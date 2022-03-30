@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.prs.hub.practice.mapper.ParameterMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.prs.hub.practice.entity.Parameter">
+        <id column="id" property="id" />
+        <result column="algorithms_id" property="algorithmsId" />
+        <result column="NAME" property="name" />
+        <result column="description" property="description" />
+        <result column="default_value" property="defaultValue" />
+        <result column="reg_exp" property="regExp" />
+        <result column="error_msg" property="errorMsg" />
+        <result column="created_user" property="createdUser" />
+        <result column="created_date" property="createdDate" />
+        <result column="modified_user" property="modifiedUser" />
+        <result column="modified_date" property="modifiedDate" />
+        <result column="is_delete" property="isDelete" />
+    </resultMap>
+
+</mapper>

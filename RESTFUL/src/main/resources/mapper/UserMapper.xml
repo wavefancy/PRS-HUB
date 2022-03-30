@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.prs.hub.practice.mapper.UserMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.prs.hub.practice.entity.User">
+        <id column="id" property="id" />
+        <result column="email" property="email" />
+        <result column="PASSWORD" property="password" />
+        <result column="first_name" property="firstName" />
+        <result column="last_name" property="lastName" />
+        <result column="job_title" property="jobTitle" />
+        <result column="city" property="city" />
+        <result column="country" property="country" />
+        <result column="organisation" property="organisation" />
+        <result column="sex" property="sex" />
+        <result column="age" property="age" />
+        <result column="id_no" property="idNo" />
+        <result column="mobile" property="mobile" />
+        <result column="created_user" property="createdUser" />
+        <result column="created_date" property="createdDate" />
+        <result column="modified_user" property="modifiedUser" />
+        <result column="modified_date" property="modifiedDate" />
+        <result column="is_delete" property="isDelete" />
+    </resultMap>
+
+</mapper>
