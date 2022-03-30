@@ -58,10 +58,13 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
             // 判断是否存在令牌信息，如果存在，则允许登录
             String accessToken = request.getParameter(ACCESS_TOKEN);
             if (null == accessToken) {
-                returnJson(response);
-                return false;
+                accessToken = request.getHeader(ACCESS_TOKEN);
+                if(null == accessToken){
+                    returnJson(response);
+                    return false;
+                }
             }
-            //验证token是否正确，是否过期，token有效返回true
+            //验证token是否正确，是否过期 过期时间半小时，token有效返回true
             if(!TokenUtil.verify(accessToken)){
                 returnJson(response);
                 return false;

@@ -12,8 +12,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 public class TokenUtil {
-    //设置过期时间
-    private static final long EXPIRE_DATE=30*60*100000;
+    //设置过期时间半小时
+    private static final long EXPIRE_DATE=30*60*1000;
     //token秘钥
     private static final String TOKEN_SECRET = "ASDGFadsfg43245asdfF2353VFDG";
 

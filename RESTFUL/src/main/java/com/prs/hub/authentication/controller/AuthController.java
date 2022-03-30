@@ -132,6 +132,7 @@ public class AuthController extends BaseController {
     public BaseResult login(HttpServletRequest req, HttpServletResponse res, UserShowReqDTO userShowReqDTO){
         log.info("执行登录controller开始userShowReqDTO="+userShowReqDTO);
         Map<String,Object> resultMap = new HashMap<>();
+        resultMap.containsKey()
         if(userShowReqDTO  == null) {
             log.info("登录login方法结束，页面传入的用户数据为空");
             resultMap.put("code", ResultCodeEnum.EMPTY.getCode());

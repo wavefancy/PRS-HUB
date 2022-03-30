@@ -1,6 +1,5 @@
 package com.prs.hub.practice.dto;
 
-import com.prs.hub.practice.entity.Parameter;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -38,5 +37,5 @@ public class AlgorithmsDTO implements Serializable {
     /**0：未删除，1：已删除**/
     private Integer isDelete;
 
-    private List<Parameter> parameters;
+    private List<ParameterDTO> parameters;
 }

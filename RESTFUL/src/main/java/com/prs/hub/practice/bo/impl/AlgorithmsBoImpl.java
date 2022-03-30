@@ -1,9 +1,9 @@
 package com.prs.hub.practice.bo.impl;
 
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.prs.hub.practice.bo.AlgorithmsBo;
 import com.prs.hub.practice.entity.Algorithms;
 import com.prs.hub.practice.mapper.AlgorithmsMapper;
-import com.prs.hub.practice.bo.AlgorithmsBo;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
 /**

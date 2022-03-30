@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.prs.hub.practice.mapper.AlgorithmsMapper">
-<!--
-    &lt;!&ndash; 通用查询映射结果 &ndash;&gt;
+<mapper namespace="com.prs.hub.practice.mapper.AlgorithmsSpecial">
+
+    <!-- 通用查询映射结果 -->
     <resultMap id="BaseResultMap" type="com.prs.hub.practice.dto.AlgorithmsDTO">
         <id column="id" property="id" />
         <result column="NAME" property="name" />
@@ -12,6 +12,48 @@
         <result column="modified_user" property="modifiedUser" />
         <result column="modified_date" property="modifiedDate" />
         <result column="is_delete" property="isDelete" />
+        <collection ofType="com.prs.hub.practice.dto.ParameterDTO" property="parameters" columnPrefix="children_">
+            <id column="id" property="id" />
+            <result column="algorithms_id" property="algorithmsId" />
+            <result column="NAME" property="name" />
+            <result column="description" property="description" />
+            <result column="default_value" property="defaultValue" />
+            <result column="reg_exp" property="regExp" />
+            <result column="error_msg" property="errorMsg" />
+            <result column="created_user" property="createdUser" />
+            <result column="created_date" property="createdDate" />
+            <result column="modified_user" property="modifiedUser" />
+            <result column="modified_date" property="modifiedDate" />
+            <result column="is_delete" property="isDelete" />
+        </collection>
     </resultMap>
-    <select id=""></select>-->
+    <select id="queryAlgorithmsDetails" parameterType="com.prs.hub.practice.entity.Algorithms" resultMap="BaseResultMap">
+        SELECT
+            a.`id`,
+            a.`NAME`,
+            a.`summary`,
+            a.`created_date`,
+            a.`created_user`,
+            a.`modified_date`,
+            a.`modified_user`,
+            a.`is_delete`,
+            p.`id` as children_id,
+            p.`algorithms_id` as children_algorithms_id,
+            p.`NAME` as children_NAME,
+            p.`description` as children_description,
+            p.`default_value` as children_default_value,
+            p.`reg_exp` as children_reg_exp,
+            p.`error_msg` as children_error_msg,
+            p.`created_date` as children_created_date,
+            p.`created_user` as children_created_user,
+            p.`modified_date` as children_modified_date,
+            p.`modified_user` as children_modified_user,
+            p.`is_delete` as children_is_delete
+        FROM algorithms a
+                 LEFT JOIN parameter p ON a.`id` = p.`algorithms_id` AND p.`is_delete`=0
+        WHERE a.`is_delete`=0
+        <if test="id!=null and id!=''">
+            and a.`id` = #{id}
+        </if>
+    </select>
 </mapper>
