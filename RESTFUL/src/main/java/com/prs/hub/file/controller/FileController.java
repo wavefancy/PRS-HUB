@@ -88,18 +88,19 @@ public class FileController {
         try {
             //上传文件到服务器
 //            String filePath = userReqDTO.getEmail()+"/"+System.currentTimeMillis()+"/";
-            String filePath = userReqDTO.getEmail()+"/"+fileName.substring(0,fileName.lastIndexOf("."))+"/";
+            String filePath = userReqDTO.getEmail()+"/"+fileName.substring(0,fileName.lastIndexOf("."))+System.currentTimeMillis()+"/";
             log.info("sftp文件上传controller,targetPath="+filePath+fileName);
             sftpSystemService.uploadFile(filePath+fileName,multipartFile.getInputStream());
             log.info("sftp文件上传成功");
 
             //将上传文件信息存储到数据库
             log.info("调用fileService将上传文件信息存储到数据库开始");
-            Boolean flag = fileService.saveOrUpdateFileDetail(filePath,fileName,userReqDTO);
-            log.info("调用fileService将上传文件信息存储到数据库结束flag="+flag);
-            if(flag){
+            Integer fileId = fileService.saveFileDetail(filePath,fileName,userReqDTO);
+            log.info("调用fileService将上传文件信息存储到数据库结束fileId="+fileId);
+            if(fileId !=null){
                 resultMap.put("code",ResultCodeEnum.SUCCESS.getCode());
                 resultMap.put("msg","sftp文件上传成功");
+                resultMap.put("fileId",fileId);
             }else {
                 resultMap.put("code",ResultCodeEnum.FAIL.getCode());
                 resultMap.put("msg","sftp文件上传失败");

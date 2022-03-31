@@ -121,6 +121,7 @@ import { isEmpty }  from "@/utils/validate"
 axios.defaults.timeout = 40000
 axios.defaults.baseURL = "http://127.0.0.1:9090/prs/hub"
 axios.defaults.headers.post['Content-Type'] = 'application/json charset=UTF-8'
+axios.defaults.headers['accessToken'] = localStorage.getItem("accessToken")
 export default {
     name:"SidebarItem",
     data() {
@@ -179,15 +180,29 @@ export default {
       //初始化用户数据
         axios.get("/getUserInfo",{
           params:{
-            accessToken: localStorage.getItem("accessToken")
           }
         }).then(
         (response) => {
+          const code = response.data.code
+          if(code==="400"){
+            //跳转登录页面
+            //提示框
+            this.$MessageBox.alert("The login status is invalid, please log in again !", 'prompt', {
+              confirmButtonText: 'OK',
+              callback: () => {
+                //跳转登录页面
+                this.$router.push({
+                  name:'login'
+                });
+              }
+            })
+            return
+          }
           const data = response.data 
           if(!isEmpty(data)){
               const user = data.data
               if(!isEmpty(user)){
-                this.name=user.name
+                this.name=user.firstName+" "+user.lastName
               }
           }        
         })

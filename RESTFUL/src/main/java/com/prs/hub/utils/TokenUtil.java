@@ -6,11 +6,13 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+@Slf4j
 public class TokenUtil {
     //设置过期时间半小时
     private static final long EXPIRE_DATE=30*60*1000;
@@ -41,9 +43,10 @@ public class TokenUtil {
             }
             token = jwtB.withExpiresAt(date).sign(algorithm);
         }catch (Exception e){
-            e.printStackTrace();
+             log.error("生成Token异常",e);
             return  null;
         }
+        log.info("生成Token="+token);
         return token;
     }
 
@@ -64,7 +67,7 @@ public class TokenUtil {
             return resMap;
 
         }catch (JWTDecodeException e){
-            e.printStackTrace();
+             log.error("获取token中信息异常",e);
         }
         return null;
     }
@@ -80,7 +83,7 @@ public class TokenUtil {
             DecodedJWT jwt = verifier.verify(token);
             return true;
         }catch (Exception e){
-            e.printStackTrace();
+            log.error("验证token是否正确，过期异常",e);
             return  false;
         }
     }

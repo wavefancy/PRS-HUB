@@ -75,6 +75,7 @@ Decimal.set({
 axios.defaults.timeout = 40000
 axios.defaults.baseURL = "http://127.0.0.1:9090/prs/hub"
 axios.defaults.headers.post['Content-Type'] = 'multipart/form-data'
+axios.defaults.headers['accessToken'] = localStorage.getItem("accessToken")
 export default {
   name: "UploadFile",
   data () {
@@ -95,7 +96,6 @@ export default {
        
         let formData = new FormData();
         formData.append('file', file);
-        formData.append('accessToken', localStorage.getItem("accessToken")); 
       
         axios.post("/sftpupload",formData).then(response => {
           console.log(response.data)
@@ -104,6 +104,7 @@ export default {
           if(code === 0){
             const innerData = resData.data;
             const msg = innerData.msg;
+            const fileId = innerData.fileId;
             if(innerData.code === 0){
               this.$bus.$emit('tips', {
                 show: true,
@@ -112,7 +113,10 @@ export default {
               })
               this.fileName = fileName
               this.fileSize = fileSize<1024? fileSize+"b" : Decimal.div(fileSize,1024).toFixed(2, Decimal.ROUND_HALF_UP)+"kb"
-              this.$store.dispatch('uploadFileData/setUploadFlag',true)
+              let fileData = {}
+              fileData["uploadFlag"] = true
+              fileData["fileId"] = fileId
+              this.$store.dispatch('uploadFileData/setUploadFlag',fileData)
             }else{
               this.$bus.$emit('tips', {
                 show: true,

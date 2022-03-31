@@ -1,6 +1,8 @@
 package com.prs.hub.file.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.prs.hub.authentication.dto.UserReqDTO;
 import com.prs.hub.file.service.FileService;
@@ -151,5 +153,59 @@ public class FileServiceImpl implements FileService {
         flag = fileBo.saveOrUpdate(prsFile,updateWrapper);
         log.info("将文件信息存储数据库结束flag="+flag);
         return flag;
+    }
+
+    /**
+     * 新增文件的信息
+     * @param filePath 文件路径
+     * @param fileName 文件名
+     * @param userReqDTO 用户信息
+     * @return
+     */
+    @Override
+    public Integer saveFileDetail(String filePath,String fileName,UserReqDTO userReqDTO){
+        log.info("新增文件的信息path="+filePath);
+        log.info("新增文件的信息fileName="+fileName);
+        log.info("用户信息userReqDTO="+JSON.toJSONString(userReqDTO));
+        //获取到后缀名
+        String suffixName = fileName.contains(".") ? fileName.substring(fileName.lastIndexOf(".")) : null;
+        log.info("后缀名suffixName="+suffixName);
+
+        //获取到后缀名
+        String onlyName = fileName.contains(".") ? fileName.substring(0,fileName.lastIndexOf(".")) : fileName;
+        log.info("上传文件名onlyName="+onlyName);
+
+        Boolean flag = false;
+        //将这些文件的信息写入到数据库中
+        PrsFile prsFile = new PrsFile();
+        prsFile.setFilePath(filePath);
+        prsFile.setFileName(onlyName);
+        prsFile.setFileSuffix(suffixName);
+        prsFile.setUserId(Long.valueOf(userReqDTO.getId()));
+        prsFile.setCreatedUser("system");
+        prsFile.setCreatedDate(LocalDateTime.now());
+        prsFile.setModifiedUser("system");
+        prsFile.setModifiedDate(LocalDateTime.now());
+        prsFile.setIsDelete(0);
+
+        log.info("调用bo新增文件的信息开始prsFile="+JSON.toJSON(prsFile));
+        flag = fileBo.save(prsFile);
+        log.info("调用bo新增文件的信息结束flag="+flag);
+
+        Integer resInt = null;
+        if(flag){
+            QueryWrapper<PrsFile> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("user_id",prsFile.getUserId());
+            queryWrapper.eq("file_path",prsFile.getFilePath());
+            queryWrapper.eq("file_name",prsFile.getFileName());
+            queryWrapper.eq("file_suffix",prsFile.getFileSuffix());
+            log.info("调用bo查询新增文件的信息开始queryWrapper="+JSON.toJSON(queryWrapper));
+            PrsFile prsFileRes = fileBo.getOne(queryWrapper);
+            log.info("调用bo查询新增文件的信息结束prsFileRes="+JSON.toJSONString(prsFileRes));
+            if(prsFileRes != null){
+                resInt = prsFileRes.getId().intValue();
+            }
+        }
+        return resInt;
     }
 }

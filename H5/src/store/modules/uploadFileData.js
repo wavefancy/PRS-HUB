@@ -8,17 +8,18 @@ export default {
     },
     mutations: {
         SET_UPLOAD_FLAG(state,val){
-            state.fileData.uploadFlag=val
+            state.fileData=val
         }
     },
     state: {
         fileData:{
-            uploadFlag:false
+            uploadFlag:false,
+            fileId:null
         }
     },
     getters: {
-        getUploadFlag(state){
-            return state.fileData.uploadFlag
+        getFileData(state){
+            return state.fileData
         }
     }
 }

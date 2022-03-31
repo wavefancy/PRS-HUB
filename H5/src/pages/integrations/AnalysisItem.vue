@@ -109,10 +109,17 @@
     </div>
 </template>
 <script>
+import axios from "axios"
+import { isEmpty }  from "@/utils/validate"
 // import {mapActions,mapGetters} from 'vuex'
 import UploadFile from "@/components/commons/UploadFile"
 import PopModal from "@/components/commons/PopModal"
 import AlgorithmsItem from "@/pages/integrations/AlgorithmsItem"
+
+axios.defaults.timeout = 40000
+axios.defaults.baseURL = "http://127.0.0.1:9090/prs/hub"
+axios.defaults.headers.post['Content-Type'] = 'application/json charset=UTF-8'
+axios.defaults.headers['accessToken'] = localStorage.getItem("accessToken")
 export default {
     name:"AnalysisItem",
     components:{
@@ -383,8 +390,8 @@ export default {
         return this.algorithmsData.length > 0 ? false:true
       },
       //上传文件标志
-      uploadFlag(){
-        return this.$store.getters['uploadFileData/getUploadFlag']
+     fileData(){
+        return this.$store.getters['uploadFileData/getFileData']
       }
     },
     methods: {
@@ -460,7 +467,7 @@ export default {
       },
       //数据提交
       dataSubmit(){
-        if(!this.uploadFlag){//未上传文件
+        if(!this.fileData.uploadFlag){//未上传文件
           //提示框
           this.$MessageBox.alert('Please upload GWAS summary statistics !', 'prompt', {
             confirmButtonText: 'OK',
@@ -480,6 +487,44 @@ export default {
       this.$bus.$on('algorithmChecked',this.algorithmChecked)
       this.$bus.$on('changeShowParModal',this.changeShowParModal)
       this.$bus.$on('changeShowParameters',this.changeShowParameters)
+      //获取算法数据
+      axios.get("/algorithms/getAlgorithmsInfo",
+        {
+          params:{
+          }
+        }
+      ).then((response) => {
+          const data = response.data 
+          if(!isEmpty(data)){
+              const resultMap = data.data
+              const code = resultMap.code
+              const algorithmsArr = resultMap.data
+              //解析后台返回的算法参数
+              if(code === 0 && !isEmpty(algorithmsArr)){
+                let algorithmsArrShow = [];
+                for(let i=0 ; i< algorithmsArr.length ; i++){
+                  let algorithms = algorithmsArr[i]
+                  algorithms["toggleName"] = null
+                  let parameterArr = algorithms.parameters
+                  let parametersArrShow = [];
+                  if(!isEmpty(parameterArr) && parameterArr.length>0){
+                    for(let j=0 ; j< parameterArr.length ; j++){
+                      let parameter = parameterArr[j]
+                      parameter["setValue"] = null
+                      parameter["errorFlag"] = false
+                      parametersArrShow.push(parameter)
+                    }
+                  }
+                  algorithms["parameters"] = parametersArrShow
+                  algorithmsArrShow.push(algorithms)
+                }
+                //为页面显示的参数赋值
+                this.algorithms.algorithmsShow = algorithmsArrShow
+              }
+          }else{
+            //跳转错误页面
+          }
+        })
     },
     beforeDestroy() {
       //销毁总线绑定的函数

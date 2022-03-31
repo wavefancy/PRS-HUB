@@ -28,12 +28,21 @@ public interface FileService {
     InputStream getFileInputStream(PrsFile prsFile);
 
     /**
-     * 将文件的信息写入到数据库中
+     * 新增或修改文件的信息
      * @param filePath 文件路径
      * @param fileName 文件名
      * @param userReqDTO 用户信息
      * @return
      */
     Boolean saveOrUpdateFileDetail(String filePath,String fileName,UserReqDTO userReqDTO);
+    /**
+     * 新增文件的信息
+     * @param filePath 文件路径
+     * @param fileName 文件名
+     * @param userReqDTO 用户信息
+     * @return
+     */
+    Integer saveFileDetail(String filePath,String fileName,UserReqDTO userReqDTO);
+
 
 }

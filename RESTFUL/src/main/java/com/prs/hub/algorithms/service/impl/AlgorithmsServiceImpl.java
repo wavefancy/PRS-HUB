@@ -4,9 +4,11 @@ import com.alibaba.fastjson.JSON;
 import com.prs.hub.algorithms.dto.AlgorithmsResDTO;
 import com.prs.hub.algorithms.dto.ParameterResDTO;
 import com.prs.hub.algorithms.service.AlgorithmsService;
+import com.prs.hub.practice.bo.AlgorithmsBo;
 import com.prs.hub.practice.bo.AlgorithmsSpecialBo;
 import com.prs.hub.practice.dto.AlgorithmsDTO;
 import com.prs.hub.practice.dto.ParameterDTO;
+import com.prs.hub.practice.entity.Algorithms;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -27,6 +28,8 @@ import java.util.List;
 public class AlgorithmsServiceImpl implements AlgorithmsService {
     @Autowired
     private AlgorithmsSpecialBo algorithmsSpecialBo;
+    @Autowired
+    private AlgorithmsBo algorithmsBo;
 
     @Override
     public List<AlgorithmsResDTO> queryAlgorithmsDetails() {
@@ -53,4 +56,23 @@ public class AlgorithmsServiceImpl implements AlgorithmsService {
         log.info("service查询算法详细信息结束algorithmsResDTOList="+JSON.toJSONString(algorithmsResDTOList));
         return algorithmsResDTOList;
     }
+    /**
+     * 根据id查询算法
+     * @param id
+     * @return
+     */
+    @Override
+    public Algorithms queryAlgorithmsById(Long id) {
+        log.info("根据id查询算法service开始id="+id);
+        Algorithms algorithms = null;
+        try {
+            algorithms = algorithmsBo.getById(id);
+            log.info("根据id查询算法service结束algorithms="+JSON.toJSONString(algorithms));
+        }catch (Exception e){
+            log.error("根据id查询算法service异常",e);
+            return null;
+        }
+        return algorithms;
+    }
+
 }

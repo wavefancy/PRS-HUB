@@ -1,6 +1,7 @@
 package com.prs.hub.algorithms.service;
 
 import com.prs.hub.algorithms.dto.AlgorithmsResDTO;
+import com.prs.hub.practice.entity.Algorithms;
 
 import java.util.List;
 
@@ -14,4 +15,11 @@ public interface AlgorithmsService {
      * @return
      */
     List<AlgorithmsResDTO> queryAlgorithmsDetails();
+
+    /**
+     * 根据id查询算法
+     * @param id
+     * @return
+     */
+    Algorithms queryAlgorithmsById(Long id);
 }

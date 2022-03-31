@@ -56,13 +56,11 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
             // 有 @Authorization 注解，需要认证
             log.info("验证登陆状态开始");
             // 判断是否存在令牌信息，如果存在，则允许登录
-            String accessToken = request.getParameter(ACCESS_TOKEN);
+//            String accessToken = request.getParameter(ACCESS_TOKEN);
+            String accessToken = request.getHeader(ACCESS_TOKEN);
             if (null == accessToken) {
-                accessToken = request.getHeader(ACCESS_TOKEN);
-                if(null == accessToken){
-                    returnJson(response);
-                    return false;
-                }
+                returnJson(response);
+                return false;
             }
             //验证token是否正确，是否过期 过期时间半小时，token有效返回true
             if(!TokenUtil.verify(accessToken)){
@@ -133,6 +131,11 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
         PrintWriter writer = null;
         response.setCharacterEncoding("UTF-8");
         response.setContentType("application/json; charset=utf-8");
+        //解决跨域问题
+        response.addHeader("Access-Control-Allow-Origin", "*");
+        response.addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD");
+        response.addHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+        response.addHeader("Access-Control-Max-Age", "3600");
         try {
             writer = response.getWriter();
             Map<String, Object> result = new HashMap<>();
