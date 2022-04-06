@@ -4,6 +4,7 @@ import Vuex from 'vuex'
 //算法参数-提交后台用
 import algorithmsData from '@/store/modules/algorithmsData'
 import uploadFileData from '@/store/modules/uploadFileData'
+import loginData from '@/store/modules/loginData'
 //应用Vuex插件
 Vue.use(Vuex)
 
@@ -11,7 +12,8 @@ Vue.use(Vuex)
 export default new Vuex.Store({
     modules:{
         algorithmsData,
-        uploadFileData
+        uploadFileData,
+        loginData
     }
 
 })

@@ -1,6 +1,7 @@
 <template>
     <!-- Content -->
     <div class="flex-lg-1 h-screen overflow-y-lg-auto">
+      <vue-element-loading :active="loading" :is-full-screen="true" spinner="ring"/>
       <!-- Navbar -->
       <header class="position-sticky top-0 overlap-10 bg-surface-primary border-bottom">
         <div class="container-fluid py-4">
@@ -109,17 +110,13 @@
     </div>
 </template>
 <script>
-import axios from "axios"
+import {Prs} from "@/api"
 import { isEmpty }  from "@/utils/validate"
 // import {mapActions,mapGetters} from 'vuex'
 import UploadFile from "@/components/commons/UploadFile"
 import PopModal from "@/components/commons/PopModal"
 import AlgorithmsItem from "@/pages/integrations/AlgorithmsItem"
 
-axios.defaults.timeout = 40000
-axios.defaults.baseURL = "http://127.0.0.1:9090/prs/hub"
-axios.defaults.headers.post['Content-Type'] = 'application/json charset=UTF-8'
-axios.defaults.headers['accessToken'] = localStorage.getItem("accessToken")
 export default {
     name:"AnalysisItem",
     components:{
@@ -377,7 +374,8 @@ export default {
         //是否展示参数配置弹窗
         showParModal:false,
         //提交按钮配置弹窗
-        subModalToggle:'modal'
+        subModalToggle:'modal',
+        loading:false,
       }
     },
     computed:{
@@ -471,16 +469,54 @@ export default {
           //提示框
           this.$MessageBox.alert('Please upload GWAS summary statistics !', 'prompt', {
             confirmButtonText: 'OK',
-            // callback: action => {
-            //   if("confirm" === action){//点击确定
-            //   }
-            // }
           })
           return
         }
-
+        let subData = {
+          algorithmList:this.algorithmsData,
+          fileId:this.fileData.fileId,
+          headers: {'accessToken':  localStorage.getItem("accessToken")}
+        }
+        //加载中
+        this.loading=true
         //提交参数
-      }
+        Prs.setParametersInfo(subData).then((response) => {
+          const data = response;
+          if(data.code === 0){
+            const resData = data.data;
+            if(resData.code === 0){
+              //关闭加载中
+                this.loading=false
+                //提示框
+                this.$MessageBox.alert('Submit successfully .', 'prompt', {
+                  confirmButtonText: 'OK',
+                  callback: () => {
+                   this.toStatistics()
+                  }
+                })
+            }
+          }else  if(data.code==="400"){
+            //跳转登录页面
+            //提示框
+            this.$MessageBox.alert("The login status is invalid, please log in again !", 'prompt', {
+              confirmButtonText: 'OK',
+              callback: () => {
+                //跳转登录页面
+                this.$router.push({
+                  name:'login'
+                });
+              }
+            })
+            return
+          }
+        })
+      },
+      //跳转到登录页
+      toStatistics(){
+        this.$router.push({
+					name:'statistics'
+				});
+      },
     },
     mounted() {
       //为总线绑定函数
@@ -488,52 +524,63 @@ export default {
       this.$bus.$on('changeShowParModal',this.changeShowParModal)
       this.$bus.$on('changeShowParameters',this.changeShowParameters)
       //获取算法数据
-      axios.get("/algorithms/getAlgorithmsInfo",
-        {
-          params:{
-          }
+      Prs.getAlgorithmsInfo().then((response) => {
+        const code = response.code
+        if(code==="400"){
+          //跳转登录页面
+          //提示框
+          this.$MessageBox.alert("The login status is invalid, please log in again !", 'prompt', {
+            confirmButtonText: 'OK',
+            callback: () => {
+              //跳转登录页面
+              this.$router.push({
+                name:'login'
+              });
+            }
+          })
+          return
         }
-      ).then((response) => {
-          const data = response.data 
-          if(!isEmpty(data)){
-              const resultMap = data.data
-              const code = resultMap.code
-              const algorithmsArr = resultMap.data
-              //解析后台返回的算法参数
-              if(code === 0 && !isEmpty(algorithmsArr)){
-                let algorithmsArrShow = [];
-                for(let i=0 ; i< algorithmsArr.length ; i++){
-                  let algorithms = algorithmsArr[i]
-                  algorithms["toggleName"] = null
-                  let parameterArr = algorithms.parameters
-                  let parametersArrShow = [];
-                  if(!isEmpty(parameterArr) && parameterArr.length>0){
-                    for(let j=0 ; j< parameterArr.length ; j++){
-                      let parameter = parameterArr[j]
-                      parameter["setValue"] = null
-                      parameter["errorFlag"] = false
-                      parametersArrShow.push(parameter)
-                    }
+        const data = response.data 
+        if(!isEmpty(data)){
+            const algorithmsArr = data.data
+            const code = data.code
+            //解析后台返回的算法参数
+            if(code === 0 && !isEmpty(algorithmsArr)){
+              let algorithmsArrShow = [];
+              for(let i=0 ; i< algorithmsArr.length ; i++){
+                let algorithms = algorithmsArr[i]
+                algorithms["toggleName"] = null
+                let parameterArr = algorithms.parameters
+                let parametersArrShow = [];
+                if(!isEmpty(parameterArr) && parameterArr.length>0){
+                  for(let j=0 ; j< parameterArr.length ; j++){
+                    let parameter = parameterArr[j]
+                    parameter["setValue"] = null
+                    parameter["errorFlag"] = false
+                    parametersArrShow.push(parameter)
                   }
-                  algorithms["parameters"] = parametersArrShow
-                  algorithmsArrShow.push(algorithms)
                 }
-                //为页面显示的参数赋值
-                this.algorithms.algorithmsShow = algorithmsArrShow
+                algorithms["parameters"] = parametersArrShow
+                algorithmsArrShow.push(algorithms)
               }
-          }else{
-            //跳转错误页面
-          }
-        })
+              //为页面显示的参数赋值
+              this.algorithms.algorithmsShow = algorithmsArrShow
+            }
+        }else{
+          //跳转错误页面
+        }
+      })
     },
     beforeDestroy() {
       //销毁总线绑定的函数
       this.$bus.$off('algorithmChecked')
       this.$bus.$off('changeShowParModal')
       this.$bus.$off('changeShowParameters')
-    },
+    }
 }
+
 </script>
+
 <style>
 .algorithm{
   border-bottom: 1px solid #c9c9d2;

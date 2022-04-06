@@ -55,12 +55,9 @@
 </template>
 
 <script>
-import axios from "axios"
+import {Account} from "@/api"
 import { isEmpty }  from "@/utils/validate"
 
-axios.defaults.timeout = 40000
-axios.defaults.baseURL = "http://127.0.0.1:9090/prs/hub"
-axios.defaults.headers.post['Content-Type'] = 'application/json charset=UTF-8'
 export default {
     name:"LoginItem",
     data () {
@@ -95,22 +92,18 @@ export default {
         }
 
         //提交数据
-        axios.get("/login",
-          {
-            params:subData
-          }
-        ).then((response) => {
-          const data = response.data 
+        Account.reqLogin(subData).then((res) => {
+          const data = res.data
           if(!isEmpty(data)){
-              const resultMap = data.data
-              const code = resultMap.code
-              const msg = resultMap.msg
-              const token = resultMap.token
+              const code = data.code
+              const msg = data.msg
+              const token = data.token
               if(code === 0){
                 //关闭加载中
                 this.loading=false
                 //存储token
                 localStorage.setItem('accessToken',token)
+                this.$store.dispatch('loginData/setLoginData',{accessToken:token})
                 //跳转home页
                 this.$router.push({
                   name:'functionItem'

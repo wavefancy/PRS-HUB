@@ -115,13 +115,9 @@
 </template>
 
 <script>
-import axios from "axios"
+import {Account} from "@/api"
 import { isEmpty }  from "@/utils/validate"
 
-axios.defaults.timeout = 40000
-axios.defaults.baseURL = "http://127.0.0.1:9090/prs/hub"
-axios.defaults.headers.post['Content-Type'] = 'application/json charset=UTF-8'
-axios.defaults.headers['accessToken'] = localStorage.getItem("accessToken")
 export default {
     name:"SidebarItem",
     data() {
@@ -178,12 +174,9 @@ export default {
     },
     mounted () {
       //初始化用户数据
-        axios.get("/getUserInfo",{
-          params:{
-          }
-        }).then(
+        Account.getUserInfo().then(
         (response) => {
-          const code = response.data.code
+          const code = response.code
           if(code==="400"){
             //跳转登录页面
             //提示框
@@ -200,7 +193,7 @@ export default {
           }
           const data = response.data 
           if(!isEmpty(data)){
-              const user = data.data
+              const user = data
               if(!isEmpty(user)){
                 this.name=user.firstName+" "+user.lastName
               }

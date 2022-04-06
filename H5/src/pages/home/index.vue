@@ -89,24 +89,24 @@
             <div class="col-lg-6 order-md-0">
                 <!-- Surtitle -->
                 <h5 class="h5 mb-5 text-uppercase text-warning mb-5">
-                    Purpose Design System
+                    XXXXXX XXXXXX
                 </h5>
                 <!-- Heading -->
                 <h1 class="ls-tight font-bolder display-3 mb-5">
-                    Build beautiful websites, faster.
+                    XXXXX XXXX XXXX
                 </h1>
                 <!-- Text -->
                 <p class="lead mb-10">
-                    Accelerate your development while remaining consistent.
+                    xxxx xxx xxxx xxxx xxx 
                 </p>
                 <!-- Buttons -->
                 <div class="mx-n2">
-                    <a href="#" class="btn btn-lg btn-primary shadow-sm mx-2 px-lg-8">
-                        Get started
-                    </a>
-                    <a href="#" class="btn btn-lg btn-neutral mx-2 px-lg-8">
-                        Learn more
-                    </a>
+                    <router-link to="/login" class="btn btn-lg btn-primary shadow-sm mx-2 px-lg-8">
+                        Sign in
+                    </router-link>
+                    <router-link to="/register" class="btn btn-lg btn-neutral mx-2 px-lg-8">
+                        Register
+                    </router-link>
                 </div>
             </div>
         </div>

@@ -102,12 +102,9 @@
 </template>
 
 <script>
-import axios from "axios"
+import {Account} from "@/api"
 import { checkEmail,checkPassword,isEmpty,checkName }  from "@/utils/validate"
 
-axios.defaults.timeout = 40000
-axios.defaults.baseURL = "http://127.0.0.1:9090/prs/hub"
-axios.defaults.headers.post['Content-Type'] = 'application/json charset=UTF-8'
 export default {
     name:"RegisterItem",
     data () {
@@ -207,12 +204,8 @@ export default {
         }
 
         //提交数据
-        axios.get("/auth",
-          {
-            params:subData
-          }
-        ).then((response) => {
-          const data = response.data 
+        Account.auth(subData).then((response) => {
+          const data = response
           if(!isEmpty(data)){
               const resultMap = data.data
               const code = resultMap.code

@@ -98,8 +98,7 @@ export default {
         formData.append('file', file);
       
         axios.post("/sftpupload",formData).then(response => {
-          console.log(response.data)
-          const resData = response.data
+          const resData = response
           const code = resData.code;
           if(code === 0){
             const innerData = resData.data;
