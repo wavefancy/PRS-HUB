@@ -42,7 +42,7 @@ public interface FileService {
      * @param userReqDTO 用户信息
      * @return
      */
-    Integer saveFileDetail(String filePath,String fileName,UserReqDTO userReqDTO);
+    Long saveFileDetail(String filePath,String fileName,UserReqDTO userReqDTO);
 
 
 }

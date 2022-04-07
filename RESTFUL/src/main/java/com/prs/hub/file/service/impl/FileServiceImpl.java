@@ -163,7 +163,7 @@ public class FileServiceImpl implements FileService {
      * @return
      */
     @Override
-    public Integer saveFileDetail(String filePath,String fileName,UserReqDTO userReqDTO){
+    public Long saveFileDetail(String filePath,String fileName,UserReqDTO userReqDTO){
         log.info("新增文件的信息path="+filePath);
         log.info("新增文件的信息fileName="+fileName);
         log.info("用户信息userReqDTO="+JSON.toJSONString(userReqDTO));
@@ -192,7 +192,7 @@ public class FileServiceImpl implements FileService {
         flag = fileBo.save(prsFile);
         log.info("调用bo新增文件的信息结束flag="+flag);
 
-        Integer resInt = null;
+        Long resInt = null;
         if(flag){
             QueryWrapper<PrsFile> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("user_id",prsFile.getUserId());
@@ -203,7 +203,7 @@ public class FileServiceImpl implements FileService {
             PrsFile prsFileRes = fileBo.getOne(queryWrapper);
             log.info("调用bo查询新增文件的信息结束prsFileRes="+JSON.toJSONString(prsFileRes));
             if(prsFileRes != null){
-                resInt = prsFileRes.getId().intValue();
+                resInt = prsFileRes.getId();
             }
         }
         return resInt;

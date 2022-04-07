@@ -1,7 +1,8 @@
 package com.prs.hub.algorithms.service.impl;
 
 import com.alibaba.fastjson.JSON;
-import com.prs.hub.algorithms.dto.AlgorithmsReqDTO;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.prs.hub.algorithms.dto.AlgorithmReqDTO;
 import com.prs.hub.algorithms.dto.ParameterEnterReqDTO;
 import com.prs.hub.algorithms.service.ParameterEnterService;
 import com.prs.hub.practice.bo.ParameterEnterBo;
@@ -12,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author fanshupeng
@@ -25,31 +28,47 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
 
     /**
      * 保存用户设置参数
-     * @param parameterEnterReqDTO
+     * @param algorithmReqDTOList
      * @return
      */
     @Override
-    public Boolean setParametersInfo(ParameterEnterReqDTO parameterEnterReqDTO) {
-        log.info("保存用户设置参数开始algorithmsReqDTO="+ JSON.toJSONString(parameterEnterReqDTO));
-        ParameterEnter parameterEnter = new ParameterEnter();
-        String id = parameterEnterReqDTO.getId();
-        if(StringUtils.isNotEmpty(id)){
-            parameterEnter.setParameterId(Long.valueOf(id));
+    public Boolean setParametersInfo(List<AlgorithmReqDTO> algorithmReqDTOList,Long fileId) {
+        log.info("保存用户设置参数开始palgorithmsReqDTOList="+ JSON.toJSONString(algorithmReqDTOList));
+        List<ParameterEnter> parameterEnters = new ArrayList<>();
+        if(CollectionUtils.isEmpty(algorithmReqDTOList)){
+            log.info("保存用户设置参数结束，传入数据为空");
+            return false;
         }
-        String fileId = parameterEnterReqDTO.getFileId();
-        if(StringUtils.isNotEmpty(fileId)){
-            parameterEnter.setFileId(Long.valueOf(fileId));
-        }
+        //当前系统时间
         LocalDateTime now = LocalDateTime.now();
-        parameterEnter.setValue(parameterEnterReqDTO.getValue());
-        parameterEnter.setCreatedUser("system");
-        parameterEnter.setCreatedDate(now);
-        parameterEnter.setModifiedUser("system");
-        parameterEnter.setModifiedDate(now);
-        parameterEnter.setIsDelete(0);
-
-        parameterEnterBo.save(parameterEnter);
-        log.info("保存用户设置参数结束");
-        return null;
+        for (AlgorithmReqDTO algorithmReqDTO : algorithmReqDTOList) {
+            List<ParameterEnterReqDTO> parameterEnterReqList = algorithmReqDTO.getParameters();
+            for (ParameterEnterReqDTO parameterEnterReqDTO: parameterEnterReqList) {
+                ParameterEnter parameterEnter = new ParameterEnter();
+                String id = parameterEnterReqDTO.getId();
+                if(StringUtils.isNotEmpty(id)){
+                    parameterEnter.setParameterId(Long.valueOf(id));
+                }
+                if(fileId != null){
+                    parameterEnter.setFileId(fileId);
+                }
+                parameterEnter.setValue(parameterEnterReqDTO.getValue());
+                parameterEnter.setCreatedUser("system");
+                parameterEnter.setCreatedDate(now);
+                parameterEnter.setModifiedUser("system");
+                parameterEnter.setModifiedDate(now);
+                parameterEnter.setIsDelete(0);
+                parameterEnters.add(parameterEnter);
+            }
+        }
+        if(CollectionUtils.isEmpty(parameterEnters)){
+            log.info("保存用户设置参数结束，传入parameterEnters数据为空");
+            return false;
+        }
+        log.info("调用bo保存用户设置参数parameterEnters="+JSON.toJSONString(parameterEnters));
+        Boolean flag = parameterEnterBo.saveBatch(parameterEnters);
+        log.info("调用bo保存用户设置参数结束flag="+flag);
+        log.info("保存用户设置参数结束flag="+flag);
+        return flag;
     }
 }

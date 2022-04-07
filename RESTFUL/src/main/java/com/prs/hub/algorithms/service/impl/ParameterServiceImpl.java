@@ -3,7 +3,6 @@ package com.prs.hub.algorithms.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.prs.hub.algorithms.service.ParameterService;
 import com.prs.hub.practice.bo.ParameterBo;
-import com.prs.hub.practice.entity.Algorithms;
 import com.prs.hub.practice.entity.Parameter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

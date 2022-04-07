@@ -54,10 +54,10 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
         // 没有 @Authorization 注解，不需要认证
         if (methodAnnotation != null){
             // 有 @Authorization 注解，需要认证
-            log.info("验证登陆状态开始");
             // 判断是否存在令牌信息，如果存在，则允许登录
 //            String accessToken = request.getParameter(ACCESS_TOKEN);
             String accessToken = request.getHeader(ACCESS_TOKEN);
+            log.info("验证登陆状态开始accessToken="+accessToken);
             if (null == accessToken) {
                 returnJson(response);
                 return false;

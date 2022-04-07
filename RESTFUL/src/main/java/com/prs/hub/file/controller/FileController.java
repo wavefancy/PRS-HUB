@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -88,14 +89,16 @@ public class FileController {
         try {
             //上传文件到服务器
 //            String filePath = userReqDTO.getEmail()+"/"+System.currentTimeMillis()+"/";
-            String filePath = userReqDTO.getEmail()+"/"+fileName.substring(0,fileName.lastIndexOf("."))+System.currentTimeMillis()+"/";
+            Calendar c = Calendar.getInstance();
+            String dataPath = c.get(Calendar.YEAR) + "-" + (c.get(Calendar.MONTH)+1) + "-" + c.get(Calendar.DATE);
+            String filePath = dataPath+"/"+userReqDTO.getEmail()+"/"+fileName.substring(0,fileName.lastIndexOf("."))+System.currentTimeMillis()+"/";
             log.info("sftp文件上传controller,targetPath="+filePath+fileName);
             sftpSystemService.uploadFile(filePath+fileName,multipartFile.getInputStream());
             log.info("sftp文件上传成功");
 
             //将上传文件信息存储到数据库
             log.info("调用fileService将上传文件信息存储到数据库开始");
-            Integer fileId = fileService.saveFileDetail(filePath,fileName,userReqDTO);
+            Long fileId = fileService.saveFileDetail(filePath,fileName,userReqDTO);
             log.info("调用fileService将上传文件信息存储到数据库结束fileId="+fileId);
             if(fileId !=null){
                 resultMap.put("code",ResultCodeEnum.SUCCESS.getCode());

@@ -8,24 +8,13 @@ import java.util.List;
 
 /**
  * @author fanshupeng
- * @create 2022/3/30 16:07
+ * @create 2022/4/1 16:25
  */
-@Getter
 @Setter
+@Getter
 public class AlgorithmsReqDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
-    /**主键**/
-    private String id;
-
-    /**算法名**/
-    private String name;
-
-    /**概要**/
-    private String summary;
-    /**
-     * 参数
-     */
-    private List<ParameterEnterReqDTO> parameters;
+    private Long fileId;
+    private List<AlgorithmReqDTO> algorithmList;
 }

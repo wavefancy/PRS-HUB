@@ -1,6 +1,8 @@
 package com.prs.hub.algorithms.service;
 
-import com.prs.hub.algorithms.dto.ParameterEnterReqDTO;
+import com.prs.hub.algorithms.dto.AlgorithmReqDTO;
+
+import java.util.List;
 
 /**
  * @author fanshupeng
@@ -11,5 +13,5 @@ public interface ParameterEnterService {
      * 查询算法详细信息
      * @return
      */
-    Boolean setParametersInfo(ParameterEnterReqDTO parameterEnterReqDTO);
+    Boolean setParametersInfo(List<AlgorithmReqDTO> algorithmReqDTOList,Long fileId);
 }

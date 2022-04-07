@@ -26,6 +26,7 @@ class PrsHubApplicationTests {
         filePathMap.put("workflowInputs",inputsFile);
         String remote_url = "http://39.103.140.193:8000/api/workflows/v1";// 第三方服务器请求地址
         HttpClientUtil.httpClientUploadFileByfile(filePathMap,remote_url);
+
     }
 
 

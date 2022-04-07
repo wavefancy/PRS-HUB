@@ -43,11 +43,10 @@
             <div class="mt-10">
               <!-- Heading -->
               <h6>Parameters:</h6>
-              <!-- Features -->
-              <div class="row" v-for="parameter in showParameters" :key="parameter.id">
-                <label class="col-12 control-label">
+              <div class="list-unstyled mt-3 mle" v-for="parameter in showParameters" :key="parameter.id">
+                <p class="py-1 d-flex align-items-center">
                   {{ parameter.name }}:{{ parameter.description }}
-                </label>
+                </p>
                 <div class="input-group input-group-sm input-group-inline">
                   <input
                     type="text"
@@ -56,11 +55,11 @@
                     :placeholder='"Default:"+parameter.defaultValue'
                   />
                 </div>
-                <label v-show="parameter.errorFlag" class="errorMsg" name="errorMsg">
-                  请按照默认值格式输入正确的数据!
-                </label>
+                <p v-show="parameter.errorFlag" class="errorMsg" name="errorMsg">
+                  Please enter the correct data in the default format!
+                </p>
               </div>
-              <div class="modal-footer">
+              <div class="modal-footer" style="    border-top: 0px solid #e7eaf0;">
                 <button
                   type="button"
                   class="btn btn-sm btn-neutral"
@@ -588,5 +587,8 @@ export default {
 .parameters{
     margin-left: 0.5rem;
     padding-bottom: 0.5rem;
+}
+.mle{
+  margin-left: 1rem;
 }
 </style>

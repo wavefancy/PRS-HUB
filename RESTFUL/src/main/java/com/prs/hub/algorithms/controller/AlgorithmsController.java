@@ -1,8 +1,12 @@
 package com.prs.hub.algorithms.controller;
 
 import com.alibaba.fastjson.JSON;
-import com.prs.hub.algorithms.dto.AlgorithmsResDTO;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.prs.hub.algorithms.dto.AlgorithmReqDTO;
+import com.prs.hub.algorithms.dto.AlgorithmResDTO;
+import com.prs.hub.algorithms.dto.AlgorithmsReqDTO;
 import com.prs.hub.algorithms.service.AlgorithmsService;
+import com.prs.hub.algorithms.service.ParameterEnterService;
 import com.prs.hub.authentication.dto.UserReqDTO;
 import com.prs.hub.commons.Authorization;
 import com.prs.hub.commons.BaseResult;
@@ -10,6 +14,7 @@ import com.prs.hub.commons.CurrentUser;
 import com.prs.hub.constant.ResultCodeEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,6 +35,8 @@ import java.util.Map;
 public class AlgorithmsController {
     @Autowired
     private AlgorithmsService algorithmsService;
+    @Autowired
+    private ParameterEnterService parameterEnterService;
     /**
      * 获取算法详情
      * @param req
@@ -43,15 +50,48 @@ public class AlgorithmsController {
         log.info("获取算法详情controller开始,userReqDTO="+ JSON.toJSON(userReqDTO));
         Map<String,Object> resultMap = new HashMap<>();
         try {
-            List<AlgorithmsResDTO> algorithmsResDTOList = algorithmsService.queryAlgorithmsDetails();
+            List<AlgorithmResDTO> algorithmResDTOList = algorithmsService.queryAlgorithmsDetails();
             resultMap.put("code", ResultCodeEnum.SUCCESS.getCode());
-            resultMap.put("data" ,algorithmsResDTOList);
-            log.info("获取算法详情controller结束,algorithmsResDTOList="+JSON.toJSONString(algorithmsResDTOList));
+            resultMap.put("data" , algorithmResDTOList);
+            log.info("获取算法详情controller结束,resultMap="+JSON.toJSONString(resultMap));
         }catch (Exception e){
             log.error("获取算法详情controller异常",e);
             resultMap.put("code", ResultCodeEnum.EXCEPTION.getCode());
             resultMap.put("msg" ,"获取算法详情controller异常");
+            return BaseResult.ok("接口调用成功",resultMap);
         }
-        return BaseResult.ok("成功",resultMap);
+        return BaseResult.ok("接口调用成功",resultMap);
+    }
+
+    /**
+     * 用户设置参数落库
+     * @param userReqDTO
+     * @return
+     */
+    @RequestMapping(value = "/setParametersInfo", method = RequestMethod.POST)
+    @Authorization
+    public BaseResult setParametersInfo(@CurrentUser UserReqDTO userReqDTO, @RequestBody AlgorithmsReqDTO algorithmsReqDTO){
+        log.info("用户设置参数落库controller开始,algorithmsReqDTO="+ JSON.toJSON(algorithmsReqDTO));
+        Map<String,Object> resultMap = new HashMap<>();
+        List<AlgorithmReqDTO> algorithmReqDTOList = algorithmsReqDTO.getAlgorithmList();
+        Long fileId = algorithmsReqDTO.getFileId();
+        if(CollectionUtils.isEmpty(algorithmReqDTOList)||fileId==null){
+            log.info("用户设置参数落库controller必传参数为空");
+            resultMap.put("code", ResultCodeEnum.EMPTY.getCode());
+            resultMap.put("msg" ,"用户设置参数落库controller必传参数为空");
+            return BaseResult.ok("接口调用成功",resultMap);
+        }
+        try {
+            Boolean flag = parameterEnterService.setParametersInfo(algorithmReqDTOList,fileId);
+            resultMap.put("code", ResultCodeEnum.SUCCESS.getCode());
+            resultMap.put("data" ,flag);
+        }catch (Exception e){
+            log.error("用户设置参数落库controller异常",e);
+            resultMap.put("code", ResultCodeEnum.EXCEPTION.getCode());
+            resultMap.put("msg" ,"用户设置参数落库controller异常");
+            return BaseResult.ok("接口调用成功",resultMap);
+        }
+        log.info("用户设置参数落库controller结束,resultMap="+JSON.toJSONString(resultMap));
+        return BaseResult.ok("接口调用成功",resultMap);
     }
 }

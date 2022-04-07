@@ -12,12 +12,12 @@ import java.util.List;
  */
 @Getter
 @Setter
-public class AlgorithmsResDTO implements Serializable {
+public class AlgorithmReqDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     /**主键**/
-    private Long id;
+    private String id;
 
     /**算法名**/
     private String name;
@@ -27,5 +27,5 @@ public class AlgorithmsResDTO implements Serializable {
     /**
      * 参数
      */
-    private List<ParameterResDTO> parameters;
+    private List<ParameterEnterReqDTO> parameters;
 }

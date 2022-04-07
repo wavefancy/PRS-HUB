@@ -1,7 +1,7 @@
 package com.prs.hub.algorithms.service.impl;
 
 import com.alibaba.fastjson.JSON;
-import com.prs.hub.algorithms.dto.AlgorithmsResDTO;
+import com.prs.hub.algorithms.dto.AlgorithmResDTO;
 import com.prs.hub.algorithms.dto.ParameterResDTO;
 import com.prs.hub.algorithms.service.AlgorithmsService;
 import com.prs.hub.practice.bo.AlgorithmsBo;
@@ -32,29 +32,29 @@ public class AlgorithmsServiceImpl implements AlgorithmsService {
     private AlgorithmsBo algorithmsBo;
 
     @Override
-    public List<AlgorithmsResDTO> queryAlgorithmsDetails() {
+    public List<AlgorithmResDTO> queryAlgorithmsDetails() {
         log.info("service查询算法详细信息开始");
         log.info("service调用Bo查询算法详细信息开始");
         List<AlgorithmsDTO> algorithmsDTOList = algorithmsSpecialBo.queryAlgorithmsDetails();
         log.info("service调用Bo查询算法详细信息结束algorithmsDTOList="+ JSON.toJSONString(algorithmsDTOList));
-        List<AlgorithmsResDTO> algorithmsResDTOList = new ArrayList<>();
+        List<AlgorithmResDTO> algorithmResDTOList = new ArrayList<>();
         if(!CollectionUtils.isEmpty(algorithmsDTOList)){
             for (AlgorithmsDTO algorithmsDTO:algorithmsDTOList) {
-                AlgorithmsResDTO algorithmsResDTO = new AlgorithmsResDTO();
-                BeanUtils.copyProperties(algorithmsDTO,algorithmsResDTO);
+                AlgorithmResDTO algorithmResDTO = new AlgorithmResDTO();
+                BeanUtils.copyProperties(algorithmsDTO, algorithmResDTO);
                 List<ParameterResDTO> parameterResDTOList = new ArrayList<>();
                 for (ParameterDTO parameterDTO:algorithmsDTO.getParameters()) {
                     ParameterResDTO parameterResDTO = new ParameterResDTO();
                     BeanUtils.copyProperties(parameterDTO,parameterResDTO);
                     parameterResDTOList.add(parameterResDTO);
                 }
-                algorithmsResDTO.setParameters(parameterResDTOList);
-                algorithmsResDTOList.add(algorithmsResDTO);
+                algorithmResDTO.setParameters(parameterResDTOList);
+                algorithmResDTOList.add(algorithmResDTO);
                 System.out.println();
             }
         }
-        log.info("service查询算法详细信息结束algorithmsResDTOList="+JSON.toJSONString(algorithmsResDTOList));
-        return algorithmsResDTOList;
+        log.info("service查询算法详细信息结束algorithmsResDTOList="+JSON.toJSONString(algorithmResDTOList));
+        return algorithmResDTOList;
     }
     /**
      * 根据id查询算法
