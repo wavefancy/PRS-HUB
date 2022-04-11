@@ -153,6 +153,10 @@ export default {
               {
                 name:"Algorithms",
                 path:"/analysis"
+              },
+              {
+                name:"Upload LD reference",
+                path:"/reference"
               }
             
             ]

@@ -3,7 +3,7 @@ import { Message } from 'element-ui'
 import store from '@/store'
 
 axios.defaults.timeout = 40000
-axios.defaults.baseURL = "http://127.0.0.1:9090/prs/hub"
+axios.defaults.baseURL = process.env.VUE_APP_BASE_PRS_EPORTAL
 axios.defaults.headers.post['Content-Type'] = 'application/json charset=UTF-8'
 
 //请求拦截器：携带的token字段

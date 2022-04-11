@@ -7,6 +7,13 @@ spring:
     url: jdbc:mysql://127.0.0.1:3306/prs?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&allowMultiQueries=true
     password: 111111
     username: root
+  servlet:
+    # 本地文件上传：最大支持文件大小
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+      enabled: true
+      resolve-lazily: false
 #控制台打印sql
 mybatis-plus:
   configuration:

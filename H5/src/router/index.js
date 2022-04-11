@@ -5,6 +5,7 @@ import VueRouter from "vue-router";
 //引入组件
 import AnalysisItem from '@/pages/integrations/AnalysisItem'
 import StatisticsItem from '@/pages/task/StatisticsItem'
+import ReferenceItem from '@/pages/task/ReferenceItem'
 import LoginItem from '@/pages/authentication/LoginItem'
 import RegisterItem from '@/pages/authentication/RegisterItem'
 import HomeItem from '@/pages/home'
@@ -37,6 +38,11 @@ export default new VueRouter({
                     name:"statistics",
                     path:'/statistics',
                     component:StatisticsItem
+                },
+                {
+                    name:"reference",
+                    path:'/reference',
+                    component:ReferenceItem
                 }
             ],
         },

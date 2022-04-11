@@ -85,7 +85,6 @@ public class FileController {
             resultMap.put("msg",ResultCodeEnum.FILE_MAX_SIZE.getName());
             return BaseResult.ok("接口调用成功",resultMap);
         }
-
         try {
             //上传文件到服务器
 //            String filePath = userReqDTO.getEmail()+"/"+System.currentTimeMillis()+"/";

@@ -66,7 +66,7 @@
                 <img class="eyes" :src="eyesImage" @click="clickEyes">
               </div>
               <p class="errrorMsg" v-if="errorPw">Incorrect password format</p>
-              <p style="font-size: xx-small;color: rgba(107,123,147);">Use 6 ~ 20 characters with a mix of uppercase and lowercase letters, Numbers, or symbols.</p>
+              <p style="font-size: xx-small;color: rgba(107,123,147);">Use 6 ~ 20 characters.</p>
             </div>
             <div class="mb-2">
               <label class="form-label" for="password">Confirm<img class="asterisk" :src="imgUrls.asterisk" > </label>

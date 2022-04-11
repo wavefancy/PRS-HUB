@@ -57,7 +57,8 @@
                   </div>
                 </div>
                 <!-- Subtitle -->
-                <span class="d-block text-xs text-muted">{{fileSize}}</span>
+                <span class="d-block text-xs text-muted me-2">{{fileSize}}</span>
+                <span class="d-block text-xs text-muted">{{uplodMsg}}</span>
               </div>
             </div>
             
@@ -76,7 +77,7 @@
     rounding: 4
   })
   axios.defaults.timeout = 40000
-  axios.defaults.baseURL = "http://127.0.0.1:9090/prs/hub"
+  axios.defaults.baseURL = process.env.VUE_APP_BASE_PRS_EPORTAL
   axios.defaults.headers.post['Content-Type'] = 'multipart/form-data'
   axios.defaults.headers['accessToken'] = localStorage.getItem("accessToken")
   export default {
@@ -89,6 +90,7 @@
         progress:0,
         progressVisible:false,
         colorClass:'bg-success',
+        uplodMsg:""
       }
     },
     methods: {
@@ -114,9 +116,11 @@
                 //progressEvent.total:被上传文件的总大小
                 let complete = Decimal.div(progressEvent.loaded,progressEvent.total).toFixed(2, Decimal.ROUND_HALF_UP)* 100
                 if (complete < 100){
-                  this.progress = complete;
+                  this.progress = complete/2;
+                  this.uplodMsg = "uploading"
                 }else{
-                  this.progress = 99;
+                  this.progress = 50;
+                  this.uplodMsg = "Data validation"
                 }
               }
 
@@ -136,7 +140,9 @@
               const fileId = innerData.fileId;
               if(innerData.code === 0){
                 this.progress = 100;
-                this.fileSize = fileSize<1024? fileSize+"b" : (Decimal.div(fileSize,1024)<1024 ? Decimal.div(fileSize,1024).toFixed(2, Decimal.ROUND_HALF_UP)+"kb" : Decimal.div(Decimal.div(fileSize,1024),1024)+"mb"  )
+                
+                this.uplodMsg = "successful"
+                this.fileSize = fileSize<1024? fileSize+"b" : (Decimal.div(fileSize,1024)<1024 ? Decimal.div(fileSize,1024).toFixed(2, Decimal.ROUND_HALF_UP)+"kb" : Decimal.div(Decimal.div(fileSize,1024),1024).toFixed(2, Decimal.ROUND_HALF_UP)+"mb"  )
                 let fileData = {}
                 fileData["uploadFlag"] = true
                 fileData["fileId"] = fileId

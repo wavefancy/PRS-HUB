@@ -61,6 +61,7 @@ public class AlgorithmsController {
             return BaseResult.ok("接口调用成功",resultMap);
         }
         return BaseResult.ok("接口调用成功",resultMap);
+
     }
 
     /**

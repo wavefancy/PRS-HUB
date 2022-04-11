@@ -103,6 +103,18 @@
         </PopModal>
         <div class="container-fluid vstack gap-10">
           <UploadFile></UploadFile>
+          <div  class="row">
+            <div class="col-xl-3 col-sm-6">
+              <h4 class="mb-4">Select LD reference panel:</h4>
+                <select class="form-select" v-model="referencePanel">
+                  <option value="">please select</option>
+                  <option value="1000G EUR">1000G EUR</option>
+                  <option value="1000G AFR">1000G AFR</option>
+                  <option value="1000G SAS">1000G SAS</option>
+                  <option value="1000G EAS">1000G EAS</option>
+                </select>
+            </div>
+          </div>
           <AlgorithmsItem :algorithmsShow='algorithms.algorithmsShow' ></AlgorithmsItem>
         </div>
       </main>
@@ -362,10 +374,10 @@ export default {
                   }
                 ]
             }
-          ],
-          
-
+          ]
         },
+        //参考
+        referencePanel:"",
         //正在配置参数的算法id
         settingPId:null,
         //参数弹窗展示的参数数据
