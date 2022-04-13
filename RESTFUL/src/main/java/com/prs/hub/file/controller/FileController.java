@@ -1,6 +1,7 @@
 package com.prs.hub.file.controller;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.prs.hub.authentication.dto.UserReqDTO;
 import com.prs.hub.commons.Authorization;
 import com.prs.hub.commons.BaseResult;
@@ -26,6 +27,7 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -38,34 +40,51 @@ public class FileController {
     private SFTPSystemService sftpSystemService;
     @Value("${file.max-size}")
     private String maxSize;
+
     /**
-     * 文件上传接口
+     * 获取文件信息
      */
-    /*@Authorization
-    @RequestMapping(value = "/upload",method = RequestMethod.POST)
-    public BaseResult upLoadFiles(@CurrentUser UserReqDTO userReqDTO,@RequestParam("file")MultipartFile multipartFile){
-        log.info("文件上传Controller开始");
+    @Authorization
+    @RequestMapping(value = "/getFileList",method = RequestMethod.GET)
+    public BaseResult getFileList(@CurrentUser UserReqDTO userReqDTO,HttpServletRequest req){
+        log.info("获取文件信息Controller开始fileType="+req.getParameter("fileType"));
         log.info("userReqDTO="+ JSON.toJSON(userReqDTO));
-        //如果文件为空，直接返回错误信息
-        if (multipartFile.isEmpty()){
-            return new BaseResult(ResultCodeEnum.FILE_EMPTY.getCode(),ResultCodeEnum.FILE_EMPTY.getName(),null);
+        Map<String,Object> resultMap = new HashMap<>();
+        String fileType = req.getParameter("fileType");
+        try {
+            PrsFile prsFile = new PrsFile();
+            prsFile.setUserId(Long.valueOf(userReqDTO.getId()));
+            prsFile.setFileType(fileType);
+            List<PrsFile> prsFileList = fileService.getFileList(prsFile);
+            resultMap.put("prsFileList",prsFileList);
+            resultMap.put("code",ResultCodeEnum.SUCCESS.getCode());
+            resultMap.put("msg","获取文件信息成功");
+        }catch (Exception e){
+            log.error("获取文件信息controller异常",e);
+            resultMap.put("code",ResultCodeEnum.EXCEPTION.getCode());
+            resultMap.put("msg","获取文件信息异常");
+            return BaseResult.ok("接口调用成功",resultMap);
         }
-        //否则调用service上传文件
-        return fileService.upLoadFiles(userReqDTO,multipartFile);
-    }*/
+        return BaseResult.ok("接口调用成功",resultMap);
+    }
     /**
      * sftp文件上传接口
      */
     @Authorization
     @RequestMapping(value = "/sftpupload",method = RequestMethod.POST)
-    public BaseResult sftpUpLoadFiles(@CurrentUser UserReqDTO userReqDTO,@RequestParam("file")MultipartFile multipartFile){
-        log.info("sftp文件上传接口Controller开始");
+    public BaseResult sftpUpLoadFiles(@CurrentUser UserReqDTO userReqDTO,
+                                      @RequestParam("file")MultipartFile multipartFile,
+                                        HttpServletRequest req
+                                      ){
+        log.info("sftp文件上传接口Controller开始fileType="+req.getParameter("fileType"));
         log.info("userReqDTO="+ JSON.toJSON(userReqDTO));
         Map<String,Object> resultMap = new HashMap<>();
         //如果文件为空，直接返回错误信息
         if (multipartFile.isEmpty()){
             return new BaseResult(ResultCodeEnum.FILE_EMPTY.getCode(),ResultCodeEnum.FILE_EMPTY.getName(),null);
         }
+        String fileType = req.getParameter("fileType");
+        String descrition = req.getParameter("descrition");
         //设置支持最大上传的文件，这里是1024*1024*20=20M
         long MAX_SIZE=Long.valueOf(maxSize);
         //获取要上传文件的名称
@@ -90,14 +109,28 @@ public class FileController {
 //            String filePath = userReqDTO.getEmail()+"/"+System.currentTimeMillis()+"/";
             Calendar c = Calendar.getInstance();
             String dataPath = c.get(Calendar.YEAR) + "-" + (c.get(Calendar.MONTH)+1) + "-" + c.get(Calendar.DATE);
-            String filePath = dataPath+"/"+userReqDTO.getEmail()+"/"+fileName.substring(0,fileName.lastIndexOf("."))+System.currentTimeMillis()+"/";
+            String filePath = dataPath+"/"+fileType+"/"+userReqDTO.getEmail()+"/"+fileName.substring(0,fileName.lastIndexOf("."))+"/";
             log.info("sftp文件上传controller,targetPath="+filePath+fileName);
             sftpSystemService.uploadFile(filePath+fileName,multipartFile.getInputStream());
             log.info("sftp文件上传成功");
 
             //将上传文件信息存储到数据库
+            PrsFile prsFile = new PrsFile();
+            //获取到后缀名
+            String suffixName = fileName.contains(".") ? fileName.substring(fileName.lastIndexOf(".")) : null;
+            log.info("后缀名suffixName="+suffixName);
+
+            //获取到文件名
+            String onlyName = fileName.contains(".") ? fileName.substring(0,fileName.lastIndexOf(".")) : fileName;
+            log.info("上传文件名onlyName="+onlyName);
+            prsFile.setDescrition(descrition);
+            prsFile.setFileType(fileType);
+            prsFile.setFilePath(filePath);
+            prsFile.setFileName(onlyName);
+            prsFile.setFileSuffix(suffixName);
+            prsFile.setUserId(Long.valueOf(userReqDTO.getId()));
             log.info("调用fileService将上传文件信息存储到数据库开始");
-            Long fileId = fileService.saveFileDetail(filePath,fileName,userReqDTO);
+            Long fileId = fileService.saveFileDetail(prsFile);
             log.info("调用fileService将上传文件信息存储到数据库结束fileId="+fileId);
             if(fileId !=null){
                 resultMap.put("code",ResultCodeEnum.SUCCESS.getCode());
@@ -128,17 +161,17 @@ public class FileController {
     public void downloadFiles(@PathVariable("id") String id, HttpServletRequest request, HttpServletResponse response){
         OutputStream outputStream=null;
         InputStream inputStream=null;
-        //先根据id查到文件信息
-        PrsFile file = fileService.getFileById(id);
-        String fileName = file.getFileName();
-        //通过文件信息将文件转化为inputStream
-        inputStream=fileService.getFileInputStream(file);
-        //下载文件需要设置的header
-        response.setHeader("Content-Disposition", "attachment;filename=" +  new String(fileName.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1));
-        // 获取输出流
         try {
+            //先根据id查到文件信息
+            PrsFile file = fileService.getFileById(id);
+            String fileName = file.getFileName();
+            //通过文件信息将文件转化为inputStream
+            inputStream=fileService.getFileInputStream(file);
+            //下载文件需要设置的header
+            response.setHeader("Content-Disposition", "attachment;filename=" +  new String(fileName.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1));
+            // 获取输出流
             outputStream = response.getOutputStream();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }finally {
             //关闭流

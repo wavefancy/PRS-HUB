@@ -78,7 +78,6 @@
   })
   axios.defaults.timeout = 40000
   axios.defaults.baseURL = process.env.VUE_APP_BASE_PRS_EPORTAL
-  axios.defaults.headers.post['Content-Type'] = 'multipart/form-data'
   axios.defaults.headers['accessToken'] = localStorage.getItem("accessToken")
   export default {
     name: "UploadFile",
@@ -104,6 +103,7 @@
           
           let formData = new FormData();
           formData.append('file', file);
+          formData.append('fileType',"GWAS")
         let config = {
             onUploadProgress: progressEvent => {
               

@@ -9,6 +9,8 @@
         <result column="file_path" property="filePath" />
         <result column="file_name" property="fileName" />
         <result column="file_suffix" property="fileSuffix" />
+        <result column="file_type" property="fileType" />
+        <result column="descrition" property="descrition" />
         <result column="created_user" property="createdUser" />
         <result column="created_date" property="createdDate" />
         <result column="modified_user" property="modifiedUser" />

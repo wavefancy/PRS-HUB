@@ -17,4 +17,6 @@ public class AlgorithmsReqDTO implements Serializable {
     private static final long serialVersionUID = 1L;
     private Long fileId;
     private List<AlgorithmReqDTO> algorithmList;
+    //参考项
+    private String referencePanel;
 }

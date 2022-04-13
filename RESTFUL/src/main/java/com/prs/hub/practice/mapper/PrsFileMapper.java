@@ -10,7 +10,7 @@ import org.apache.ibatis.annotations.Mapper;
  * </p>
  *
  * @author fansp
- * @since 2022-03-22
+ * @since 2022-04-13
  */
 @Mapper
 public interface PrsFileMapper extends BaseMapper<PrsFile> {

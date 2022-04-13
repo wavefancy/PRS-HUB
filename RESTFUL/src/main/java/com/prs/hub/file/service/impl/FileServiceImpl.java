@@ -17,6 +17,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -91,11 +92,23 @@ public class FileServiceImpl implements FileService {
     }*/
 
     @Override
-    public PrsFile getFileById(String id) {
+    public PrsFile getFileById(String id) throws Exception {
         log.info("文件service根据文件id获取文件信息id="+id);
         PrsFile prsFile = fileBo.getById(id);
         log.info("文件service根据文件id获取文件信息prsFile="+JSON.toJSON(prsFile));
         return prsFile;
+    }
+
+    @Override
+    public List<PrsFile> getFileList(PrsFile prsFile) throws Exception {
+        log.info("文件service根据prsFile获取文件信息,prsFile="+JSON.toJSONString(prsFile));
+        QueryWrapper<PrsFile> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("user_id",prsFile.getUserId());
+        queryWrapper.eq("file_type",prsFile.getFileType());
+        log.info("调用bo查询新增文件的信息开始queryWrapper="+JSON.toJSON(queryWrapper));
+        List<PrsFile> prsFileList = fileBo.list(queryWrapper);
+        log.info("调用bo查询新增文件的信息结束prsFileList="+JSON.toJSON(prsFileList));
+        return prsFileList;
     }
 
     @Override
@@ -118,7 +131,7 @@ public class FileServiceImpl implements FileService {
      * @return
      */
     @Override
-    public Boolean saveOrUpdateFileDetail(String filePath,String fileName,UserReqDTO userReqDTO){
+    public Boolean saveOrUpdateFileDetail(String filePath,String fileName,UserReqDTO userReqDTO)throws Exception{
         log.info("文件的信息path="+filePath);
         log.info("文件的信息fileName="+fileName);
         log.info("用户信息userReqDTO="+JSON.toJSONString(userReqDTO));
@@ -157,31 +170,15 @@ public class FileServiceImpl implements FileService {
 
     /**
      * 新增文件的信息
-     * @param filePath 文件路径
-     * @param fileName 文件名
-     * @param userReqDTO 用户信息
+     * @param prsFile 文件信息
      * @return
      */
     @Override
-    public Long saveFileDetail(String filePath,String fileName,UserReqDTO userReqDTO){
-        log.info("新增文件的信息path="+filePath);
-        log.info("新增文件的信息fileName="+fileName);
-        log.info("用户信息userReqDTO="+JSON.toJSONString(userReqDTO));
-        //获取到后缀名
-        String suffixName = fileName.contains(".") ? fileName.substring(fileName.lastIndexOf(".")) : null;
-        log.info("后缀名suffixName="+suffixName);
-
-        //获取到后缀名
-        String onlyName = fileName.contains(".") ? fileName.substring(0,fileName.lastIndexOf(".")) : fileName;
-        log.info("上传文件名onlyName="+onlyName);
+    public Long saveFileDetail(PrsFile prsFile) throws Exception{
+        log.info("新增文件的信息prsFile="+JSON.toJSONString(prsFile));
 
         Boolean flag = false;
         //将这些文件的信息写入到数据库中
-        PrsFile prsFile = new PrsFile();
-        prsFile.setFilePath(filePath);
-        prsFile.setFileName(onlyName);
-        prsFile.setFileSuffix(suffixName);
-        prsFile.setUserId(Long.valueOf(userReqDTO.getId()));
         prsFile.setCreatedUser("system");
         prsFile.setCreatedDate(LocalDateTime.now());
         prsFile.setModifiedUser("system");

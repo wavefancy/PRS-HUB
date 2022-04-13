@@ -6,6 +6,7 @@ import com.prs.hub.practice.entity.PrsFile;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
+import java.util.List;
 
 public interface FileService {
     /**
@@ -19,7 +20,13 @@ public interface FileService {
      * @param id
      * @return
      */
-    PrsFile getFileById(String id);
+    PrsFile getFileById(String id) throws Exception;
+    /**
+     * 根据prsFile获取文件
+     * @param prsFile
+     * @return
+     */
+    List<PrsFile> getFileList(PrsFile prsFile) throws Exception;
     /**
      * 根据file获取数据流
      * @param prsFile
@@ -34,15 +41,13 @@ public interface FileService {
      * @param userReqDTO 用户信息
      * @return
      */
-    Boolean saveOrUpdateFileDetail(String filePath,String fileName,UserReqDTO userReqDTO);
+    Boolean saveOrUpdateFileDetail(String filePath,String fileName,UserReqDTO userReqDTO) throws Exception;
     /**
      * 新增文件的信息
-     * @param filePath 文件路径
-     * @param fileName 文件名
-     * @param userReqDTO 用户信息
+     * @param prsFile 文件信息
      * @return
      */
-    Long saveFileDetail(String filePath,String fileName,UserReqDTO userReqDTO);
+    Long saveFileDetail(PrsFile prsFile) throws Exception;
 
 
 }

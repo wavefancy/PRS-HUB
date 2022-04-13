@@ -1,7 +1,7 @@
 <template>
   <div>
         <h4 class="mb-4">
-            Step 2 Algorithms choice
+            Step 3 Algorithms choice
         </h4>
         <div class="row row-cols g-4 g-xl-6" style="">
             <div class="col-xl-3 col-sm-6" v-for="algorithm in algorithmsShow" :key="algorithm.id">
