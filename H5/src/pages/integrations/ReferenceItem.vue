@@ -23,13 +23,13 @@
             <div class="row" style="margin: 0.5rem 0rem;">
               <div class="des"><b>Name:</b></div>
               <div class="col-xl-3 col-sm-6 input-group-sm input-group-inline">
-                <input type="text" class="form-control"/>
+                <input type="text" class="form-control" v-model="fileName"/>
               </div>
             </div>
             <div class="row" style="margin:  0.5rem  0rem;">
               <div class="des"><b>Descrition:</b></div>
               <div class="col-xl-3 col-sm-6 input-group-sm input-group-inline">
-                <input type="text" class="form-control"/>
+                <input type="text" class="form-control" v-model="descrition"/>
               </div>
             </div>
             
@@ -58,14 +58,16 @@
                   <div class="d-flex text-sm mt-3">
                     <p class="font-semibold">Upload a file</p>
                   </div>
-                  <p class="text-xs text-gray-500">tsv.gz up to 3MB</p>
+                  <!-- <p class="text-xs text-gray-500">tsv.gz up to 3MB</p> -->
                 </div>
               </div>
             </div>
             <div class="row ">
+              <div class="mb-2" style="width: 6rem">
+              </div>
               <!-- Upload preview -->
-              <div class="col-10 list-group-list py-3 d-flex align-items-center mt-2" >
-                <!-- <div class="flex-fill">
+              <div class="col-10 list-group-list py-3 d-flex align-items-center mt-2"  v-if="progressVisible" >
+                <div class="flex-fill">
                   <div class="d-flex align-items-center">
                     <span class="d-block h6 text-sm font-semibold me-2">{{fileName}}:</span>
                     <span class="me-2">{{progress}}%</span>
@@ -83,8 +85,9 @@
                       </div>
                     </div>
                     <span class="d-block text-xs text-muted me-2">{{fileSize}}</span>
+                    <span class="d-block text-xs text-muted">{{uplodMsg}}</span>
                   </div>
-                </div> -->
+                </div>
               </div>
             </div>
           </div>
@@ -112,13 +115,29 @@
                   <tr v-for="file in files.fileList" :key="file.id">  
                     <td>
                       <div class="d-flex align-items-center">
-                        {{file.name}}
+                        {{file.fileName}}
                       </div>
                     </td>
-                    <td></td>
-                    <td>{{file.uploadDate}}</td>
-                    <td></td>
-                    <td></td>
+                    <td>
+                      <div class="d-flex align-items-center">
+                        {{file.descrition}}
+                      </div>
+                    </td>
+                    <td>
+                      <div class="d-flex align-items-center">
+                        {{file.uploadDate}}
+                      </div>
+                      </td>
+                    <td>
+                      <div class="d-flex align-items-center">
+                        {{file.status}}
+                      </div>
+                    </td>
+                    <td>
+                      <div class="d-flex align-items-center">
+                        {{file.deleteDate}}
+                      </div>
+                    </td>
                     <td>
                       <a href="#" class="btn btn-sm btn-neutral operate">Refresh</a>
                     </td>
@@ -134,30 +153,141 @@
 </template>
 
 <script>
-export default {
-  name: "ReferenceItem",
-  data() {
-      return {
-          files:{
-              //正在分析的总数
-              total:'10',
-              //我的任务排名
-              ranking:'3',
-              fileList:[
-                  {
-                      id:'001',
-                      //文件名
-                      name:'testFile1',
-                      //上传时间
-                      uploadDate:'2022-04-04',
-                      //错误信息
-                      message:'Wrong file format',
-                  }
-              ]
+  import axios from "axios"
+  import {Prs} from "@/api"
+  import {Decimal} from "decimal.js"
+  // import { isEmpty }  from "@/utils/validate"
+  Decimal.set({
+    rounding: 4
+  })
+  axios.defaults.timeout = 40000
+  axios.defaults.baseURL = process.env.VUE_APP_BASE_PRS_EPORTAL
+  axios.defaults.headers['accessToken'] = localStorage.getItem("accessToken")
+  export default {
+    name: "ReferenceItem",
+    data() {
+        return {
+            files:{
+                fileList:[
+                    {
+                        id:'001',
+                        //文件名
+                        name:'testFile1',
+                        descrition:'',
+                        //上传时间
+                        uploadDate:'2022-04-04',
+                        //错误信息
+                        message:'Wrong file format',
+                    }
+                ]
+            },
+            fileSize:'',
+            descrition:'',
+            fileName:'',
+            progress:0,
+            progressVisible:false,
+            colorClass:'bg-success',
+            uplodMsg:""
+        }
+    },
+    methods: {
+      fileChange(e){
+        let inputDom = e.target // input 本身，从这里获取 files<FileList>
+        let file = inputDom.files[0]
+        if(file){
+          // const fileName = file.name
+          // const fileType = file.type
+          const fileSize = file.size
+          
+          let formData = new FormData();
+          formData.append('file', file);
+          formData.append('fileType',"LD")
+          formData.append('descrition',this.descrition)
+          formData.append('fileName',this.fileName)
+        let config = {
+            onUploadProgress: progressEvent => {
+              
+              // this.fileName = fileName
+              //属性lengthComputable主要表明总共需要完成的工作量和已经完成的工作是否可以被测量
+              //如果lengthComputable为false，就获取不到total和loaded
+              if (progressEvent.lengthComputable) {
+                this.progressVisible=true
+                //progressEvent.loaded:已上传文件大小
+                //progressEvent.total:被上传文件的总大小
+                let complete = Decimal.div(progressEvent.loaded,progressEvent.total).toFixed(2, Decimal.ROUND_HALF_UP)* 100
+                if (complete < 100){
+                  this.progress = complete/2;
+                  this.uplodMsg = "uploading"
+                }else{
+                  this.progress = 50;
+                  this.uplodMsg = "Data validation"
+                }
+              }
+
+            },
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
           }
+
+
+          axios.post("/sftpupload",formData,config).then(response => {
+            const resData = response
+            const code = resData.code;
+            if(code === 0){
+              const innerData = resData.data;
+              const msg = innerData.msg;
+              if(innerData.code === 0){
+                this.progress = 100;
+                
+                this.uplodMsg = "successful"
+                this.fileSize = fileSize<1024? fileSize+"b" : (Decimal.div(fileSize,1024)<1024 ? Decimal.div(fileSize,1024).toFixed(2, Decimal.ROUND_HALF_UP)+"kb" : Decimal.div(Decimal.div(fileSize,1024),1024).toFixed(2, Decimal.ROUND_HALF_UP)+"mb"  )
+                //刷新table
+                this.getFileList()
+              }else{
+                //提示框
+                this.$MessageBox.alert(msg, 'prompt', {
+                  confirmButtonText: 'OK',
+                  callback: () => {
+                    inputDom.value=""//同一文件可重复上传
+                  }
+                })
+
+              }
+            }else{
+              this.$MessageBox.alert('System is busy, please try again later !', 'prompt', {
+                  confirmButtonText: 'OK',
+                  callback: () => {
+                    inputDom.value=""//同一文件可重复上传
+                  }
+                })
+            }
+            inputDom.value=""//同一文件可重复上传
+          })
+        }
+      },
+      getFileList(){
+        let subData = {
+          // fileType:'GWAS',
+          fileType:'LD',
+        }
+        //提交参数
+        Prs.getFileList(subData).then(response => {
+          if(response.code===0){
+            const resData = response.data;
+            if(resData.code===0){
+              this.files.fileList=resData.resDTOList
+            }
+          }
+        })
       }
-  },
-};
+    },
+    //数据初始化
+    mounted(){
+      this.getFileList();
+    }
+    
+  };
 </script>
 
 <style>
@@ -182,6 +312,6 @@ export default {
     width: 6rem;
     border-radius: 0.375rem;
     font-size: .875rem;
-    padding: 0.5rem 0rem 0.5rem 1rem;
+    padding: 0.5rem 0rem;
 }
 </style>

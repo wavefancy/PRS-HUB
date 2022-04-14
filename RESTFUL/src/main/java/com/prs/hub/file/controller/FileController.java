@@ -2,19 +2,24 @@ package com.prs.hub.file.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.prs.hub.authentication.dto.UserReqDTO;
 import com.prs.hub.commons.Authorization;
 import com.prs.hub.commons.BaseResult;
 import com.prs.hub.commons.CurrentUser;
 import com.prs.hub.constant.ResultCodeEnum;
+import com.prs.hub.file.dto.PrsFileResDTO;
 import com.prs.hub.file.service.FileService;
 import com.prs.hub.practice.entity.PrsFile;
 import com.prs.hub.sftpsystem.service.SFTPSystemService;
 import com.prs.hub.utils.MultipartFileToFileUtil;
 import com.prs.hub.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.client.utils.DateUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.format.datetime.standard.DateTimeFormatterFactory;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,10 +30,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.util.*;
 
 @Slf4j
 @RestController
@@ -56,7 +61,31 @@ public class FileController {
             prsFile.setUserId(Long.valueOf(userReqDTO.getId()));
             prsFile.setFileType(fileType);
             List<PrsFile> prsFileList = fileService.getFileList(prsFile);
-            resultMap.put("prsFileList",prsFileList);
+
+            List<PrsFileResDTO> resDTOList = new ArrayList<PrsFileResDTO>();
+            if(CollectionUtils.isNotEmpty(prsFileList)){
+                for (PrsFile prsFileRes:prsFileList) {
+                    PrsFileResDTO prsFileResDTO = new PrsFileResDTO();
+                    BeanUtils.copyProperties(prsFileRes,prsFileResDTO);
+
+                    LocalDateTime createdDate = prsFileRes.getCreatedDate();
+                    if(createdDate!=null){
+                        DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                        prsFileResDTO.setUploadDate(createdDate.format(df));
+                        LocalDateTime deleteDate = createdDate.plusDays(30);
+                        prsFileResDTO.setDeleteDate(deleteDate.format(df));
+                        LocalDateTime now = LocalDateTime.now();
+                        if(now.isAfter(deleteDate)&&!(now.format(df).equals(deleteDate.format(df)))){
+                            prsFileResDTO.setStatus("expired");
+                        }else{
+                            prsFileResDTO.setStatus("validity");
+                        }
+                    }
+
+                    resDTOList.add(prsFileResDTO);
+                }
+            }
+            resultMap.put("resDTOList",resDTOList);
             resultMap.put("code",ResultCodeEnum.SUCCESS.getCode());
             resultMap.put("msg","获取文件信息成功");
         }catch (Exception e){
@@ -83,6 +112,7 @@ public class FileController {
         if (multipartFile.isEmpty()){
             return new BaseResult(ResultCodeEnum.FILE_EMPTY.getCode(),ResultCodeEnum.FILE_EMPTY.getName(),null);
         }
+        String fileNameReq = req.getParameter("fileName");
         String fileType = req.getParameter("fileType");
         String descrition = req.getParameter("descrition");
         //设置支持最大上传的文件，这里是1024*1024*20=20M
@@ -106,23 +136,28 @@ public class FileController {
         }
         try {
             //上传文件到服务器
+            //获取到后缀名
+            String suffixName = fileName.contains(".") ? fileName.substring(fileName.lastIndexOf(".")) : null;
+            log.info("后缀名suffixName="+suffixName);
+            //获取到文件名
+            String onlyName = null;
+            if(StringUtils.isNotEmpty(fileNameReq)){//当页面传入自定义文件名时
+                onlyName = fileNameReq;
+            }else{
+                onlyName = fileName.contains(".") ? fileName.substring(0,fileName.lastIndexOf(".")) : fileName;
+            }
+            log.info("上传文件名onlyName="+onlyName);
 //            String filePath = userReqDTO.getEmail()+"/"+System.currentTimeMillis()+"/";
             Calendar c = Calendar.getInstance();
             String dataPath = c.get(Calendar.YEAR) + "-" + (c.get(Calendar.MONTH)+1) + "-" + c.get(Calendar.DATE);
-            String filePath = dataPath+"/"+fileType+"/"+userReqDTO.getEmail()+"/"+fileName.substring(0,fileName.lastIndexOf("."))+"/";
+            String filePath = dataPath+"/"+fileType+"/"+userReqDTO.getEmail()+"/"+onlyName+"/";
             log.info("sftp文件上传controller,targetPath="+filePath+fileName);
-            sftpSystemService.uploadFile(filePath+fileName,multipartFile.getInputStream());
+            sftpSystemService.uploadFile(filePath+onlyName+suffixName,multipartFile.getInputStream());
             log.info("sftp文件上传成功");
 
             //将上传文件信息存储到数据库
             PrsFile prsFile = new PrsFile();
-            //获取到后缀名
-            String suffixName = fileName.contains(".") ? fileName.substring(fileName.lastIndexOf(".")) : null;
-            log.info("后缀名suffixName="+suffixName);
 
-            //获取到文件名
-            String onlyName = fileName.contains(".") ? fileName.substring(0,fileName.lastIndexOf(".")) : fileName;
-            log.info("上传文件名onlyName="+onlyName);
             prsFile.setDescrition(descrition);
             prsFile.setFileType(fileType);
             prsFile.setFilePath(filePath);
