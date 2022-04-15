@@ -23,20 +23,21 @@
             <div class="row" style="margin: 0.5rem 0rem;">
               <div class="des"><b>Name:</b></div>
               <div class="col-xl-3 col-sm-6 input-group-sm input-group-inline">
-                <input type="text" class="form-control" v-model="fileName"/>
+                <input type="text" class="form-control" v-model="fileName" ref="fileName"/>
               </div>
             </div>
             <div class="row" style="margin:  0.5rem  0rem;">
               <div class="des"><b>Descrition:</b></div>
               <div class="col-xl-3 col-sm-6 input-group-sm input-group-inline">
-                <input type="text" class="form-control" v-model="descrition"/>
+                <input type="text" class="form-control" v-model="descrition" ref="descrition"/>
               </div>
             </div>
             
             <div class=" rounded
                 border-2 border-dashed border-primary-hover
                 position-relative " >
-              <div class="d-flex justify-content-center px-5 py-5">
+              <div class="d-flex justify-content-center px-5 py-5" 
+                    >
                 <label
                   for="file_upload"
                   class=" position-absolute
@@ -48,7 +49,8 @@
                     name="file_upload"
                     type="file"
                     class="visually-hidden"
-                    @change="fileChange"/>
+                    @change="fileChange"
+                    />
                   
                 </label>
                 <div class="text-center">
@@ -156,7 +158,7 @@
   import axios from "axios"
   import {Prs} from "@/api"
   import {Decimal} from "decimal.js"
-  // import { isEmpty }  from "@/utils/validate"
+  import { isEmpty }  from "@/utils/validate"
   Decimal.set({
     rounding: 4
   })
@@ -192,6 +194,17 @@
     },
     methods: {
       fileChange(e){
+        //校验数据
+        if(isEmpty(this.fileName)){
+          alert("Please enter fileName !")
+          this.$refs.fileName.focus()
+          return;
+        }
+        if(isEmpty(this.descrition)){
+          alert("Please enter descrition !")
+          this.$refs.descrition.focus()
+          return;
+        }
         let inputDom = e.target // input 本身，从这里获取 files<FileList>
         let file = inputDom.files[0]
         if(file){
