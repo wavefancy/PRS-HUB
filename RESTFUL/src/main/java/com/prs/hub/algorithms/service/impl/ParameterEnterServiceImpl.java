@@ -1,12 +1,14 @@
 package com.prs.hub.algorithms.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.prs.hub.algorithms.dto.AlgorithmReqDTO;
 import com.prs.hub.algorithms.dto.ParameterEnterReqDTO;
 import com.prs.hub.algorithms.service.ParameterEnterService;
 import com.prs.hub.practice.bo.ParameterEnterBo;
 import com.prs.hub.practice.entity.ParameterEnter;
+import com.prs.hub.utils.FileUtil;
 import com.prs.hub.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +45,9 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
         LocalDateTime now = LocalDateTime.now();
         for (AlgorithmReqDTO algorithmReqDTO : algorithmReqDTOList) {
             List<ParameterEnterReqDTO> parameterEnterReqList = algorithmReqDTO.getParameters();
+            String name = algorithmReqDTO.getName();
+            String fileName = name+"_input.json";
+            JSONObject jsonObject = new JSONObject();
             for (ParameterEnterReqDTO parameterEnterReqDTO: parameterEnterReqList) {
                 ParameterEnter parameterEnter = new ParameterEnter();
                 String id = parameterEnterReqDTO.getId();
@@ -59,7 +64,12 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
                 parameterEnter.setModifiedDate(now);
                 parameterEnter.setIsDelete(0);
                 parameterEnters.add(parameterEnter);
+                //拼装json
+                jsonObject.put("PandT."+parameterEnterReqDTO.getName()+"_list",parameterEnterReqDTO.getValue());
             }
+            log.info("将参数写入文件中");
+            FileUtil.writerJsonFile(fileName,jsonObject);
+            //TODO 将文件上传到指定服务器
         }
         if(CollectionUtils.isEmpty(parameterEnters)){
             log.info("保存用户设置参数结束，传入parameterEnters数据为空");

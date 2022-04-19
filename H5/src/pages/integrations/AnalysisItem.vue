@@ -43,7 +43,7 @@
             <div class="mt-10">
               <!-- Heading -->
               <h6>Parameters:</h6>
-              <div class="list-unstyled mt-3 mle" v-for="parameter in showParameters" :key="parameter.id">
+              <div class="list-unstyled mb-4 mle" v-for="parameter in showParameters" :key="parameter.id">
                 <p class="py-1 d-flex align-items-center">
                   {{ parameter.name }}:{{ parameter.description }}
                 </p>

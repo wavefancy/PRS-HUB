@@ -24,4 +24,7 @@ public class ParameterEnterReqDTO implements Serializable {
     /**默认值**/
     private String value;
 
+    /**参数名**/
+    private String name;
+
 }

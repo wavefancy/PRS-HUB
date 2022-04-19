@@ -48,6 +48,7 @@
                     id="file_upload"
                     name="file_upload"
                     type="file"
+                    ref="file_upload"
                     class="visually-hidden"
                     @change="fileChange"
                     />
@@ -105,12 +106,12 @@
               <table class="table table-hover table-nowrap">
                 <thead class="table-light">
                   <tr>
-                    <th scope="col">Name</th>
-                    <th scope="col">Descrition</th>
-                    <th scope="col">Upload Date</th>
-                    <th scope="col">Status</th>
-                    <th scope="col">Delete Date</th>
-                    <th scope="col">Refresh</th>
+                    <th scope="col-xl-1 col-sm-1">Name</th>
+                    <th scope="col-xl-5 col-sm-5">Descrition</th>
+                    <th scope="col-xl-2 col-sm-2">Upload Date</th>
+                    <th scope="col-xl-1 col-sm-1">Status</th>
+                    <th scope="col-xl-2 col-sm-2">Delete Date</th>
+                    <th scope="col-xl-1 col-sm-1">Refresh</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -132,7 +133,9 @@
                       </td>
                     <td>
                       <div class="d-flex align-items-center">
-                        {{file.status}}
+                        <!-- <el-tooltip class="item" effect="dark" content="Right Center 提示文字" placement="right"> -->
+                          {{file.status}}
+                        <!-- </el-tooltip> -->
                       </div>
                     </td>
                     <td>
@@ -159,6 +162,7 @@
   import {Prs} from "@/api"
   import {Decimal} from "decimal.js"
   import { isEmpty }  from "@/utils/validate"
+  
   Decimal.set({
     rounding: 4
   })
@@ -198,11 +202,15 @@
         if(isEmpty(this.fileName)){
           alert("Please enter fileName !")
           this.$refs.fileName.focus()
+          //清空input（file）中已上传的文件
+          this.$refs.file_upload.value = '';
           return;
         }
         if(isEmpty(this.descrition)){
           alert("Please enter descrition !")
           this.$refs.descrition.focus()
+          //清空input（file）中已上传的文件
+          this.$refs.file_upload.value = '';
           return;
         }
         let inputDom = e.target // input 本身，从这里获取 files<FileList>
