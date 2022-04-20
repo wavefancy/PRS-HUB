@@ -12,6 +12,8 @@ import com.prs.hub.commons.Authorization;
 import com.prs.hub.commons.BaseResult;
 import com.prs.hub.commons.CurrentUser;
 import com.prs.hub.constant.ResultCodeEnum;
+import com.prs.hub.file.service.FileService;
+import com.prs.hub.practice.entity.PrsFile;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -37,6 +39,8 @@ public class AlgorithmsController {
     private AlgorithmsService algorithmsService;
     @Autowired
     private ParameterEnterService parameterEnterService;
+    @Autowired
+    private FileService fileService;
     /**
      * 获取算法详情
      * @param req
@@ -83,7 +87,10 @@ public class AlgorithmsController {
             return BaseResult.ok("接口调用成功",resultMap);
         }
         try {
-            Boolean flag = parameterEnterService.setParametersInfo(algorithmReqDTOList,fileId);
+            //根据fileId获取file信息
+            PrsFile prsFile = fileService.getFileById(fileId.toString());
+
+            Boolean flag = parameterEnterService.setParametersInfo(algorithmReqDTOList,prsFile);
             resultMap.put("code", ResultCodeEnum.SUCCESS.getCode());
             resultMap.put("data" ,flag);
         }catch (Exception e){

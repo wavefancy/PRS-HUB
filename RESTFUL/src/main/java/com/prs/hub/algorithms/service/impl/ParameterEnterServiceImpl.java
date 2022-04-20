@@ -8,12 +8,17 @@ import com.prs.hub.algorithms.dto.ParameterEnterReqDTO;
 import com.prs.hub.algorithms.service.ParameterEnterService;
 import com.prs.hub.practice.bo.ParameterEnterBo;
 import com.prs.hub.practice.entity.ParameterEnter;
+import com.prs.hub.practice.entity.PrsFile;
+import com.prs.hub.sftpsystem.service.SFTPSystemService;
 import com.prs.hub.utils.FileUtil;
+import com.prs.hub.utils.MultipartFileToFileUtil;
 import com.prs.hub.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,19 +33,22 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
     @Autowired
     private ParameterEnterBo parameterEnterBo;
 
+    @Autowired
+    private SFTPSystemService sftpSystemService;
     /**
      * 保存用户设置参数
      * @param algorithmReqDTOList
      * @return
      */
     @Override
-    public Boolean setParametersInfo(List<AlgorithmReqDTO> algorithmReqDTOList,Long fileId) {
+    public Boolean setParametersInfo(List<AlgorithmReqDTO> algorithmReqDTOList, PrsFile prsFile) throws Exception {
         log.info("保存用户设置参数开始palgorithmsReqDTOList="+ JSON.toJSONString(algorithmReqDTOList));
         List<ParameterEnter> parameterEnters = new ArrayList<>();
         if(CollectionUtils.isEmpty(algorithmReqDTOList)){
             log.info("保存用户设置参数结束，传入数据为空");
             return false;
         }
+        Long fileId = prsFile.getId();
         //当前系统时间
         LocalDateTime now = LocalDateTime.now();
         for (AlgorithmReqDTO algorithmReqDTO : algorithmReqDTOList) {
@@ -69,7 +77,14 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
             }
             log.info("将参数写入文件中");
             FileUtil.writerJsonFile(fileName,jsonObject);
-            //TODO 将文件上传到指定服务器
+            // 将文件上传到指定服务器
+            String filePath = prsFile.getFilePath();
+            log.info("参数文件上传,targetPath="+filePath+fileName);
+            sftpSystemService.uploadFile(filePath+fileName,new FileInputStream(fileName));
+            log.info("参数文件上传成功");
+            //删除本地临时文件
+            MultipartFileToFileUtil.delteTempFile(new File(fileName));
+
         }
         if(CollectionUtils.isEmpty(parameterEnters)){
             log.info("保存用户设置参数结束，传入parameterEnters数据为空");

@@ -23,13 +23,13 @@
             <div class="row" style="margin: 0.5rem 0rem;">
               <div class="des"><b>Name:</b></div>
               <div class="col-xl-3 col-sm-6 input-group-sm input-group-inline">
-                <input type="text" class="form-control" v-model="fileName" ref="fileName"/>
+                <input type="text" class="form-control" v-model.trim="fileName" ref="fileName" @blur="checkName"/>
               </div>
             </div>
             <div class="row" style="margin:  0.5rem  0rem;">
               <div class="des"><b>Descrition:</b></div>
               <div class="col-xl-3 col-sm-6 input-group-sm input-group-inline">
-                <input type="text" class="form-control" v-model="descrition" ref="descrition"/>
+                <input type="text" class="form-control" v-model.trim="descrition" ref="descrition"/>
               </div>
             </div>
             
@@ -297,10 +297,32 @@
           if(response.code===0){
             const resData = response.data;
             if(resData.code===0){
-              this.files.fileList=resData.resDTOList
+              this.files.fileList=resData.resDTOList;
             }
           }
         })
+      },
+      checkName(){
+         //校验数据
+        if(isEmpty(this.fileName)){
+          return;
+        }
+        const fileList = this.files.fileList;
+        if(fileList.length>0){
+          fileList.forEach(file => {
+            const fileName = file.fileName;
+            if(fileName === this.fileName){
+              this.$MessageBox.alert('The file name already exists !', 'prompt', {
+                confirmButtonText: 'OK',
+                  callback: () => {
+                    this.fileName = '';
+                    this.$refs.fileName.value = '';
+                    this.$refs.fileName.innerHTML = '';
+                  }
+                })
+            }
+          });
+        }
       }
     },
     //数据初始化

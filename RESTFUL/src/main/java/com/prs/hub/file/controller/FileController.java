@@ -8,6 +8,7 @@ import com.prs.hub.commons.Authorization;
 import com.prs.hub.commons.BaseResult;
 import com.prs.hub.commons.CurrentUser;
 import com.prs.hub.constant.ResultCodeEnum;
+import com.prs.hub.file.dto.PrsFileReqDTO;
 import com.prs.hub.file.dto.PrsFileResDTO;
 import com.prs.hub.file.service.FileService;
 import com.prs.hub.practice.entity.PrsFile;
@@ -51,15 +52,14 @@ public class FileController {
      */
     @Authorization
     @RequestMapping(value = "/getFileList",method = RequestMethod.GET)
-    public BaseResult getFileList(@CurrentUser UserReqDTO userReqDTO,HttpServletRequest req){
-        log.info("获取文件信息Controller开始fileType="+req.getParameter("fileType"));
+    public BaseResult getFileList(@CurrentUser UserReqDTO userReqDTO, HttpServletRequest req, PrsFileReqDTO prsFileReqDTO){
+        log.info("获取文件信息Controller开始prsFileReqDTO="+JSON.toJSONString(prsFileReqDTO));
         log.info("userReqDTO="+ JSON.toJSON(userReqDTO));
         Map<String,Object> resultMap = new HashMap<>();
-        String fileType = req.getParameter("fileType");
         try {
             PrsFile prsFile = new PrsFile();
+            BeanUtils.copyProperties(prsFileReqDTO,prsFile);
             prsFile.setUserId(Long.valueOf(userReqDTO.getId()));
-            prsFile.setFileType(fileType);
             List<PrsFile> prsFileList = fileService.getFileList(prsFile);
 
             List<PrsFileResDTO> resDTOList = new ArrayList<PrsFileResDTO>();
