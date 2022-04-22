@@ -9,6 +9,7 @@ import com.prs.hub.algorithms.service.ParameterEnterService;
 import com.prs.hub.practice.bo.ParameterEnterBo;
 import com.prs.hub.practice.entity.ParameterEnter;
 import com.prs.hub.practice.entity.PrsFile;
+import com.prs.hub.sftpsystem.dto.SFTPPropertiesDTO;
 import com.prs.hub.sftpsystem.service.SFTPSystemService;
 import com.prs.hub.utils.FileUtil;
 import com.prs.hub.utils.MultipartFileToFileUtil;
@@ -35,6 +36,9 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
 
     @Autowired
     private SFTPSystemService sftpSystemService;
+
+    @Autowired
+    private SFTPPropertiesDTO config;
     /**
      * 保存用户设置参数
      * @param algorithmReqDTOList
@@ -49,6 +53,10 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
             return false;
         }
         Long fileId = prsFile.getId();
+        String filePath = prsFile.getFilePath();
+        String root = config.getRoot();
+        //页面上传文件完整地址
+        String uploadFilePath = root+filePath+prsFile.getFileName()+prsFile.getFileSuffix();
         //当前系统时间
         LocalDateTime now = LocalDateTime.now();
         for (AlgorithmReqDTO algorithmReqDTO : algorithmReqDTOList) {
@@ -73,12 +81,12 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
                 parameterEnter.setIsDelete(0);
                 parameterEnters.add(parameterEnter);
                 //拼装json
-                jsonObject.put("PandT."+parameterEnterReqDTO.getName()+"_list",parameterEnterReqDTO.getValue());
+                jsonObject.put("PandT."+parameterEnterReqDTO.getName()+"_list",parameterEnterReqDTO.getValue().split(","));
             }
+            jsonObject.put("PandT.summary_statistic",uploadFilePath);
             log.info("将参数写入文件中");
             FileUtil.writerJsonFile(fileName,jsonObject);
             // 将文件上传到指定服务器
-            String filePath = prsFile.getFilePath();
             log.info("参数文件上传,targetPath="+filePath+fileName);
             sftpSystemService.uploadFile(filePath+fileName,new FileInputStream(fileName));
             log.info("参数文件上传成功");

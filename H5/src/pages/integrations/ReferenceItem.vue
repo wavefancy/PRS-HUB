@@ -132,11 +132,13 @@
                       </div>
                       </td>
                     <td>
-                      <div class="d-flex align-items-center">
-                        <!-- <el-tooltip class="item" effect="dark" content="Right Center 提示文字" placement="right"> -->
-                          {{file.status}}
-                        <!-- </el-tooltip> -->
-                      </div>
+                        <div class="d-flex align-items-center">
+                            {{file.status}} 
+                            <el-tooltip class="item" effect="light" placement="right">
+                              <div slot="content">The file is valid for 30 days. <br/>Click "Refresh" for an extension of 30 days !</div>
+                              <img :src="hintUrl" style="width: 1rem;">
+                            </el-tooltip>
+                        </div>
                     </td>
                     <td>
                       <div class="d-flex align-items-center">
@@ -193,7 +195,8 @@
             progress:0,
             progressVisible:false,
             colorClass:'bg-success',
-            uplodMsg:""
+            uplodMsg:"",
+            hintUrl:"./img/hint.png"
         }
     },
     methods: {

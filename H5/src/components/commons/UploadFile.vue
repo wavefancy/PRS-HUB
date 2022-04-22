@@ -18,6 +18,7 @@
                 name="file_upload"
                 type="file"
                 class="visually-hidden"
+                ref="file_upload"
                 @change="fileChange"/>
               
             </label>
@@ -98,9 +99,17 @@
         let file = inputDom.files[0]
         if(file){
           const fileName = file.name
+
+          if(fileName.lastIndexOf(".gz") === -1 ){
+            //清空input（file）中已上传的文件
+            this.$refs.file_upload.value = '';
+            alert("invalid file format !")
+            return
+          }
+
           // const fileType = file.type
           const fileSize = file.size
-          
+
           let formData = new FormData();
           formData.append('file', file);
           formData.append('fileType',"GWAS")
