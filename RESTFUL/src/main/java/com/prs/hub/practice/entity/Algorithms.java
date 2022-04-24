@@ -16,7 +16,7 @@ import lombok.Setter;
  * </p>
  *
  * @author fansp
- * @since 2022-03-18
+ * @since 2022-04-24
  */
 @Getter
 @Setter
@@ -37,6 +37,10 @@ public class Algorithms implements Serializable {
     @ApiModelProperty("概要")
     @TableField("summary")
     private String summary;
+
+    @ApiModelProperty("固定参数")
+    @TableField("fixed_parameter")
+    private String fixedParameter;
 
     @TableField("created_user")
     private String createdUser;

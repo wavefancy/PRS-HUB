@@ -1,9 +1,9 @@
 package com.prs.hub.practice.bo.impl;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.prs.hub.practice.bo.AlgorithmsBo;
 import com.prs.hub.practice.entity.Algorithms;
 import com.prs.hub.practice.mapper.AlgorithmsMapper;
+import com.prs.hub.practice.bo.AlgorithmsBo;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
 /**
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
  * </p>
  *
  * @author fansp
- * @since 2022-03-18
+ * @since 2022-04-24
  */
 @Service
 public class AlgorithmsBoImpl extends ServiceImpl<AlgorithmsMapper, Algorithms> implements AlgorithmsBo {

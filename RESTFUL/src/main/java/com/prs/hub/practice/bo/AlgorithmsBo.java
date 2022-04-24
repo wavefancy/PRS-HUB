@@ -1,10 +1,7 @@
 package com.prs.hub.practice.bo;
 
-import com.prs.hub.practice.dto.AlgorithmsDTO;
 import com.prs.hub.practice.entity.Algorithms;
 import com.baomidou.mybatisplus.extension.service.IService;
-
-import java.util.List;
 
 /**
  * <p>
@@ -12,7 +9,7 @@ import java.util.List;
  * </p>
  *
  * @author fansp
- * @since 2022-03-18
+ * @since 2022-04-24
  */
 public interface AlgorithmsBo extends IService<Algorithms> {
 

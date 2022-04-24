@@ -6,7 +6,9 @@ import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.prs.hub.algorithms.dto.AlgorithmReqDTO;
 import com.prs.hub.algorithms.dto.ParameterEnterReqDTO;
 import com.prs.hub.algorithms.service.ParameterEnterService;
+import com.prs.hub.practice.bo.AlgorithmsBo;
 import com.prs.hub.practice.bo.ParameterEnterBo;
+import com.prs.hub.practice.entity.Algorithms;
 import com.prs.hub.practice.entity.ParameterEnter;
 import com.prs.hub.practice.entity.PrsFile;
 import com.prs.hub.sftpsystem.dto.SFTPPropertiesDTO;
@@ -39,6 +41,8 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
 
     @Autowired
     private SFTPPropertiesDTO config;
+    @Autowired
+    private AlgorithmsBo algorithmsBo;
     /**
      * 保存用户设置参数
      * @param algorithmReqDTOList
@@ -62,8 +66,18 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
         for (AlgorithmReqDTO algorithmReqDTO : algorithmReqDTOList) {
             List<ParameterEnterReqDTO> parameterEnterReqList = algorithmReqDTO.getParameters();
             String name = algorithmReqDTO.getName();
+
+            //根据algorithms_id获取algorithms信息
+            Algorithms algorithms = algorithmsBo.getById(algorithmReqDTO.getId());
+            log.info("根据algorithms_id获取algorithms信息Algorithms="+JSON.toJSONString(algorithms));
+            String fixedParameter = algorithms.getFixedParameter();
+            JSONObject jsonObject = null;
+            if (StringUtils.isNotEmpty(fixedParameter)){
+                jsonObject = JSON.parseObject(fixedParameter);
+            }else {
+                jsonObject = new JSONObject();
+            }
             String fileName = name+"_input.json";
-            JSONObject jsonObject = new JSONObject();
             for (ParameterEnterReqDTO parameterEnterReqDTO: parameterEnterReqList) {
                 ParameterEnter parameterEnter = new ParameterEnter();
                 String id = parameterEnterReqDTO.getId();

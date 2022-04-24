@@ -15,12 +15,12 @@ public class MyFastAutoGenerator {
     public static void main(String[] args) {
         List<String> tables = new ArrayList<>();
 //        tables.add("prs_user");
-//        tables.add("algorithms");
+        tables.add("algorithms");
 //        tables.add("parameter");
 //        tables.add("menu");
 //        tables.add("runner_detail");
 //        tables.add("parameter_enter");
-        tables.add("prs_file");
+//        tables.add("prs_file");
 //        tables.add("runner_detail");
 
 
