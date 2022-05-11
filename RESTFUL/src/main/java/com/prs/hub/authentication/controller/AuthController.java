@@ -122,6 +122,18 @@ public class AuthController extends BaseController {
     }
 
     /**
+     * 注册激活
+     * @param req
+     * @param res
+     * @return
+     */
+    @RequestMapping(value = "/authActive", method = RequestMethod.GET)
+    public BaseResult active(HttpServletRequest req, HttpServletResponse res){
+        String msg = req.getParameter("msg");
+        log.info("msg="+msg);
+        return null;
+    }
+    /**
      * 登录
      * @param req
      * @param res
