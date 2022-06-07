@@ -16,11 +16,11 @@ import lombok.Setter;
  * </p>
  *
  * @author fansp
- * @since 2022-03-29
+ * @since 2022-05-15
  */
 @Getter
 @Setter
-@TableName("prs_user")
+@TableName("PRS_USER")
 @ApiModel(value = "User对象", description = "用户表")
 public class User implements Serializable {
 
@@ -77,6 +77,10 @@ public class User implements Serializable {
     @ApiModelProperty("手机号")
     @TableField("mobile")
     private String mobile;
+
+    @ApiModelProperty("注册状态 1:已激活,0:未激活")
+    @TableField("status")
+    private Integer status;
 
     @TableField("created_user")
     private String createdUser;

@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
  * </p>
  *
  * @author fansp
- * @since 2022-03-29
+ * @since 2022-05-15
  */
 @Service
 public class UserBoImpl extends ServiceImpl<UserMapper, User> implements UserBo {

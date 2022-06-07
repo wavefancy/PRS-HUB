@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
  * </p>
  *
  * @author fansp
- * @since 2022-04-24
+ * @since 2022-05-26
  */
 @Service
 public class AlgorithmsBoImpl extends ServiceImpl<AlgorithmsMapper, Algorithms> implements AlgorithmsBo {

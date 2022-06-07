@@ -1,9 +1,9 @@
 <template>
 <div class="outer">
   <vue-element-loading :active="loading" :is-full-screen="true" spinner="ring"/>
-  <div class="px-5 py-5 p-lg-0 h-screen bg-surface-secondary d-flex flex-column justify-content-center">
+  <div class="px-5 py-5 p-lg-0  bg-surface-secondary d-flex flex-column justify-content-center">
     <div class="d-flex justify-content-center">
-      <div class="col-12 col-md-9 col-lg-6 min-h-lg-screen d-flex flex-column justify-content-center py-lg-16 px-lg-20 position-relative">
+      <div class="col-12 col-md-9 col-lg-8 min-h-lg-screen d-flex flex-column justify-content-center py-lg-16 px-lg-20 position-relative">
         <div class="row">
           <div class="col-lg-10 col-md-9 col-xl-7 mx-auto">
             <div class="text-center mb-12">
@@ -214,7 +214,7 @@ export default {
                 //关闭加载中
                 this.loading=false
                 //提示框
-                this.$MessageBox.alert('Click OK to jump to the login page', 'prompt', {
+                this.$MessageBox.alert('Please click the activation link in the activation email to activate your account !', 'prompt', {
                   confirmButtonText: 'OK',
                   callback: action => {
                     if("confirm" === action){//点击确定

@@ -14,17 +14,21 @@ import com.prs.hub.practice.entity.PrsFile;
 import com.prs.hub.sftpsystem.dto.SFTPPropertiesDTO;
 import com.prs.hub.sftpsystem.service.SFTPSystemService;
 import com.prs.hub.utils.FileUtil;
+import com.prs.hub.utils.HttpClientUtil;
 import com.prs.hub.utils.MultipartFileToFileUtil;
 import com.prs.hub.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author fanshupeng
@@ -44,6 +48,12 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
     @Autowired
     private AlgorithmsBo algorithmsBo;
     /**
+     * Cromwell服务访问地址
+     */
+    @Value("${cromwell.workflows.url}")
+    private String cromwellUrl;
+
+    /**
      * 保存用户设置参数
      * @param algorithmReqDTOList
      * @return
@@ -58,9 +68,8 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
         }
         Long fileId = prsFile.getId();
         String filePath = prsFile.getFilePath();
-        String root = config.getRoot();
         //页面上传文件完整地址
-        String uploadFilePath = root+filePath+prsFile.getFileName()+prsFile.getFileSuffix();
+        String uploadFilePath =filePath+prsFile.getFileName()+prsFile.getFileSuffix();
         //当前系统时间
         LocalDateTime now = LocalDateTime.now();
         for (AlgorithmReqDTO algorithmReqDTO : algorithmReqDTOList) {
@@ -70,7 +79,11 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
             //根据algorithms_id获取algorithms信息
             Algorithms algorithms = algorithmsBo.getById(algorithmReqDTO.getId());
             log.info("根据algorithms_id获取algorithms信息Algorithms="+JSON.toJSONString(algorithms));
+            //input文件固定值
             String fixedParameter = algorithms.getFixedParameter();
+            //wdl脚本地址
+            String wdlPath = algorithms.getWdlPath();
+
             JSONObject jsonObject = null;
             if (StringUtils.isNotEmpty(fixedParameter)){
                 jsonObject = JSON.parseObject(fixedParameter);
@@ -100,12 +113,24 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
             jsonObject.put("PandT.summary_statistic",uploadFilePath);
             log.info("将参数写入文件中");
             FileUtil.writerJsonFile(fileName,jsonObject);
-            // 将文件上传到指定服务器
-            log.info("参数文件上传,targetPath="+filePath+fileName);
-            sftpSystemService.uploadFile(filePath+fileName,new FileInputStream(fileName));
-            log.info("参数文件上传成功");
+//            // 将文件上传到指定服务器
+//            log.info("参数文件上传,targetPath="+filePath+fileName);
+//            sftpSystemService.uploadFile(filePath+fileName,new FileInputStream(fileName));
+//            log.info("参数文件上传成功");
+
+            File inputFile = new File(filePath+fileName);
+            File wdlFile = new File(wdlPath);
+
+            Map<String,File> fileMap = new HashMap<>();
+            fileMap.put("workflowInputs",inputFile);
+            fileMap.put("workflowSource",wdlFile);
+
+            log.info("访问cromwell提交工作流"+fileName);
+            String resultmsg = HttpClientUtil.httpClientUploadFileByfile(fileMap,cromwellUrl);
+            log.info("访问cromwell提交工作流返回结果"+JSON.toJSONString(resultmsg));
+
             //删除本地临时文件
-            MultipartFileToFileUtil.delteTempFile(new File(fileName));
+            MultipartFileToFileUtil.delteTempFile(inputFile);
 
         }
         if(CollectionUtils.isEmpty(parameterEnters)){

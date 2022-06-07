@@ -10,7 +10,7 @@ import org.apache.ibatis.annotations.Mapper;
  * </p>
  *
  * @author fansp
- * @since 2022-04-24
+ * @since 2022-05-26
  */
 @Mapper
 public interface AlgorithmsMapper extends BaseMapper<Algorithms> {

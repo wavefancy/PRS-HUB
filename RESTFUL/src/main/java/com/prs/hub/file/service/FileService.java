@@ -14,7 +14,7 @@ public interface FileService {
      * @param multipartFile
      * @return
      */
-//    BaseResult upLoadFiles(UserReqDTO userReqDTO, MultipartFile multipartFile);
+    BaseResult upLoadFiles(String filePath,String fileName, MultipartFile file);
     /**
      * 根据id获取文件
      * @param id

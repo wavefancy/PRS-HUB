@@ -41,7 +41,7 @@
         </div>
     </div>
 </nav>
-<div class="py-md-32 position-relative">
+<div class="py-md-32 position-relative" style="padding-top: 0rem!important;">
     <div class="container-lg max-w-screen-xl">
         <div class="row align-items-center">
             <div class="col-lg-6 order-lg-1 ms-auto d-none d-lg-block">

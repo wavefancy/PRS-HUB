@@ -10,7 +10,7 @@ import LoginItem from '@/pages/authentication/LoginItem'
 import RegisterItem from '@/pages/authentication/RegisterItem'
 import HomeItem from '@/pages/home'
 import FunctionItem from '@/pages/function'
-
+import ResultItem from '@/pages/authentication/ResultItem'
 export default new VueRouter({
     routes:[
         {
@@ -55,6 +55,11 @@ export default new VueRouter({
             name:"register",
             path:'/register',
             component:RegisterItem
+        },
+        {
+            name:"result",
+            path:'/result',
+            component:ResultItem
         }
     ]
 })

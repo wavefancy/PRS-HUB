@@ -34,6 +34,11 @@ public class MailServiceImpl implements IMailService {
      */
     @Value("${spring.mail.username}")
     private String sender;
+    /**
+     * 访问地址
+     */
+    @Value("${system.path}")
+    private String systemPath;
 
     /**
      * 邮件发送
@@ -74,16 +79,8 @@ public class MailServiceImpl implements IMailService {
             messageHelper.setTo(to);
             //邮件主题
             message.setSubject(subject);
-//            Context context = new Context();
-//            //设置传入模板的页面的参数 参数名为:id 参数随便写一个就行
-//            context.setVariable("message", content);
-//            //emailTemplate是你要发送的模板我这里用的是Thymeleaf
-
-//            String process = templateEngine.process("emailTemplate", context);
-            //邮件内容，html格式
-//            messageHelper.setText(process, true);
             messageHelper.setText("尊敬的用户,您好:<br>"
-                    + "<br>请点击下方的“邮箱激活”，进行注册激活:<br><a href=\'http://127.0.0.1:9090/prs/hub/authActive?msg="+content+"\'>邮箱激活</a><br>本次激活链接30分钟内有效，请及时激活。<br>"
+                    + "<br>请点击下方的“邮箱激活”，进行注册激活:<br><a href=\'"+systemPath+"/authActive?msg="+content+"\'>邮箱激活</a><br>本次激活链接30分钟内有效，请及时激活。<br>"
                     + "<br>如非本人操作，请忽略该邮件。<br>(这是一封自动发送的邮件，请不要直接回复）", true);
             //发送
             mailSender.send(message);

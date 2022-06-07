@@ -255,7 +255,7 @@
           }
 
 
-          axios.post("/sftpupload",formData,config).then(response => {
+          axios.post("/uploadFiles",formData,config).then(response => {
             const resData = response
             const code = resData.code;
             if(code === 0){

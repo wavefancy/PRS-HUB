@@ -9,7 +9,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * </p>
  *
  * @author fansp
- * @since 2022-04-24
+ * @since 2022-05-26
  */
 public interface AlgorithmsBo extends IService<Algorithms> {
 

@@ -11,6 +11,9 @@ import VueElementLoading from 'vue-element-loading'
 import {Message , MessageBox,Tooltip  } from 'element-ui'
 //引入element-ui全局样式
 import 'element-ui/lib/theme-chalk/index.css'
+//导入bootstrap
+// import 'bootstrap/dist/css/bootstrap.css'
+
 //应用ElementUI
 Vue.component('VueElementLoading', VueElementLoading)
 //ElementUI注册组件的时候，还有一种写法，挂在原型上

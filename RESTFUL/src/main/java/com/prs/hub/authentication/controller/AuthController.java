@@ -9,19 +9,25 @@ import com.prs.hub.commons.BaseController;
 import com.prs.hub.commons.BaseResult;
 import com.prs.hub.commons.CurrentUser;
 import com.prs.hub.constant.ResultCodeEnum;
+import com.prs.hub.email.service.IMailService;
 import com.prs.hub.practice.entity.User;
 import com.prs.hub.utils.MD5Util;
 import com.prs.hub.utils.StringUtils;
+import com.prs.hub.utils.TokenUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.view.RedirectView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -39,7 +45,10 @@ public class AuthController extends BaseController {
 
     @Autowired
     private AuthService authService;
-
+    @Autowired
+    IMailService iMailService;
+    @Value("${system.loginUrl}")
+    private String loginUrl;
     /**
      * 注册Controller
      * @param req
@@ -95,6 +104,7 @@ public class AuthController extends BaseController {
         user.setCity(userShowReqDTO.getCity());
         user.setCountry(userShowReqDTO.getCountry());
         user.setOrganisation(userShowReqDTO.getOrganisation());
+        user.setStatus(0);//未激活
         log.info("注册auth方法调用authService的saveOrUpdateUser方法开始，user="+JSON.toJSONString(user));
         BaseResult serviceResult = authService.saveOrUpdateUser(user);
         log.info("注册auth方法调用authService的saveOrUpdateUser方法结束，serviceResult="+JSON.toJSONString(serviceResult));
@@ -112,7 +122,9 @@ public class AuthController extends BaseController {
          */
         String accessToken = this.getAccessToken(user);
         log.info("token="+accessToken);
-        
+        //发送验证邮件
+        iMailService.sendHtmlMail(email,"注册激活",accessToken);
+
         resultMap.put("code",ResultCodeEnum.SUCCESS.getCode());
         resultMap.put("msg","注册成功");
         resultMap.put("token",accessToken);
@@ -128,10 +140,45 @@ public class AuthController extends BaseController {
      * @return
      */
     @RequestMapping(value = "/authActive", method = RequestMethod.GET)
-    public BaseResult active(HttpServletRequest req, HttpServletResponse res){
+    public RedirectView active(HttpServletRequest req, HttpServletResponse res){
+        RedirectView redirectTarget = new RedirectView();
+        redirectTarget.setContextRelative(true);
+
         String msg = req.getParameter("msg");
         log.info("msg="+msg);
-        return null;
+        //解析token
+        List<String> keyList = new ArrayList<>();
+        keyList.add("email");
+        keyList.add("password");
+        Map<String, String> resMap = TokenUtil.getMessage(msg,keyList);
+        log.info("解析token="+JSON.toJSONString(resMap));
+
+        String email = resMap.get("email");
+        String password = resMap.get("password");
+        if(StringUtils.isEmpty(email) || StringUtils.isEmpty(password)){
+            log.info("注册激活数据email或password为空");
+            return null;
+        }
+
+        User user = new User();
+        user.setEmail(resMap.get("email"));
+        user.setStatus(1);//1：已激活
+        try {
+            log.info("注册激活开始，user="+JSON.toJSONString(user));
+            BaseResult serviceResult = authService.saveOrUpdateUser(user);
+            log.info("注册激活结束，serviceResult="+JSON.toJSONString(serviceResult));
+
+            if (serviceResult.getCode() != 0){
+                log.info("注册激活数据落库失败");
+                return null;
+            }
+        }catch (Exception e){
+            log.error("注册激活异常",e);
+            return null;
+        }
+        log.info("注册激活成功");
+        redirectTarget.setUrl(loginUrl);
+        return redirectTarget;
     }
     /**
      * 登录
@@ -162,6 +209,7 @@ public class AuthController extends BaseController {
         User user = new User();
         user.setEmail(email);
         user.setPassword(MD5Util.MD5Encode(password,"utf-8"));
+        user.setStatus(1);//激活成功的用户才可以登录
         log.info("登录login方法调用authService的getUserInfo方法开始，user="+JSON.toJSONString(user));
         BaseResult userInfo = authService.getUserInfo(user);
         log.info("登录login方法调用authService的getUserInfo方法结束，userInfo="+JSON.toJSONString(userInfo));

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.prs.hub.practice.mapper.MetadataEntryMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.prs.hub.practice.entity.MetadataEntry">
+        <id column="METADATA_JOURNAL_ID" property="metadataJournalId" />
+        <result column="WORKFLOW_EXECUTION_UUID" property="workflowExecutionUuid" />
+        <result column="METADATA_KEY" property="metadataKey" />
+        <result column="CALL_FQN" property="callFqn" />
+        <result column="JOB_SCATTER_INDEX" property="jobScatterIndex" />
+        <result column="JOB_RETRY_ATTEMPT" property="jobRetryAttempt" />
+        <result column="METADATA_VALUE" property="metadataValue" />
+        <result column="METADATA_TIMESTAMP" property="metadataTimestamp" />
+        <result column="METADATA_VALUE_TYPE" property="metadataValueType" />
+    </resultMap>
+
+</mapper>

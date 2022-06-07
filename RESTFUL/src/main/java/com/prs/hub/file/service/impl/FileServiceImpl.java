@@ -5,19 +5,26 @@ import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.prs.hub.authentication.dto.UserReqDTO;
+import com.prs.hub.commons.BaseResult;
+import com.prs.hub.constant.ResultCodeEnum;
 import com.prs.hub.file.service.FileService;
 import com.prs.hub.practice.bo.PrsFileBo;
 import com.prs.hub.practice.entity.PrsFile;
+import com.prs.hub.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -26,37 +33,12 @@ public class FileServiceImpl implements FileService {
     @Autowired
     private PrsFileBo fileBo;
 
-   /* @Override
-    public BaseResult upLoadFiles(UserReqDTO userReqDTO,MultipartFile file) {
-        log.info("文件上传service开始file="+ JSON.toJSON(userReqDTO));
+    @Override
+    public BaseResult upLoadFiles(String filePath,String fileName, MultipartFile file) {
+        log.info("文件上传service开始filePath="+ filePath);
+        log.info("文件上传service开始fileName="+ fileName);
         Map<String,Object> resultMap = new HashMap<>();
-        //设置支持最大上传的文件，这里是1024*1024*2=2M
-        long MAX_SIZE=2097152L;
-        //获取要上传文件的名称
-        String fileName=file.getOriginalFilename();
-        log.info("上传文件的名称fileName="+fileName);
-        //如果名称为空，返回一个文件名为空的错误
-        if (StringUtils.isEmpty(fileName)){
-            log.info(ResultCodeEnum.FILE_NAME_EMPTY.getName()+"fileName="+fileName);
-            resultMap.put("code", ResultCodeEnum.FILE_NAME_EMPTY.getCode());
-            resultMap.put("msg",ResultCodeEnum.FILE_NAME_EMPTY.getName());
-            return BaseResult.ok("接口调用成功",resultMap);
-        }
-        //如果文件超过最大值，返回超出可上传最大值的错误
-        if (file.getSize()>MAX_SIZE){
-            log.info(ResultCodeEnum.FILE_MAX_SIZE.getName()+"fileSize="+file.getSize());
-            resultMap.put("code", ResultCodeEnum.FILE_MAX_SIZE.getCode());
-            resultMap.put("msg",ResultCodeEnum.FILE_MAX_SIZE.getName());
-            return BaseResult.ok("接口调用成功",resultMap);
-        }
 
-        //上传文件路径
-        String filePath = savePath+File.separator+userReqDTO.getEmail();
-        log.info("上传文件路径filePath="+filePath);
-
-
-        //文件的保存重新按照时间戳命名
-//        String newName = System.currentTimeMillis() + suffixName;
 
         File newFile=new File(filePath,fileName);
 
@@ -65,12 +47,10 @@ public class FileServiceImpl implements FileService {
             newFile.getParentFile().mkdirs();
         }
 
-        //落库标志
-        Boolean flag = false;
         try {
             //文件写入
             file.transferTo(newFile);
-            flag = saveOrUpdateFileDetail(filePath,fileName,userReqDTO);
+
         } catch (Exception e) {
             log.error("文件上传异常",e);
             resultMap.put("code", ResultCodeEnum.EXCEPTION.getCode());
@@ -78,18 +58,11 @@ public class FileServiceImpl implements FileService {
             return BaseResult.ok("接口调用成功",resultMap);
         }
 
-        if(!flag){
-            log.error("文件上传数据落库失败");
-            resultMap.put("code", ResultCodeEnum.FAIL.getCode());
-            resultMap.put("msg","文件上传数据落库失败");
-            return BaseResult.ok("接口调用成功",resultMap);
-        }
-
         resultMap.put("code", ResultCodeEnum.SUCCESS.getCode());
         resultMap.put("msg","文件上传成功");
         log.info("文件上传成功resultMap="+JSON.toJSON(resultMap));
         return BaseResult.ok("接口调用成功",resultMap);
-    }*/
+    }
 
     @Override
     public PrsFile getFileById(String id) throws Exception {

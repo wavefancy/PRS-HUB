@@ -17,6 +17,7 @@
         <result column="age" property="age" />
         <result column="id_no" property="idNo" />
         <result column="mobile" property="mobile" />
+        <result column="status" property="status" />
         <result column="created_user" property="createdUser" />
         <result column="created_date" property="createdDate" />
         <result column="modified_user" property="modifiedUser" />
