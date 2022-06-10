@@ -6,8 +6,8 @@
     <resultMap id="BaseResultMap" type="com.prs.hub.practice.entity.ParameterEnter">
         <id column="id" property="id" />
         <result column="file_id" property="fileId" />
-        <result column="parameter_id" property="parameterId" />
-        <result column="value" property="value" />
+        <result column="parameter_name" property="parameterName" />
+        <result column="parameter_value" property="parameterValue" />
         <result column="created_user" property="createdUser" />
         <result column="created_date" property="createdDate" />
         <result column="modified_user" property="modifiedUser" />

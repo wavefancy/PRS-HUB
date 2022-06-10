@@ -9,7 +9,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * </p>
  *
  * @author fansp
- * @since 2022-03-25
+ * @since 2022-06-10
  */
 public interface RunnerDetailBo extends IService<RunnerDetail> {
 

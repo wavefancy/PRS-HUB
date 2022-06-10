@@ -16,7 +16,7 @@ import lombok.Setter;
  * </p>
  *
  * @author fansp
- * @since 2022-03-25
+ * @since 2022-06-10
  */
 @Getter
 @Setter
@@ -36,7 +36,11 @@ public class RunnerDetail implements Serializable {
 
     @ApiModelProperty("上传文件id")
     @TableField("file_id")
-    private String fileId;
+    private Long fileId;
+
+    @ApiModelProperty("工作流uuid")
+    @TableField("workflow_execution_uuid")
+    private String workflowExecutionUuid;
 
     @ApiModelProperty("运行结果文件地址")
     @TableField("result_path")

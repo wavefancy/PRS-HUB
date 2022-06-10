@@ -8,9 +8,11 @@ import com.prs.hub.algorithms.dto.ParameterEnterReqDTO;
 import com.prs.hub.algorithms.service.ParameterEnterService;
 import com.prs.hub.practice.bo.AlgorithmsBo;
 import com.prs.hub.practice.bo.ParameterEnterBo;
+import com.prs.hub.practice.bo.RunnerDetailBo;
 import com.prs.hub.practice.entity.Algorithms;
 import com.prs.hub.practice.entity.ParameterEnter;
 import com.prs.hub.practice.entity.PrsFile;
+import com.prs.hub.practice.entity.RunnerDetail;
 import com.prs.hub.sftpsystem.dto.SFTPPropertiesDTO;
 import com.prs.hub.sftpsystem.service.SFTPSystemService;
 import com.prs.hub.utils.FileUtil;
@@ -47,6 +49,8 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
     private SFTPPropertiesDTO config;
     @Autowired
     private AlgorithmsBo algorithmsBo;
+    @Autowired
+    private RunnerDetailBo runnerDetailBo;
     /**
      * Cromwell服务访问地址
      */
@@ -93,14 +97,11 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
             String fileName = name+"_input.json";
             for (ParameterEnterReqDTO parameterEnterReqDTO: parameterEnterReqList) {
                 ParameterEnter parameterEnter = new ParameterEnter();
-                String id = parameterEnterReqDTO.getId();
-                if(StringUtils.isNotEmpty(id)){
-                    parameterEnter.setParameterId(Long.valueOf(id));
-                }
+                parameterEnter.setParameterName(parameterEnterReqDTO.getName());
                 if(fileId != null){
                     parameterEnter.setFileId(fileId);
                 }
-                parameterEnter.setValue(parameterEnterReqDTO.getValue());
+                parameterEnter.setParameterValue(parameterEnterReqDTO.getValue());
                 parameterEnter.setCreatedUser("system");
                 parameterEnter.setCreatedDate(now);
                 parameterEnter.setModifiedUser("system");
@@ -108,17 +109,18 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
                 parameterEnter.setIsDelete(0);
                 parameterEnters.add(parameterEnter);
                 //拼装json
-                jsonObject.put("PandT."+parameterEnterReqDTO.getName()+"_list",parameterEnterReqDTO.getValue().split(","));
+                jsonObject.put(parameterEnterReqDTO.getName()+"-1-value",parameterEnterReqDTO.getValue().split(","));
             }
-            jsonObject.put("PandT.summary_statistic",uploadFilePath);
+            jsonObject.put("summary_statistic-2",uploadFilePath);
             log.info("将参数写入文件中");
-            FileUtil.writerJsonFile(fileName,jsonObject);
+            FileUtil.writerJsonFile(filePath+fileName,jsonObject);
 //            // 将文件上传到指定服务器
 //            log.info("参数文件上传,targetPath="+filePath+fileName);
 //            sftpSystemService.uploadFile(filePath+fileName,new FileInputStream(fileName));
 //            log.info("参数文件上传成功");
 
             File inputFile = new File(filePath+fileName);
+//            File wdlFile = new File("E:\\temp\\files\\P+T.wdl");
             File wdlFile = new File(wdlPath);
 
             Map<String,File> fileMap = new HashMap<>();
@@ -129,8 +131,26 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
             String resultmsg = HttpClientUtil.httpClientUploadFileByfile(fileMap,cromwellUrl);
             log.info("访问cromwell提交工作流返回结果"+JSON.toJSONString(resultmsg));
 
+            if(StringUtils.isNotEmpty(resultmsg)){
+                JSONObject  cromwellResult = JSON.parseObject(resultmsg);
+                String cromwellId = cromwellResult.get("id").toString();
+                RunnerDetail runnerDetail = new RunnerDetail();
+                runnerDetail.setFileId(fileId);
+                runnerDetail.setWorkflowExecutionUuid(cromwellId);//工作流uuid
+                runnerDetail.setUserId(prsFile.getUserId());
+                runnerDetail.setStatus(0);//运行状态 4:Finish, 3:Project at risk ,1:In progress,0:Not started
+                runnerDetail.setProgress(0);//运行进度 0-100
+                runnerDetail.setCreatedUser("system");
+                runnerDetail.setCreatedDate(now);
+                runnerDetail.setModifiedUser("system");
+                runnerDetail.setModifiedDate(now);
+                runnerDetail.setIsDelete(0);
+                log.info("保存工作流运行数据开始runnerDetail="+JSON.toJSONString(runnerDetail));
+                Boolean runnerFlag = runnerDetailBo.save(runnerDetail);
+                log.info("保存工作流运行数据结束runnerFlag="+runnerFlag);
+            }
             //删除本地临时文件
-            MultipartFileToFileUtil.delteTempFile(inputFile);
+//            MultipartFileToFileUtil.delteJTempFile(inputFile);
 
         }
         if(CollectionUtils.isEmpty(parameterEnters)){
