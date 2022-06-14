@@ -6,11 +6,11 @@ module.exports = defineConfig({
   devServer: {
     proxy: {
       "/api": {
-        target: "http://11.11.11.55:9091/prs/hub/",
+        target: "http://localhost:9091/prs/hub/",
         pathRewrite: { '^/api': '' },
       },
       "/prd-api": {
-        target: "http://192.168.118.81:9091/prs/hub/",
+        target: "http://12.12.1.55:8081/prs/hub/",
         pathRewrite: { '^/prd-api': '' },
       },
     },
