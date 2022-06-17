@@ -32,11 +32,30 @@ public class StatisticsServiceImpl implements StatisticsService {
     @Autowired
     private MetadataEntryBo metadataEntryBo;
 
+    /**
+     * 查询runner数据
+     * @param userId
+     * @param fileId
+     * @return
+     */
     @Override
-    public RunnerDetail getRunnerDetail(Long userId, Long fileId) {
-        return null;
+    public List<RunnerDetail> getRunnerDetail(Long userId, Long fileId) {
+        log.info("查询runner数据开始userId="+userId+"\nfileId="+fileId);
+
+        QueryWrapper<RunnerDetail> RunnerDetailQueryWrapper = new QueryWrapper<>();
+
+        RunnerDetailQueryWrapper.eq("user_id",userId);
+        RunnerDetailQueryWrapper.eq("file_id",fileId);
+
+        log.info("查询Runner表未结束的工作流入参RunnerDetailQueryWrapper="+ JSON.toJSONString(RunnerDetailQueryWrapper));
+        List<RunnerDetail> runnerDetailList = runnerDetailBo.selectList(RunnerDetailQueryWrapper);
+        log.info("查询Runner表未结束的工作流出参runnerDetailList="+ JSON.toJSONString(runnerDetailList));
+        return runnerDetailList;
     }
 
+    /**
+     * 定时任务：实时更新runner数据定
+     */
     @Scheduled(cron = "30 * * * * ?")
     private void realTimeUpdateRunnerDetail(){
         log.info("实时更新runner数据定时任务开始每30秒执行一次");
@@ -46,7 +65,7 @@ public class StatisticsServiceImpl implements StatisticsService {
         statusList.add(0);
         statusList.add(1);
         RunnerDetailQueryWrapper.in("status",statusList);
-
+ 
         log.info("查询Runner表未结束的工作流入参RunnerDetailQueryWrapper="+ JSON.toJSONString(RunnerDetailQueryWrapper));
         List<RunnerDetail> runnerDetailList = runnerDetailBo.selectList(RunnerDetailQueryWrapper);
         log.info("查询Runner表未结束的工作流出参runnerDetailList="+ JSON.toJSONString(runnerDetailList));
@@ -92,9 +111,9 @@ public class StatisticsServiceImpl implements StatisticsService {
                         RunnerDetail runnerDetailReq = new RunnerDetail();
                         runnerDetailReq.setResultPath(resultPath);
                         runnerDetailReq.setStatus(status);
-                        log.info("跟新runner数据入参runnerDetailReq="+JSON.toJSONString(runnerDetailReq));
+                        log.info("更新runner数据入参runnerDetailReq="+JSON.toJSONString(runnerDetailReq));
                         Boolean flag = runnerDetailBo.update(runnerDetailReq,updateWrapper);
-                        log.info("跟新runner数据出参flag="+flag);
+                        log.info("更新runner数据出参flag="+flag);
 
                     }
                 }

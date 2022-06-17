@@ -109,9 +109,9 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
                 parameterEnter.setIsDelete(0);
                 parameterEnters.add(parameterEnter);
                 //拼装json
-                jsonObject.put(parameterEnterReqDTO.getName()+"-1-value",parameterEnterReqDTO.getValue().split(","));
+                jsonObject.put(name+"."+parameterEnterReqDTO.getName()+"-1-value",parameterEnterReqDTO.getValue().split(","));
             }
-//            jsonObject.put("summary_statistic-2",uploadFilePath);
+            jsonObject.put(name+"."+"summary_statistic-2",uploadFilePath);
             log.info("将参数写入文件中");
             FileUtil.writerJsonFile(filePath+fileName,jsonObject);
 //            // 将文件上传到指定服务器

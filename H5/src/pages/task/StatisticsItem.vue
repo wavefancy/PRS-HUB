@@ -31,6 +31,7 @@
                 <thead class="table-light">
                   <tr>
                     <th scope="col">Job Name</th>
+                    <th scope="col">Algorithms Name</th>
                     <th scope="col">Upload Date</th>
                     <th scope="col">progress</th>
                     <th scope="col">status</th>
@@ -40,6 +41,11 @@
                 </thead>
                 <tbody>
                   <tr v-for="file in files.fileList" :key="file.id">  
+                    <td>
+                      <div class="d-flex align-items-center">
+                        {{file.name}}
+                      </div>
+                    </td>
                     <td>
                       <div class="d-flex align-items-center">
                         {{file.name}}
