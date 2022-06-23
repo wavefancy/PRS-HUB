@@ -16,7 +16,7 @@ import lombok.Setter;
  * </p>
  *
  * @author fansp
- * @since 2022-06-09
+ * @since 2022-06-23
  */
 @Getter
 @Setter
@@ -33,6 +33,9 @@ public class ParameterEnter implements Serializable {
     @ApiModelProperty("id")
     @TableField("file_id")
     private Long fileId;
+
+    @TableField("algorithms_id")
+    private Long algorithmsId;
 
     @ApiModelProperty("参数名")
     @TableField("parameter_name")

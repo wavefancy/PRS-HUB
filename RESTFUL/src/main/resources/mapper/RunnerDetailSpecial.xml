@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.prs.hub.practice.mapper.RunnerDetailSpecial">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.prs.hub.statistics.dto.RunnerStatisDTO">
+        <result column="email" property="email" />
+        <result column="fileName" property="fileName" />
+        <result column="algorithmsName" property="algorithmsName" />
+        <result column="runnerStatus" property="runnerStatus" />
+        <result column="runnerProgress" property="runnerProgress" />
+        <result column="runnerQueue" property="runnerQueue" />
+        <collection ofType="com.prs.hub.practice.dto.ParameterEnterDTO" property="parameters" columnPrefix="children_">
+            <result column="parameterName" property="parameterName" />
+            <result column="parameterValue" property="parameterValue" />
+        </collection>
+    </resultMap>
+    <select id="queryRunnerDetails" parameterType="com.prs.hub.practice.entity.RunnerDetail" resultMap="BaseResultMap">
+        SELECT
+        pu.`email` email ,
+        pf.`file_name` fileName,
+        al.`NAME` algorithmsName ,
+        rd.`status` runnerStatus ,
+        rd.`result_path` resultPath,
+        rd.`progress` runnerProgress,
+        rd.`queue` runnerQueue,
+        pe.`parameter_name` parameterName,
+        pe.`parameter_value` parameterValue
+        FROM runner_detail rd
+        LEFT JOIN PRS_USER pu ON rd.`user_id`=pu.`id`
+        LEFT JOIN prs_file pf ON rd.`file_id`=pf.`id`
+        LEFT JOIN parameter_enter pe ON rd.`file_id`=pe.`file_id`
+        LEFT JOIN algorithms al ON pe.`algorithms_id`=al.`id`
+        WHERE rd.`is_delete`=0
+        <if test="userId!=null and userId!=''">
+            AND rd.`user_id`=#{userId}
+        </if>
+    </select>
+
+</mapper>

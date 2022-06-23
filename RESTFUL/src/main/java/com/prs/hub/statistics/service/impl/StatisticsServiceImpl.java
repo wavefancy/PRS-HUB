@@ -6,8 +6,10 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.prs.hub.practice.bo.MetadataEntryBo;
 import com.prs.hub.practice.bo.RunnerDetailBo;
+import com.prs.hub.practice.bo.RunnerDetailSpecialBo;
 import com.prs.hub.practice.entity.MetadataEntry;
 import com.prs.hub.practice.entity.RunnerDetail;
+import com.prs.hub.statistics.dto.RunnerStatisDTO;
 import com.prs.hub.statistics.service.StatisticsService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +32,8 @@ public class StatisticsServiceImpl implements StatisticsService {
     @Autowired
     private RunnerDetailBo runnerDetailBo;
     @Autowired
+    private RunnerDetailSpecialBo runnerDetailSpecialBo;
+    @Autowired
     private MetadataEntryBo metadataEntryBo;
 
     /**
@@ -39,16 +43,13 @@ public class StatisticsServiceImpl implements StatisticsService {
      * @return
      */
     @Override
-    public List<RunnerDetail> getRunnerDetail(Long userId, Long fileId) {
+    public List<RunnerStatisDTO> getRunnerDetail(Long userId, Long fileId) {
         log.info("查询runner数据开始userId="+userId+"\nfileId="+fileId);
 
-        QueryWrapper<RunnerDetail> RunnerDetailQueryWrapper = new QueryWrapper<>();
-
-        RunnerDetailQueryWrapper.eq("user_id",userId);
-        RunnerDetailQueryWrapper.eq("file_id",fileId);
-
-        log.info("查询Runner表未结束的工作流入参RunnerDetailQueryWrapper="+ JSON.toJSONString(RunnerDetailQueryWrapper));
-        List<RunnerDetail> runnerDetailList = runnerDetailBo.selectList(RunnerDetailQueryWrapper);
+        RunnerDetail runnerDetail = new RunnerDetail();
+        runnerDetail.setUserId(userId);
+        log.info("查询Runner表未结束的工作流入参runnerDetail="+ JSON.toJSONString(runnerDetail));
+        List<RunnerStatisDTO> runnerDetailList = runnerDetailSpecialBo.queryRunnerDetails(runnerDetail);
         log.info("查询Runner表未结束的工作流出参runnerDetailList="+ JSON.toJSONString(runnerDetailList));
         return runnerDetailList;
     }

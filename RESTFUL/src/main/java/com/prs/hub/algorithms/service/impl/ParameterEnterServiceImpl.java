@@ -97,6 +97,7 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
             String fileName = name+"_input.json";
             for (ParameterEnterReqDTO parameterEnterReqDTO: parameterEnterReqList) {
                 ParameterEnter parameterEnter = new ParameterEnter();
+                parameterEnter.setAlgorithmsId(algorithms.getId());
                 parameterEnter.setParameterName(parameterEnterReqDTO.getName());
                 if(fileId != null){
                     parameterEnter.setFileId(fileId);

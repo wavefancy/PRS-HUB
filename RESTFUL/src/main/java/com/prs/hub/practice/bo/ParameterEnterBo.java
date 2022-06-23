@@ -9,7 +9,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * </p>
  *
  * @author fansp
- * @since 2022-06-09
+ * @since 2022-06-23
  */
 public interface ParameterEnterBo extends IService<ParameterEnter> {
 
