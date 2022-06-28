@@ -9,7 +9,7 @@
             <div class="col">
               <div class="d-flex align-items-center gap-4">
                 
-                <h1 class="h4 ls-tight">Algorithms</h1>
+                <h1 class="h4 ls-tight">Setup</h1>
               </div>
             </div>
             <div class="col-auto">
@@ -59,7 +59,7 @@
                   Please enter the correct data in the default format!
                 </p>
               </div>
-              <div class="modal-footer" style="    border-top: 0px solid #e7eaf0;">
+              <div class="modal-footer" style="border-top: 0px solid #e7eaf0;">
                 <button
                   type="button"
                   class="btn btn-sm btn-neutral"
@@ -101,8 +101,18 @@
             </div>
           </div>
         </PopModal>
+         <div class="modal fade" id="discription"  ref="discription"
+          tabindex="-1" aria-labelledby="discription" aria-hidden="true" >
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-body px-12" >
+                  <p class="text-sm text-muted" v-html="showDiscription"></p>
+              </div>
+            </div>
+          </div>
+        </div>
         <div class="container-fluid vstack gap-10">
-          <UploadFile></UploadFile>
+          <GwasPanel></GwasPanel>
           <ReferencePanel></ReferencePanel>
           <AlgorithmsItem :algorithmsShow='algorithms.algorithmsShow' ></AlgorithmsItem>
         </div>
@@ -113,16 +123,17 @@
 import {Prs} from "@/api"
 import { isEmpty }  from "@/utils/validate"
 // import {mapActions,mapGetters} from 'vuex'
-import UploadFile from "@/components/commons/UploadFile"
+// import UploadFile from "@/components/commons/UploadFile"
 import PopModal from "@/components/commons/PopModal"
 import AlgorithmsItem from "@/pages/integrations/AlgorithmsItem"
 import ReferencePanel from "@/pages/integrations/ReferencePanel"
+import GwasPanel from "@/pages/integrations/GwasPanel"
 
 export default {
     name:"AnalysisItem",
     components:{
       PopModal,
-      UploadFile,
+      GwasPanel,
       AlgorithmsItem,
       ReferencePanel
     },
@@ -142,6 +153,8 @@ export default {
         showParModal:false,
         //提交按钮配置弹窗
         subModalToggle:'modal',
+        //算法的介绍
+        showDiscription:'',
         loading:false,
       }
     },
@@ -196,6 +209,10 @@ export default {
                 this.showParameters=algorithm.parameters
             } 
         })
+      },
+      //改变showDiscription值
+      changeShowDiscription(val){
+        this.showDiscription=val
       },
       //设置弹窗展示flag
       changeShowParModal(){
@@ -303,6 +320,7 @@ export default {
       this.$bus.$on('algorithmChecked',this.algorithmChecked)
       this.$bus.$on('changeShowParModal',this.changeShowParModal)
       this.$bus.$on('changeShowParameters',this.changeShowParameters)
+      this.$bus.$on('changeShowDiscription',this.changeShowDiscription)
       this.$bus.$on('referenceSelect',this.referenceSelect)
       //获取算法数据
       Prs.getAlgorithmsInfo().then((response) => {
@@ -357,6 +375,7 @@ export default {
       this.$bus.$off('algorithmChecked')
       this.$bus.$off('changeShowParModal')
       this.$bus.$off('changeShowParameters')
+      this.$bus.$off('changeShowDiscription')
     }
 }
 

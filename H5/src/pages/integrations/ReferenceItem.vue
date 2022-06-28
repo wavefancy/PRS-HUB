@@ -8,7 +8,7 @@
           <div class="row align-items-center">
             <div class="col-md-6 col-12 mb-4 mb-sm-0">
               <!-- Title -->
-              <h1 class="h2 ls-tight">Reference panel</h1>
+              <h1 class="h2 ls-tight">{{pageTitle}} panel</h1>
             </div>
           </div>
         </div>
@@ -17,7 +17,7 @@
     <!-- Main -->
     <main class="py-6 bg-surface-secondary">
       <div class="container-fluid">
-        <h4 class="mb-4">Upload LD reference</h4>
+        <h4 class="mb-4">Upload {{pageTitle}}</h4>
         <div class="card">
           <div class="card-body pb-0">
             <div class="row" style="margin: 0.5rem 0rem;">
@@ -96,11 +96,11 @@
           </div>
         </div>
         <div class="vstack gap-6 mt-3">
-          <h4 class="mt-3">reference table</h4>
+          <h4 class="mt-3">My {{pageTitle}} Panel</h4>
           <!-- Table -->
           <div class="card">
             <div class="card-header row">
-              <div class="col-xl-9 col-sm-9"><h5 class="mb-0">My reference</h5></div>
+              <div class="col-xl-9 col-sm-9"><h5 class="mb-0">My {{pageTitle}}</h5></div>
             </div>
             <div class="table-responsive">
               <table class="table table-hover table-nowrap">
@@ -173,20 +173,11 @@
   axios.defaults.headers['accessToken'] = localStorage.getItem("accessToken")
   export default {
     name: "ReferenceItem",
+    props: ['pageTitle','type'],
     data() {
         return {
             files:{
                 fileList:[
-                    {
-                        id:'001',
-                        //文件名
-                        name:'testFile1',
-                        descrition:'',
-                        //上传时间
-                        uploadDate:'2022-04-04',
-                        //错误信息
-                        message:'Wrong file format',
-                    }
                 ]
             },
             fileSize:'',
@@ -196,7 +187,7 @@
             progressVisible:false,
             colorClass:'bg-success',
             uplodMsg:"",
-            hintUrl:"./img/hint.png"
+            hintUrl:"./img/hint.png",
         }
     },
     methods: {
@@ -225,7 +216,7 @@
           
           let formData = new FormData();
           formData.append('file', file);
-          formData.append('fileType',"LD")
+          formData.append('fileType',this.type)
           formData.append('descrition',this.descrition)
           formData.append('fileName',this.fileName)
         let config = {
@@ -293,7 +284,7 @@
       getFileList(){
         let subData = {
           // fileType:'GWAS',
-          fileType:'LD',
+          fileType:this.type,
         }
         //提交参数
         Prs.getFileList(subData).then(response => {
@@ -331,6 +322,23 @@
     //数据初始化
     mounted(){
       this.getFileList();
+    },
+    watch: {
+      type:{
+         // 数据发生变化就会调用这个函数  
+          handler() {
+            this.getFileList();
+            this.fileSize=''
+            this.descrition=''
+            this.fileName=''
+            this.progress=0
+            this.progressVisible=false
+            this.colorClass='bg-success'
+            this.uplodMsg=""
+          },
+          // 立即处理 进入页面就触发
+          immediate: true
+      }
     }
     
   };

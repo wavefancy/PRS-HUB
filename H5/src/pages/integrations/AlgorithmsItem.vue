@@ -19,12 +19,18 @@
                     </div>
                     </div>
                 </div>
-                <div class="mt-6">
+                <!-- <div class="mt-6">
                     <p class="text-sm text-muted" v-html="algorithm.summary"></p>
-                </div>
+                </div> -->
                 <hr class="my-5" />
                 <div class="text-end" >
-                    <p class="lh-none text-heading text-primary-hover text-sm font-semibold" 
+                    <p class="discription text-heading text-primary-hover text-sm font-semibold"
+                    data-bs-toggle="modal" 
+                    data-bs-target="#discription" 
+                    @click="changeShowDiscription(algorithm.summary)"> 
+                        <i class="bi bi-chat-square-text"></i>
+                         discription</p>
+                    <p class="setting lh-none text-heading text-primary-hover text-sm font-semibold" 
                     :data-bs-toggle="algorithm.toggleName" 
                     @click="clickSettings(algorithm.id)"
                     data-bs-target="#modalInstallApp" >
@@ -49,11 +55,22 @@ export default {
         },
         clickSettings(id){
             this.$bus.$emit('changeShowParameters',id)
+        },
+        changeShowDiscription(val){
+            this.$bus.$emit('changeShowDiscription',val)
         }
     },
 }
 </script>
 
 <style>
-
+.setting {
+    width: 50%;
+    float: right;
+}
+.discription{
+    text-align: left;
+    width: 50%;
+    float: left;
+}
 </style>

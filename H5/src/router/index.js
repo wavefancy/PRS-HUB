@@ -40,9 +40,27 @@ export default new VueRouter({
                     component:StatisticsItem
                 },
                 {
-                    name:"reference",
-                    path:'/reference',
-                    component:ReferenceItem
+                    name:"gwasreference",
+                    path:'/gwasreference',
+                    component:ReferenceItem,
+                    props(){
+                        return {
+                            pageTitle:'GWAS Summary Statistics',
+                            type:'GWAS'
+                        }
+                    }
+                }
+                ,
+                {
+                    name:"ldreference",
+                    path:'/ldreference',
+                    component:ReferenceItem,
+                    props(){
+                        return {
+                            pageTitle:'LD References',
+                            type:'LD'
+                        }
+                    }
                 }
             ],
         },

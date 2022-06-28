@@ -154,12 +154,16 @@ export default {
             sign:"bi-terminal",
             inners:[
               {
-                name:"Algorithms",
+                name:"Single Ancestry",
                 path:"/analysis"
               },
               {
-                name:"Upload LD reference",
-                path:"/reference"
+                name:"GWAS Summary Statistics",
+                path:"/gwasreference"
+              },
+              {
+                name:"LD reference",
+                path:"/ldreference"
               }
             
             ]

@@ -10,7 +10,7 @@
         <result column="runnerStatus" property="runnerStatus" />
         <result column="runnerProgress" property="runnerProgress" />
         <result column="runnerQueue" property="runnerQueue" />
-        <collection ofType="com.prs.hub.practice.dto.ParameterEnterDTO" property="parameters" columnPrefix="children_">
+        <collection ofType="com.prs.hub.practice.dto.ParameterEnterDTO" property="parameters" columnPrefix="children_" javaType="list">
             <result column="parameterName" property="parameterName" />
             <result column="parameterValue" property="parameterValue" />
         </collection>
@@ -24,8 +24,8 @@
         rd.`result_path` resultPath,
         rd.`progress` runnerProgress,
         rd.`queue` runnerQueue,
-        pe.`parameter_name` parameterName,
-        pe.`parameter_value` parameterValue
+        pe.`parameter_name` as children_parameterName,
+        pe.`parameter_value` as children_parameterValue
         FROM runner_detail rd
         LEFT JOIN PRS_USER pu ON rd.`user_id`=pu.`id`
         LEFT JOIN prs_file pf ON rd.`file_id`=pf.`id`
