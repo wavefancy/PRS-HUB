@@ -69,11 +69,11 @@ public class FileController {
                     PrsFileResDTO prsFileResDTO = new PrsFileResDTO();
                     BeanUtils.copyProperties(prsFileRes,prsFileResDTO);
 
-                    LocalDateTime createdDate = prsFileRes.getCreatedDate();
-                    if(createdDate!=null){
+                    LocalDateTime modifiedDate = prsFileRes.getModifiedDate();
+                    if(modifiedDate!=null){
                         DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-                        prsFileResDTO.setUploadDate(createdDate.format(df));
-                        LocalDateTime deleteDate = createdDate.plusDays(30);
+                        prsFileResDTO.setUploadDate(prsFileRes.getCreatedDate().format(df));
+                        LocalDateTime deleteDate = modifiedDate.plusDays(30);
                         prsFileResDTO.setDeleteDate(deleteDate.format(df));
                         LocalDateTime now = LocalDateTime.now();
                         if(now.isAfter(deleteDate)&&!(now.format(df).equals(deleteDate.format(df)))){
@@ -320,5 +320,93 @@ public class FileController {
 
         }
     }
+    /**
+     * 删除文件
+     * @param fileId
+     * @param request
+     * @param response
+     */
+    @Authorization
+    @RequestMapping(value = "/deleteFile",method = RequestMethod.GET)
+    public BaseResult deleteFile( @RequestParam("fileId") String fileId, HttpServletRequest request, HttpServletResponse response){
+        log.info("删除文件fileId="+fileId);
+        Map<String,Object> resultMap = new HashMap<>();
+        if(StringUtils.isEmpty(fileId)){
+            return new BaseResult(ResultCodeEnum.FILE_ID_EMPTY.getCode(),ResultCodeEnum.FILE_ID_EMPTY.getName(),null);
+        }
 
+        try {
+            log.info("调用fileService删除文件开始fileId="+fileId);
+            Boolean deleteRes = fileService.deleteByFileId(fileId);
+            log.info("调用fileService删除文件结束deleteRes="+deleteRes);
+
+            if(deleteRes){
+                resultMap.put("code",ResultCodeEnum.SUCCESS.getCode());
+                resultMap.put("msg","删除文件成功");
+            }else {
+                resultMap.put("code",ResultCodeEnum.FAIL.getCode());
+                resultMap.put("msg","删除文件失败");
+            }
+
+        }catch (Exception e){
+            log.error("删除文件controller异常",e);
+            resultMap.put("code",ResultCodeEnum.EXCEPTION.getCode());
+            resultMap.put("msg","删除文件");
+            return BaseResult.ok("接口调用成功",resultMap);
+        }
+        return BaseResult.ok("接口调用成功",resultMap);
+    }
+    /**
+     * 延长文件有效时间
+     * @param fileId
+     * @param request
+     * @param response
+     */
+    @Authorization
+    @RequestMapping(value = "/extensionFileValidTime",method = RequestMethod.GET)
+    public BaseResult updateFile( @RequestParam("fileId") String fileId, HttpServletRequest request, HttpServletResponse response){
+        log.info("controller延长文件有效时间fileId="+fileId);
+        Map<String,Object> resultMap = new HashMap<>();
+        if(StringUtils.isEmpty(fileId)){
+            return new BaseResult(ResultCodeEnum.FILE_ID_EMPTY.getCode(),ResultCodeEnum.FILE_ID_EMPTY.getName(),null);
+        }
+
+        try {
+            log.info("调用fileService获取文件信息开始fileId="+fileId);
+            PrsFile prsFileRes = fileService.getFileById(fileId);
+            log.info("调用fileService获取文件信息结束prsFileList="+JSON.toJSONString(prsFileRes));
+
+            Boolean updateRes = false;
+            if(prsFileRes != null){
+                DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                LocalDateTime modifiedDate = prsFileRes.getModifiedDate();
+
+                LocalDateTime createdDate = prsFileRes.getCreatedDate();
+                if(createdDate.format(df).equals(modifiedDate.format(df))){
+                    PrsFileReqDTO prsFileUpdate = new PrsFileReqDTO();
+                    prsFileUpdate.setId(prsFileRes.getId());
+                    prsFileUpdate.setModifiedDate(createdDate.plusDays(30));
+                    prsFileUpdate.setCreatedDate(createdDate);
+                    log.info("调用fileService延长文件有效时间开始prsFileUpdate="+JSON.toJSONString(prsFileUpdate));
+                    updateRes = fileService.updateFile(prsFileUpdate);
+                    log.info("调用fileService延长文件有效时间结束updateRes="+updateRes);
+
+                }
+
+            }
+            if(updateRes){
+                resultMap.put("code",ResultCodeEnum.SUCCESS.getCode());
+                resultMap.put("msg","延长文件有效时间成功");
+            }else {
+                resultMap.put("code",ResultCodeEnum.FAIL.getCode());
+                resultMap.put("msg","延长文件有效时间失败");
+            }
+        }catch (Exception e){
+            log.error("延长文件有效时间controller异常",e);
+            resultMap.put("code",ResultCodeEnum.EXCEPTION.getCode());
+            resultMap.put("msg","延长文件有效时间异常");
+            return BaseResult.ok("接口调用成功",resultMap);
+        }
+        return BaseResult.ok("接口调用成功",resultMap);
+    }
 }

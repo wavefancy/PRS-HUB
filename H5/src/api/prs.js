@@ -6,6 +6,10 @@ export default {
     //获取算法数据
     getAlgorithmsInfo(params){return requests.get(`/algorithms/getAlgorithmsInfo`,params);},
     //获取上传文件信息
-    getFileList(params){return requests.get(`/getFileList`,params);}
+    getFileList(params){return requests.get(`/getFileList`,params);},
+    //删除文件
+    deleteFile(params){return requests.get(`/deleteFile`,params);},
+    //延长文件有效时间
+    extensionFileValidTime(params){return requests.get(`/extensionFileValidTime`,params);},
     
 }

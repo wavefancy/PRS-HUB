@@ -9,7 +9,8 @@ public enum ResultCodeEnum {
     // 文件模块 3xxxx
     FILE_EMPTY("文件不能空",30001),
     FILE_NAME_EMPTY("文件名称不能为空",30002),
-    FILE_MAX_SIZE("文件大小超出",30003);
+    FILE_MAX_SIZE("文件大小超出",30003),
+    FILE_ID_EMPTY("文件id不能空",30004);
 
 
     private String name;

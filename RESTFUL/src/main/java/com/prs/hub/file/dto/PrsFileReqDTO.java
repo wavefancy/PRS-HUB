@@ -1,9 +1,11 @@
 package com.prs.hub.file.dto;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 /**
  * @author fanshupeng
@@ -47,4 +49,12 @@ public class PrsFileReqDTO implements Serializable {
      * 失效日期
      */
     private String deleteDate;
+    /**
+     * 修改日期
+     */
+    private LocalDateTime modifiedDate;
+    /**
+     * 创建日期
+     */
+    private LocalDateTime createdDate;
 }

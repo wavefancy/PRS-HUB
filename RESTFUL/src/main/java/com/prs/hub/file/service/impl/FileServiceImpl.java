@@ -7,8 +7,10 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.prs.hub.authentication.dto.UserReqDTO;
 import com.prs.hub.commons.BaseResult;
 import com.prs.hub.constant.ResultCodeEnum;
+import com.prs.hub.file.dto.PrsFileReqDTO;
 import com.prs.hub.file.service.FileService;
 import com.prs.hub.practice.bo.PrsFileBo;
+import com.prs.hub.practice.entity.ParameterEnter;
 import com.prs.hub.practice.entity.PrsFile;
 import com.prs.hub.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -76,8 +78,15 @@ public class FileServiceImpl implements FileService {
     public List<PrsFile> getFileList(PrsFile prsFile) throws Exception {
         log.info("文件service根据prsFile获取文件信息,prsFile="+JSON.toJSONString(prsFile));
         QueryWrapper<PrsFile> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("user_id",prsFile.getUserId());
-        queryWrapper.eq("file_type",prsFile.getFileType());
+        if(prsFile.getId()!=null){
+            queryWrapper.eq("id",prsFile.getId());
+        }
+        if(prsFile.getUserId()!=null){
+            queryWrapper.eq("user_id",prsFile.getUserId());
+        }
+        if(StringUtils.isNotEmpty(prsFile.getFileType())){
+            queryWrapper.eq("file_type",prsFile.getFileType());
+        }
         log.info("调用bo查询新增文件的信息开始queryWrapper="+JSON.toJSON(queryWrapper));
         List<PrsFile> prsFileList = fileBo.list(queryWrapper);
         log.info("调用bo查询新增文件的信息结束prsFileList="+JSON.toJSON(prsFileList));
@@ -177,5 +186,49 @@ public class FileServiceImpl implements FileService {
             }
         }
         return resInt;
+    }
+
+    @Override
+    public Boolean deleteByFileId(String fileId) throws Exception {
+        log.info("物理删除文件fileId="+fileId);
+        PrsFile prsFile = new PrsFile();
+        prsFile.setId(Long.valueOf(fileId));
+        Boolean removeRes =  fileBo.removeById(prsFile);
+        log.info("物理删除文件removeRes="+removeRes);
+        return removeRes;
+    }
+
+    @Override
+    public Boolean updateFile(PrsFileReqDTO prsFileReqDTO) throws Exception {
+        log.info("修改文件prsFileReqDTO="+JSON.toJSONString(prsFileReqDTO));
+        PrsFile prsFile = new PrsFile();
+        prsFile.setId(prsFileReqDTO.getId());
+        if(StringUtils.isNotEmpty(prsFileReqDTO.getFilePath())){
+            prsFile.setFilePath(prsFileReqDTO.getFilePath());
+        }
+        if(StringUtils.isNotEmpty(prsFileReqDTO.getFilePath())){
+            prsFile.setFileName(prsFileReqDTO.getFileName());
+        }
+        if(StringUtils.isNotEmpty(prsFileReqDTO.getFileSuffix())){
+            prsFile.setFileSuffix(prsFileReqDTO.getFileSuffix());
+        }
+        if(prsFileReqDTO.getUserId()!=null){
+            prsFile.setUserId(prsFileReqDTO.getUserId());
+        }
+        if(prsFileReqDTO.getModifiedDate()!=null){
+            prsFile.setModifiedDate(prsFileReqDTO.getModifiedDate());
+        }
+        if(prsFileReqDTO.getCreatedDate()!=null){
+            prsFile.setCreatedDate(prsFileReqDTO.getCreatedDate());
+        }
+
+        //更新条件
+        UpdateWrapper<PrsFile> updateWrapper = new UpdateWrapper<PrsFile>();
+        updateWrapper.eq("id",prsFileReqDTO.getId());
+        log.info("修改文件prsFile="+JSON.toJSONString(prsFile));
+        Boolean updateRes =  fileBo.update(prsFile,updateWrapper);
+
+        log.info("修改文件updateRes="+updateRes);
+        return updateRes;
     }
 }

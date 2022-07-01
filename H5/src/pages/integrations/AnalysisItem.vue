@@ -102,10 +102,11 @@
           </div>
         </PopModal>
          <div class="modal fade" id="discription"  ref="discription"
-          tabindex="-1" aria-labelledby="discription" aria-hidden="true" >
+          tabindex="-1" aria-labelledby="discription" aria-hidden="true" :style="discriptionDisplay" >
           <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-              <div class="modal-body px-12" >
+              <i class="bi bi-x-lg off-x" data-bs-dismiss="modal" ></i>
+              <div class="modal-body px-12" style="padding-top: 0.5rem;" >
                   <p class="text-sm text-muted" v-html="showDiscription"></p>
               </div>
             </div>
@@ -143,6 +144,8 @@ export default {
           //算法参数-页面展示
           algorithmsShow:[]
         },
+        //选择的gwas上传文件id
+        gwasFileId:null,
         //参考
         referencePanel:"",
         //正在配置参数的算法id
@@ -155,7 +158,7 @@ export default {
         subModalToggle:'modal',
         //算法的介绍
         showDiscription:'',
-        loading:false,
+        loading:false
       }
     },
     computed:{
@@ -166,10 +169,6 @@ export default {
       //提交按钮是否可点
       submitFlag(){
         return this.algorithmsData.length > 0 ? false:true
-      },
-      //上传文件标志
-     fileData(){
-        return this.$store.getters['uploadFileData/getFileData']
       }
     },
     methods: {
@@ -265,7 +264,7 @@ export default {
         }
         let subData = {
           algorithmList:this.algorithmsData,
-          fileId:this.fileData.fileId,
+          fileId:this.gwasFileId,
           referencePanel:this.referencePanel,
           headers: {'accessToken':  localStorage.getItem("accessToken")}
         }
@@ -313,6 +312,10 @@ export default {
       //
       referenceSelect(val){
         this.referencePanel=val;
+      },
+      //选择的gwasfile的id
+      gwasPanelSelect(val){
+        this.gwasFileId=val;
       }
     },
     mounted() {
@@ -320,8 +323,9 @@ export default {
       this.$bus.$on('algorithmChecked',this.algorithmChecked)
       this.$bus.$on('changeShowParModal',this.changeShowParModal)
       this.$bus.$on('changeShowParameters',this.changeShowParameters)
-      this.$bus.$on('changeShowDiscription',this.changeShowDiscription)
+      this.$bus.$on('changeShowDiscription',this.changeShowDiscription) 
       this.$bus.$on('referenceSelect',this.referenceSelect)
+      this.$bus.$on('gwasPanelSelect',this.gwasPanelSelect)
       //获取算法数据
       Prs.getAlgorithmsInfo().then((response) => {
         const code = response.code
@@ -376,6 +380,8 @@ export default {
       this.$bus.$off('changeShowParModal')
       this.$bus.$off('changeShowParameters')
       this.$bus.$off('changeShowDiscription')
+      this.$bus.$off('referenceSelect')
+      this.$bus.$off('gwasPanelSelect')
     }
 }
 
@@ -391,5 +397,9 @@ export default {
 }
 .mle{
   margin-left: 1rem;
+}
+.off-x{
+  text-align: right;
+    padding-right: 0.3rem;
 }
 </style>

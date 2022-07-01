@@ -2,9 +2,9 @@
     <div  class="row">
         <div class="col-xl-3 col-sm-4">
             <h4 class="mb-4">Step 1 Select GWAS Summary Statistics</h4>
-            <select class="form-select" v-model="referencePanel" @change="referenceSelect">
-                <option value="">please select</option>
-                <option v-for="reference in referenceList" :key="reference.id" :value="reference.name">{{reference.name}}</option>
+            <select class="form-select" v-model="gwasFileId" @change="gwasPanelSelect">
+                <option value="0">please select</option>
+                <option v-for="gwasFile in gwasFileList" :key="gwasFile.id" :value="gwasFile.id">{{gwasFile.fileName}}</option>
             </select>
         </div>
     </div>
@@ -16,14 +16,14 @@ export default {
     name:"GwasPanel",
     data () {
         return {
-            referencePanel:"",
-            referenceList:[
+            gwasFileId:0,
+            gwasFileList:[
             ]
         }
     },
     methods: {
-        referenceSelect(){
-            this.$bus.$emit("referenceSelect", this.referencePanel)
+        gwasPanelSelect(){
+            this.$bus.$emit("gwasPanelSelect", this.gwasFileId)
         }
     },
     mounted(){
@@ -35,13 +35,7 @@ export default {
           if(response.code===0){
             const resData = response.data;
             if(resData.code===0){
-              const fileList =resData.resDTOList
-              fileList.forEach(file => {
-                  let nameData = {
-                      name:file.fileName
-                  }
-                  this.referenceList.push(nameData)
-              });
+              this.gwasFileList =resData.resDTOList
             }
           }
         })

@@ -2,6 +2,7 @@ package com.prs.hub.file.service;
 
 import com.prs.hub.authentication.dto.UserReqDTO;
 import com.prs.hub.commons.BaseResult;
+import com.prs.hub.file.dto.PrsFileReqDTO;
 import com.prs.hub.practice.entity.PrsFile;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -49,5 +50,19 @@ public interface FileService {
      */
     Long saveFileDetail(PrsFile prsFile) throws Exception;
 
+    /**
+     * 删除文件
+     * @param fileId
+     * @return
+     * @throws Exception
+     */
+    Boolean deleteByFileId(String fileId)throws Exception;
 
+    /**
+     * 修改文件信息
+     * @param prsFileReqDTO
+     * @return
+     * @throws Exception
+     */
+    Boolean updateFile(PrsFileReqDTO  prsFileReqDTO)throws Exception;
 }

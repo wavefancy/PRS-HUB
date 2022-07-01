@@ -111,7 +111,7 @@
                     <th scope="col-xl-2 col-sm-2">Upload Date</th>
                     <th scope="col-xl-1 col-sm-1">Status</th>
                     <th scope="col-xl-2 col-sm-2">Delete Date</th>
-                    <th scope="col-xl-1 col-sm-1">Refresh</th>
+                    <th scope="col-xl-1 col-sm-1">operation</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -146,7 +146,18 @@
                       </div>
                     </td>
                     <td>
-                      <a href="#" class="btn btn-sm btn-neutral operate">Refresh</a>
+                      <a href="#" class="btn btn-sm btn-neutral operate" @click="extensionFileValidTime(file.id)">Refresh</a>
+                      <button
+                        type="button"
+                        class="
+                          operate
+                          btn btn-sm btn-square btn-neutral
+                          text-danger-hover
+                        "
+                        @click="deleteFile(file.id)"
+                      >
+                        <i class="bi bi-trash"></i>
+                      </button>
                     </td>
                   </tr>
                 </tbody>
@@ -317,6 +328,34 @@
             }
           });
         }
+      },
+      //删除文件
+      deleteFile(id){
+        let subData = {
+          fileId:id,
+        }
+        Prs.deleteFile(subData).then(response => {
+          if(response.code===0){
+            const resData = response.data;
+            if(resData.code===0){
+              this.getFileList();
+            }
+          }
+        })
+      },
+      //延长文件有效时间
+      extensionFileValidTime(id){
+        let subData = {
+          fileId:id,
+        }
+        Prs.extensionFileValidTime(subData).then(response => {
+          if(response.code===0){
+            const resData = response.data;
+            if(resData.code===0){
+              this.getFileList();
+            }
+          }
+        })
       }
     },
     //数据初始化
