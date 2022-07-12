@@ -88,6 +88,8 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
             //wdl脚本地址
             String wdlPath = algorithms.getWdlPath();
 
+            Long algorithmsId =  algorithms.getId();
+
             JSONObject jsonObject = null;
             if (StringUtils.isNotEmpty(fixedParameter)){
                 jsonObject = JSON.parseObject(fixedParameter);
@@ -97,7 +99,7 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
             String fileName = name+"_input.json";
             for (ParameterEnterReqDTO parameterEnterReqDTO: parameterEnterReqList) {
                 ParameterEnter parameterEnter = new ParameterEnter();
-                parameterEnter.setAlgorithmsId(algorithms.getId());
+                parameterEnter.setAlgorithmsId(algorithmsId);
                 parameterEnter.setParameterName(parameterEnterReqDTO.getName());
                 if(fileId != null){
                     parameterEnter.setFileId(fileId);
@@ -110,9 +112,9 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
                 parameterEnter.setIsDelete(0);
                 parameterEnters.add(parameterEnter);
                 //拼装json
-                jsonObject.put(name+"."+parameterEnterReqDTO.getName()+"-1-value",parameterEnterReqDTO.getValue().split(","));
+                jsonObject.put(name+"."+parameterEnterReqDTO.getName()+"_1_value",parameterEnterReqDTO.getValue().split(","));
             }
-            jsonObject.put(name+"."+"summary_statistic-2",uploadFilePath);
+            jsonObject.put(name+"."+"summary_statistic_2",uploadFilePath);
             log.info("将参数写入文件中");
             FileUtil.writerJsonFile(filePath+fileName,jsonObject);
 //            // 将文件上传到指定服务器
@@ -131,10 +133,10 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
             log.info("访问cromwell提交工作流"+fileName);
             String resultmsg = HttpClientUtil.httpClientUploadFileByfile(fileMap,cromwellUrl);
             log.info("访问cromwell提交工作流返回结果"+JSON.toJSONString(resultmsg));
-
+            String cromwellId = null;
             if(StringUtils.isNotEmpty(resultmsg)){
                 JSONObject  cromwellResult = JSON.parseObject(resultmsg);
-                String cromwellId = cromwellResult.get("id").toString();
+                cromwellId = cromwellResult.get("id").toString();
                 RunnerDetail runnerDetail = new RunnerDetail();
                 runnerDetail.setFileId(fileId);
                 runnerDetail.setWorkflowExecutionUuid(cromwellId);//工作流uuid
@@ -149,6 +151,17 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
                 log.info("保存工作流运行数据开始runnerDetail="+JSON.toJSONString(runnerDetail));
                 Boolean runnerFlag = runnerDetailBo.save(runnerDetail);
                 log.info("保存工作流运行数据结束runnerFlag="+runnerFlag);
+            }
+            if(StringUtils.isEmpty(cromwellId)){
+                log.info("工作流运行失败");
+                return false;
+            }
+            for (int i = 0 ; i < parameterEnters.size() ; i++){
+                ParameterEnter parameterEnter = parameterEnters.get(i);
+                if(algorithmsId.equals(parameterEnter.getAlgorithmsId())){
+                    parameterEnter.setWorkflowExecutionUuid(cromwellId);
+                    parameterEnters.set(i,parameterEnter);
+                }
             }
             //删除本地临时文件
 //            MultipartFileToFileUtil.delteJTempFile(inputFile);

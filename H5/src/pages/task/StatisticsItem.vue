@@ -8,7 +8,7 @@
           <div class="row align-items-center">
             <div class="col-md-6 col-12 mb-4 mb-sm-0">
               <!-- Title -->
-              <h1 class="h2 ls-tight">Jobs Statistics</h1>
+              <h1 class="h2 ls-tight">Jobs Panel</h1>
             </div>
           </div>
         </div>
@@ -79,7 +79,8 @@
                       {{file.ranking}}
                     </td>
                     <td class="text-end">
-                      <a href="#" class="btn btn-sm btn-neutral operate">download</a>
+
+                      <a v-if="file.status==='Finish'" href="#" class="btn btn-sm btn-neutral operate">download</a>
                       <button
                         type="button"
                         class="
@@ -103,6 +104,7 @@
 </template>
 
 <script>
+import {Prs} from "@/api"
 export default {
   name: "StatisticsItem",
   data() {
@@ -113,66 +115,68 @@ export default {
               //我的任务排名
               ranking:'3',
               fileList:[
-                  {
-                      id:'001',
-                      //文件名
-                      name:'testFile1',
-                      //上传时间
-                      uploadDate:'2022-03-04',
-                      //进度 整数:100~0
-                      progress:'100',
-                      //状态
-                      status:'Finish',
-                      //不同状态对应的样式
-                      colorClass:'bg-success',
-                      ranking:'--'
-                  },
-                  {
-                      id:'002',
-                      //文件名
-                      name:'testFile2',
-                      //上传时间
-                      uploadDate:'2022-03-04',
-                      //进度 整数:100~0
-                      progress:'80',
-                      //状态
-                      status:'In progress',
-                      //不同状态对应的样式
-                      colorClass:'bg-warning',
-                      ranking:'--'
-                  },
-                  {
-                      id:'003',
-                      //文件名
-                      name:'testFile3',
-                      //上传时间
-                      uploadDate:'2022-03-04',
-                      //进度 整数:100~0
-                      progress:'4',
-                      //状态
-                      status:'Project at risk',
-                      //不同状态对应的样式
-                      colorClass:'bg-danger',
-                      ranking:'--'
-                  },
-                  {
-                      id:'004',
-                      //文件名
-                      name:'testFile4',
-                      //上传时间
-                      uploadDate:'2022-03-04',
-                      //进度 整数:100~0
-                      progress:'0',
-                      //状态
-                      status:'Not started',
-                      //不同状态对应的样式
-                      colorClass:'bg-secondary',
-                      ranking:'3'
-                  }
               ]
           }
       }
   },
+  mounted () {
+    Prs.getRunnerStatis().then((response) => {
+      console.info(response)
+      if(response.code === 0){
+        const data = response.data
+        if(data.code === 0){
+          const runnerStatisDTOList = data.runnerStatisDTOList
+          let fileListRes = []
+          runnerStatisDTOList.forEach(runnerStatisDTO => {
+            let file ={}
+            file.id=runnerStatisDTO.uuid
+            //文件名
+            file.name=runnerStatisDTO.fileName
+            //上传时间
+            file.uploadDate = runnerStatisDTO.createdDate
+            const runnerStatus = runnerStatisDTO.runnerStatus
+            if(runnerStatus === "0"){
+              //状态
+              file.status = "Not started"
+              //不同状态对应的样式
+              file.colorClass = "bg-secondary"
+              //进度 整数:100~0
+              file.progress = "0"
+            }else if(runnerStatus === "1"){
+              file.status = "In progress"
+              file.colorClass = "bg-warning"
+              file.progress = "10"
+            }else if(runnerStatus === "2"){
+              file.status = "Project at risk"
+              file.colorClass = "bg-danger"
+              file.progress = "50"
+            }else if(runnerStatus === "3"){
+              file.status = "Finish"
+              file.colorClass = "bg-success"
+              file.progress = "100"
+            }
+            file.ranking="--"
+            fileListRes.push(file)
+          });
+          this.files.fileList = fileListRes
+        }
+      }else{
+        //跳转登录页面
+            //提示框
+            this.$MessageBox.alert("The login status is invalid, please log in again !", 'prompt', {
+              confirmButtonText: 'OK',
+              callback: () => {
+                //跳转登录页面
+                this.$router.push({
+                  name:'login'
+                });
+              }
+
+            })
+            return
+      }
+    })
+  }
 };
 </script>
 

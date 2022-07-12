@@ -3,8 +3,8 @@
         <div class="col-xl-3 col-sm-4">
             <h4 class="mb-4">Step 1 Select GWAS Summary Statistics</h4>
             <select class="form-select" v-model="gwasFileId" @change="gwasPanelSelect">
-                <option value="0">please select</option>
-                <option v-for="gwasFile in gwasFileList" :key="gwasFile.id" :value="gwasFile.id">{{gwasFile.fileName}}</option>
+                <option value="0" ref="0">please select</option>
+                <option v-for="gwasFile in gwasFileList" :key="gwasFile.id" :value="gwasFile.id" >{{gwasFile.fileName}}</option>
             </select>
         </div>
     </div>
@@ -23,7 +23,15 @@ export default {
     },
     methods: {
         gwasPanelSelect(){
-            this.$bus.$emit("gwasPanelSelect", this.gwasFileId)
+            var nameVal = ""
+            for(let i=0 ;i<this.gwasFileList.length;i++){
+                let gwasFile = this.gwasFileList[i]
+                if(this.gwasFileId === gwasFile.id){
+                    nameVal = gwasFile.fileName
+                    break
+                }
+            }
+            this.$bus.$emit("gwasPanelSelect", this.gwasFileId,nameVal)
         }
     },
     mounted(){

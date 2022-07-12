@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -14,6 +15,7 @@ import java.util.List;
 @Getter
 @Setter
 public class RunnerStatisDTO implements Serializable {
+    private String  uuid ;
     private String  email ;
     private String  fileName;
     private String   algorithmsName ;
@@ -21,6 +23,7 @@ public class RunnerStatisDTO implements Serializable {
     private String   resultPath;
     private String   runnerProgress;
     private String   runnerQueue;
+    private String createdDate;
     private List<ParameterEnterDTO> parameterEnterDTOS;
 
 

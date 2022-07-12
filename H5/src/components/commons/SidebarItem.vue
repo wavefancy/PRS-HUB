@@ -42,7 +42,7 @@
 
             
             <!-- Navigation -->
-            <ul class="navbar-nav">
+            <!-- <ul class="navbar-nav">
               <li class="nav-item" v-for="(navigation,index) in navigations" :key="index">
                 <a class="nav-link" :href="`#${navigation.name}`" data-bs-toggle="collapse" 
                 role="button" aria-expanded="true" aria-controls="sidebar-integrations">
@@ -59,22 +59,16 @@
                 </div>
               </li>
 
-            </ul>
-            <!-- Divider -->
-            <hr class="navbar-divider my-4 opacity-70">
-            <!-- Documentation -->
-            <ul class="navbar-nav">
-              <li>
-                <span class="nav-link text-xs font-semibold text-uppercase text-muted ls-wide">
-                  Resources
-                </span>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link py-2" href="/docs">
-                  <i class="bi bi-code-square"></i> Documentation
-                </a>
-              </li>
-            </ul>
+            </ul> -->
+             <div class="" active-class="show">
+                  <ul class="nav nav-sm flex-column">
+                    <li class="nav-item" v-for="(navigation,index) in navigations" :key="index">
+                      <router-link :to="navigation.path" class="nav-link" active-class="font-bold">
+                       <i class="bi" :class="navigation.sign"></i>  {{navigation.name}}
+                      </router-link>
+                    </li>
+                  </ul>
+                </div>
             <!-- Push content down -->
             <div class="mt-auto"></div>
             <!-- User menu -->
@@ -149,37 +143,66 @@ export default {
           primary:"./img/logos/PRS-hub.png"
         },
         navigations:[
-          {
-            name:"Setup",
-            sign:"bi-terminal",
-            inners:[
-              {
-                name:"Single Ancestry",
-                path:"/analysis"
-              },
+          
               {
                 name:"GWAS Summary Statistics",
+                sign:"bi-upload",
                 path:"/gwasreference"
               },
               {
                 name:"LD reference",
+                sign:"bi-upload",
                 path:"/ldreference"
-              }
-            
-            ]
-          },
-          {
-            name:"Jobs",
-            sign:"bi-kanban",
-            inners:[
+              },
+              {
+                name:"Single Ancestry",
+                sign:"bi-terminal",
+                path:"/analysis"
+              },
+              {
+                name:"Multiple Ancestries",
+                sign:"bi-terminal",
+                path:"/multipleAncestries"
+              },
               {
                 name:"Statistics",
+                sign:"bi-table",
                 path:"/statistics"
               }
             
-            ]
-          }
-        ]
+            ],
+        // navigations:[
+        //   {
+        //     name:"Setup",
+        //     sign:"bi-terminal",
+        //     inners:[
+        //       {
+        //         name:"Single Ancestry",
+        //         path:"/analysis"
+        //       },
+        //       {
+        //         name:"GWAS Summary Statistics",
+        //         path:"/gwasreference"
+        //       },
+        //       {
+        //         name:"LD reference",
+        //         path:"/ldreference"
+        //       }
+            
+        //     ]
+        //   },
+        //   {
+        //     name:"Jobs",
+        //     sign:"bi-kanban",
+        //     inners:[
+        //       {
+        //         name:"Statistics",
+        //         path:"/statistics"
+        //       }
+            
+        //     ]
+        //   }
+        // ]
         
       }
     },

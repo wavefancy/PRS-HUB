@@ -67,15 +67,15 @@ public class AlgorithmsServiceImpl implements AlgorithmsService {
                     for ( Map.Entry entry :jsonSet) {
                         ParameterResDTO parameterResDTO = new ParameterResDTO();
                         String key = entry.getKey().toString();
-                        if(key.indexOf("-1-value" )!= -1){
-                            String name = key.replace("-1-value","").replace(algorithmName+".","");
+                        if(key.indexOf("_1_value" )!= -1){
+                            String name = key.replace("_1_value","").replace(algorithmName+".","");
                             parameterResDTO.setName(name);
                             if(entry.getValue()!=null){
                                 parameterResDTO.setDefaultValue(entry.getValue().toString().replace("[","").replace("]",""));
                             }
                             parameterResDTO.setId(Integer.toUnsignedLong(i));
                             i++;
-                            parameterResDTO.setDescription(jsonObject.get(algorithmName+"."+name+"-1-description")!=null?jsonObject.get(algorithmName+"."+name+"-1-description").toString():"");
+                            parameterResDTO.setDescription(jsonObject.get(algorithmName+"."+name+"_1_description")!=null?jsonObject.get(algorithmName+"."+name+"_1_description").toString():"");
                             parameterResDTOList.add(parameterResDTO);
                         }
                     }

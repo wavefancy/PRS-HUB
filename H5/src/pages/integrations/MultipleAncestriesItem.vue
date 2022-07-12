@@ -113,8 +113,41 @@
           </div>
         </div>
         <div class="container-fluid vstack gap-10">
-          <GwasPanel></GwasPanel>
-          <ReferencePanel></ReferencePanel>
+          <div class="card">
+            <div class="card-body">
+              <div class="">
+                <GwasPanel></GwasPanel>
+              </div>
+              <div class="rp">
+                <ReferencePanel></ReferencePanel>
+              </div>
+              <div class="modal-footer" style="border-top: 0px solid #e7eaf0; align-items: center;justify-content: center;">
+                <button type="button" class="btn btn-sm btn-primary" @click="addPlan">
+                  Confirm
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card">
+            <div class="card-body">
+              <h4 class="mb-3">Plans</h4>
+              <div class="row g-6 mt-n3">
+                <div class="col-xxl-12 col-md-12 col-sm-12" v-for="(plan ,index) in planVals" :key="index">
+                  <!-- <div class="position-relative d-flex align-items-center"> -->
+                    <div class="row" >
+                       <p class="plan" :style="plan[2]">{{plan[0]}}</p>  <p class="plan" :style="plan[2]">{{plan[1]}} </p>
+                    </div>
+                    <!-- <div class="me-4">
+                      <div class="avatar rounded-circle border-2 border-dashed">
+                        <i class="bi bi-plus-lg"></i>
+                      </div>
+                    </div> -->
+                  <!-- </div> -->
+                </div>
+              </div>
+            </div>
+          </div>
           <AlgorithmsItem :algorithmsShow='algorithms.algorithmsShow' ></AlgorithmsItem>
         </div>
       </main>
@@ -131,7 +164,7 @@ import ReferencePanel from "@/pages/integrations/ReferencePanel"
 import GwasPanel from "@/pages/integrations/GwasPanel"
 
 export default {
-    name:"AnalysisItem",
+    name:"MultipleAncestriesItem",
     components:{
       PopModal,
       GwasPanel,
@@ -146,6 +179,7 @@ export default {
         },
         //选择的gwas上传文件id
         gwasFileId:null,
+        gwasFileName:"",
         //参考
         referencePanel:"",
         //正在配置参数的算法id
@@ -158,7 +192,8 @@ export default {
         subModalToggle:'modal',
         //算法的介绍
         showDiscription:'',
-        loading:false
+        loading:false,
+        planVals:[]
       }
     },
     computed:{
@@ -314,8 +349,50 @@ export default {
         this.referencePanel=val;
       },
       //选择的gwasfile的id
-      gwasPanelSelect(val){
+      gwasPanelSelect(val,nameVal){
         this.gwasFileId=val;
+        this.gwasFileName=nameVal;
+      },
+      addPlan(){
+        let plan = null
+        if(isEmpty(this.gwasFileId)){//未上传文件
+          //提示框
+          this.$MessageBox.alert('Please Select GWAS summary statistics !', 'prompt', {
+            confirmButtonText: 'OK',
+          })
+          return
+        }
+        if(isEmpty(this.referencePanel)){
+          //提示框
+          this.$MessageBox.alert('Please Select LD reference panel !', 'prompt', {
+            confirmButtonText: 'OK',
+          })
+          return
+        }
+
+        plan = this.gwasFileName+"+"+this.referencePanel
+        let planArr=[];
+        planArr.push(this.gwasFileName)
+        planArr.push(this.referencePanel)
+        if(this.planVals.length===0){
+          planArr.push("color:#f56c6c;")
+          this.planVals.push(planArr)
+        }else{
+          let addFlag = true
+          for(let i = 0 ;i<this.planVals.length;i++){
+              if(plan === this.planVals[i][0]+"+"+this.planVals[i][1]){
+                addFlag = false
+              }
+          }
+          if(addFlag){
+            if(this.planVals.length%2 === 0){
+              planArr.push("color:#f56c6c;")
+            }else{
+              planArr.push("color: #67c23a;")
+            }
+            this.planVals.push(planArr)
+          }
+        }
       }
     },
     mounted() {
@@ -401,5 +478,11 @@ export default {
 .off-x{
   text-align: right;
     padding-right: 0.3rem;
+}
+.rp{
+  margin-top: 2rem;
+}
+.plan{
+  width: 7rem;
 }
 </style>

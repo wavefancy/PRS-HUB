@@ -4,19 +4,23 @@
 
     <!-- 通用查询映射结果 -->
     <resultMap id="BaseResultMap" type="com.prs.hub.statistics.dto.RunnerStatisDTO">
+        <result column="uuid" property="uuid" />
         <result column="email" property="email" />
         <result column="fileName" property="fileName" />
         <result column="algorithmsName" property="algorithmsName" />
         <result column="runnerStatus" property="runnerStatus" />
+        <result column="resultPath" property="resultPath" />
         <result column="runnerProgress" property="runnerProgress" />
         <result column="runnerQueue" property="runnerQueue" />
-        <collection ofType="com.prs.hub.practice.dto.ParameterEnterDTO" property="parameters" columnPrefix="children_" javaType="list">
+        <result column="createdDate" property="createdDate" />
+        <collection ofType="com.prs.hub.practice.dto.ParameterEnterDTO" property="parameterEnterDTOS" columnPrefix="children_" javaType="list">
             <result column="parameterName" property="parameterName" />
             <result column="parameterValue" property="parameterValue" />
         </collection>
     </resultMap>
     <select id="queryRunnerDetails" parameterType="com.prs.hub.practice.entity.RunnerDetail" resultMap="BaseResultMap">
         SELECT
+        rd.`workflow_execution_uuid` uuid,
         pu.`email` email ,
         pf.`file_name` fileName,
         al.`NAME` algorithmsName ,
@@ -24,17 +28,19 @@
         rd.`result_path` resultPath,
         rd.`progress` runnerProgress,
         rd.`queue` runnerQueue,
+        DATE_FORMAT(rd.`created_date` , '%Y-%m-%d') createdDate,
         pe.`parameter_name` as children_parameterName,
         pe.`parameter_value` as children_parameterValue
         FROM runner_detail rd
         LEFT JOIN PRS_USER pu ON rd.`user_id`=pu.`id`
         LEFT JOIN prs_file pf ON rd.`file_id`=pf.`id`
-        LEFT JOIN parameter_enter pe ON rd.`file_id`=pe.`file_id`
+        LEFT JOIN parameter_enter pe ON rd.`workflow_execution_uuid`=pe.`workflow_execution_uuid`
         LEFT JOIN algorithms al ON pe.`algorithms_id`=al.`id`
         WHERE rd.`is_delete`=0
         <if test="userId!=null and userId!=''">
             AND rd.`user_id`=#{userId}
         </if>
+        ORDER BY rd.`created_date` DESC
     </select>
 
 </mapper>

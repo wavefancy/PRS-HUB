@@ -4,6 +4,7 @@ import VueRouter from "vue-router";
 
 //引入组件
 import AnalysisItem from '@/pages/integrations/AnalysisItem'
+import MultipleAncestriesItem from '@/pages/integrations/MultipleAncestriesItem'
 import StatisticsItem from '@/pages/task/StatisticsItem'
 import ReferenceItem from '@/pages/integrations/ReferenceItem'
 import LoginItem from '@/pages/authentication/LoginItem'
@@ -30,16 +31,6 @@ export default new VueRouter({
             redirect: '/analysis',
             children: [
                 {
-                    name:"analysis",
-                    path:'/analysis',
-                    component:AnalysisItem
-                },
-                {
-                    name:"statistics",
-                    path:'/statistics',
-                    component:StatisticsItem
-                },
-                {
                     name:"gwasreference",
                     path:'/gwasreference',
                     component:ReferenceItem,
@@ -61,7 +52,23 @@ export default new VueRouter({
                             type:'LD'
                         }
                     }
-                }
+                },
+                {
+                    name:"analysis",
+                    path:'/analysis',
+                    component:AnalysisItem
+                },
+                {
+                    name:"multipleAncestries",
+                    path:'/multipleAncestries',
+                    component:MultipleAncestriesItem
+                },
+                {
+                    name:"statistics",
+                    path:'/statistics',
+                    component:StatisticsItem
+                },
+                
             ],
         },
         {
