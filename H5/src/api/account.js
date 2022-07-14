@@ -6,5 +6,7 @@ export default {
     //登录
     reqLogin(params){return requests.get(`/login`,params);},
     //初始化用户数据
-    getUserInfo(params){return requests.get(`/getUserInfo`,params);}
+    getUserInfo(params){return requests.get(`/getUserInfo`,params);},
+    //修改用户数据
+    updatedUser(params){return requests.get(`/updatedUser`,params);}
 }

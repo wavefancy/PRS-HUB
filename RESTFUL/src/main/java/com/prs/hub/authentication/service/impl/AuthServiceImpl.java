@@ -32,13 +32,16 @@ public class AuthServiceImpl implements AuthService {
         log.info("新增或修改用户信息Service开始user="+JSON.toJSONString(user));
         Boolean flag = false;
         try {
-            user.setCreatedUser("system");
-            user.setCreatedDate(LocalDateTime.now());
+            Long useriId = user.getId();
+            if(useriId == null){
+                user.setCreatedUser("system");
+                user.setCreatedDate(LocalDateTime.now());
+                user.setIsDelete(0);
+            }
             user.setModifiedUser("system");
             user.setModifiedDate(LocalDateTime.now());
-            user.setIsDelete(0);
             UpdateWrapper<User> updateWrapper = new UpdateWrapper<User>();
-            updateWrapper.eq("email",user.getEmail());
+            updateWrapper.eq("id",user.getId());
             flag = userBo.saveOrUpdate(user,updateWrapper);
         }catch (Exception e){
             log.error("新增或修改用户信息异常"+e.getMessage());

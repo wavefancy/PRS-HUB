@@ -249,4 +249,51 @@ public class AuthController extends BaseController {
         log.info("获取用户详情controller,userReqDTO="+JSON.toJSON(userReqDTO));
         return BaseResult.ok("成功",userReqDTO);
     }
+    /**
+     * 修改用户信息
+     * @param req
+     * @param res
+     * @param userShowReqDTO
+     */
+    @RequestMapping(value = "/updatedUser", method = RequestMethod.GET)
+    @Authorization
+    public BaseResult updatedUser(HttpServletRequest req, HttpServletResponse res,UserShowReqDTO userShowReqDTO) {
+        log.info("修改用户信息开始，userShowReqDTO="+JSON.toJSONString(userShowReqDTO));
+        Map<String,Object> resultMap = new HashMap<>();
+        if(userShowReqDTO  == null) {
+            log.info("修改用户信息结束，页面传入的用户数据为空");
+            resultMap.put("code", ResultCodeEnum.EMPTY.getCode());
+            resultMap.put("msg","用户数据为空");
+            return BaseResult.ok("接口调用成功",resultMap);
+        }
+
+        //组装service入参数据
+        User user = new User();
+        user.setId(Long.valueOf(userShowReqDTO.getId()));
+        user.setFirstName(userShowReqDTO.getFirstName());
+        user.setLastName(userShowReqDTO.getLastName());
+        user.setJobTitle(userShowReqDTO.getJobTitle());
+        user.setCity(userShowReqDTO.getCity());
+        user.setCountry(userShowReqDTO.getCountry());
+        user.setOrganisation(userShowReqDTO.getOrganisation());
+        user.setMobile(userShowReqDTO.getMobile());
+        log.info("修改用户信息调用authService的saveOrUpdateUser方法开始，user="+JSON.toJSONString(user));
+        BaseResult serviceResult = authService.saveOrUpdateUser(user);
+        log.info("修改用户信息调用authService的saveOrUpdateUser方法结束，serviceResult="+JSON.toJSONString(serviceResult));
+
+        if (serviceResult.getCode() != 0){
+            resultMap.put("code",ResultCodeEnum.FAIL.getCode());
+            resultMap.put("msg","修改用户信息失败");
+            BaseResult  result = BaseResult.ok("接口调用成功",resultMap);
+            log.info("修改用户信息失败"+JSON.toJSONString(result));
+            return result;
+        }
+
+
+        resultMap.put("code",ResultCodeEnum.SUCCESS.getCode());
+        resultMap.put("msg","修改用户信息成功");
+        BaseResult  result = BaseResult.ok("接口调用成功",resultMap);
+        log.info("修改用户信息成功"+JSON.toJSONString(result));
+        return result;
+    }
 }

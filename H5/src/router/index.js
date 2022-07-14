@@ -9,6 +9,7 @@ import StatisticsItem from '@/pages/task/StatisticsItem'
 import ReferenceItem from '@/pages/integrations/ReferenceItem'
 import LoginItem from '@/pages/authentication/LoginItem'
 import RegisterItem from '@/pages/authentication/RegisterItem'
+import SettingsItem from '@/pages/authentication/SettingsItem'
 import HomeItem from '@/pages/home'
 import FunctionItem from '@/pages/function'
 import ResultItem from '@/pages/authentication/ResultItem'
@@ -67,6 +68,11 @@ export default new VueRouter({
                     name:"statistics",
                     path:'/statistics',
                     component:StatisticsItem
+                },
+                {
+                    name:"settings",
+                    path:'/settings',
+                    component:SettingsItem
                 },
                 
             ],

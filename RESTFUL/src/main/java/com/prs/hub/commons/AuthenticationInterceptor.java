@@ -105,6 +105,7 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
             if(userRes.getSex() != null){
                 userReqDTO.setSex(userRes.getSex().toString());
             }
+            userReqDTO.setMobile(userRes.getMobile());
             // 当前登录用户@CurrentUser
             request.setAttribute(CurrentUserConstants.CURRENT_USER, userReqDTO);
             return true;

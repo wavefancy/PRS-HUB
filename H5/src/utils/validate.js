@@ -16,6 +16,15 @@ export function checkEmail(email){
     }
     return flag
 }
+//校验手机号
+export function checkMobile(mobile){
+    const regex = /(\+|9[976]\d|8[987530]\d|6[987]\d|5[90]\d|42\d|3[875]\d|2[98654321]\d|9[8543210]|8[6421]|6[6543210]|5[87654321]|4[987654310]|3[9643210]|2[70]|7|1)\d{1,14}$/
+    let flag = false
+    if(!regex.test(mobile)){
+        flag=true
+    }
+    return flag
+}
 //校验密码
 export function checkPassword(password){
     //6~20位至少包含数字,大小写字母,字符

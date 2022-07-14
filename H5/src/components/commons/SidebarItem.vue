@@ -29,9 +29,9 @@
               <!-- Menu -->
               <div class="dropdown-menu dropdown-menu-end" aria-labelledby="sidebarAvatar">
               
-                <a class="dropdown-item" v-for="(menu, index) in userMenus" :key="index" :href="menu.hrefUrl">
+                <router-link class="dropdown-item" v-for="(menu, index) in userMenus" :to="menu.path" :key="index">
                   {{menu.val}}
-                </a>
+                </router-link>
                 <hr class="dropdown-divider">
                 <a href="#" class="dropdown-item">Logout</a>
               </div>
@@ -95,9 +95,9 @@
                   </div>
                   <div class="dropdown-divider"></div>
                   <div>
-                    <a class="dropdown-item" v-for="(menu, index) in userMenus" :key="index" :href="menu.hrefUrl">
+                    <router-link class="dropdown-item" v-for="(menu, index) in userMenus" :key="index" :to="menu.path">
                       <i class="bi me-3" :class="menu.addClass"></i>{{menu.val}}
-                    </a>
+                    </router-link>
                   </div>
                   <div class="dropdown-divider"></div>
                   <a class="dropdown-item" href="#">
@@ -135,7 +135,7 @@ export default {
           // },
           {
             val:"Settings",
-            hrefUrl:"#",
+            path:"/settings",
             addClass:"bi-gear"
           }
         ],
