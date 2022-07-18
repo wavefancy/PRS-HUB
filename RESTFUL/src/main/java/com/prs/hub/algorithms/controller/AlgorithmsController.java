@@ -90,7 +90,7 @@ public class AlgorithmsController {
             //根据fileId获取file信息
             PrsFile prsFile = fileService.getFileById(fileId.toString());
 
-            Boolean flag = parameterEnterService.setParametersInfo(algorithmReqDTOList,prsFile);
+            Boolean flag = parameterEnterService.setParametersInfo(algorithmsReqDTO,prsFile);
             resultMap.put("code", ResultCodeEnum.SUCCESS.getCode());
             resultMap.put("data" ,flag);
         }catch (Exception e){

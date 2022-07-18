@@ -10,7 +10,7 @@ import org.apache.ibatis.annotations.Mapper;
  * </p>
  *
  * @author fansp
- * @since 2022-06-10
+ * @since 2022-07-15
  */
 @Mapper
 public interface RunnerDetailMapper extends BaseMapper<RunnerDetail> {

@@ -82,6 +82,12 @@
               <!-- Title -->
               <h5 class="text-center mt-6 mb-4">Please check the algorithms you set and its parameters</h5>
             </div>
+            <div class="col-md-12">
+              <div>
+                <h6>Job Name</h6>
+                <input type="text" class="form-control" ref="jobName" v-model.trim="jobName" placeholder="Your Job Name">
+              </div>
+            </div>
             <div class="mt-4 algorithm" v-for="algorithm in algorithmsData" :key="algorithm.id">
               <!-- Heading -->
               <h6>{{algorithm.name}}:</h6>
@@ -97,7 +103,7 @@
               <button type="button" class="btn btn-sm btn-neutral" data-bs-dismiss="modal" >
                 Cancel
               </button>
-              <button type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal" @click="dataSubmit">submit</button>
+              <button type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal" @click="dataSubmit" :disabled="jobNameFlag">submit</button>
             </div>
           </div>
         </PopModal>
@@ -158,6 +164,8 @@ export default {
         subModalToggle:'modal',
         //算法的介绍
         showDiscription:'',
+        //工作名称
+        jobName:"",
         loading:false
       }
     },
@@ -169,6 +177,10 @@ export default {
       //提交按钮是否可点
       submitFlag(){
         return this.algorithmsData.length > 0 ? false:true
+      },
+      //验证是否录入job name
+      jobNameFlag(){
+        return  isEmpty(this.jobName) 
       }
     },
     methods: {
@@ -264,6 +276,7 @@ export default {
         }
         let subData = {
           algorithmList:this.algorithmsData,
+          jobName:this.jobName,
           fileId:this.gwasFileId,
           referencePanel:this.referencePanel,
           headers: {'accessToken':  localStorage.getItem("accessToken")}
@@ -316,7 +329,8 @@ export default {
       //选择的gwasfile的id
       gwasPanelSelect(val){
         this.gwasFileId=val;
-      }
+      },
+      
     },
     mounted() {
       //为总线绑定函数

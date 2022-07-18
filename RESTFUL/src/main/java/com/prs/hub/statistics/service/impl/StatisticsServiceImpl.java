@@ -4,13 +4,16 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.prs.hub.email.service.IMailService;
 import com.prs.hub.practice.bo.MetadataEntryBo;
 import com.prs.hub.practice.bo.RunnerDetailBo;
 import com.prs.hub.practice.bo.RunnerDetailSpecialBo;
 import com.prs.hub.practice.entity.MetadataEntry;
 import com.prs.hub.practice.entity.RunnerDetail;
 import com.prs.hub.statistics.dto.RunnerStatisDTO;
+import com.prs.hub.statistics.dto.RunnerStatisReqDTO;
 import com.prs.hub.statistics.service.StatisticsService;
+import com.prs.hub.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -36,18 +39,23 @@ public class StatisticsServiceImpl implements StatisticsService {
     @Autowired
     private MetadataEntryBo metadataEntryBo;
 
+    @Autowired
+    IMailService iMailService;
     /**
      * 查询runner数据
-     * @param userId
-     * @param fileId
      * @return
      */
     @Override
-    public List<RunnerStatisDTO> getRunnerDetail(Long userId, Long fileId) {
-        log.info("查询runner数据开始userId="+userId+"\nfileId="+fileId);
+    public List<RunnerStatisDTO> getRunnerDetail(RunnerStatisReqDTO runnerStatisReqDTO) {
+        log.info("查询runner数据开始runnerStatisReqDTO"+JSON.toJSONString(runnerStatisReqDTO));
 
         RunnerDetail runnerDetail = new RunnerDetail();
-        runnerDetail.setUserId(userId);
+        if(runnerStatisReqDTO.getUserId()!=null){
+            runnerDetail.setUserId(runnerStatisReqDTO.getUserId());
+        }
+        if(StringUtils.isNotEmpty(runnerStatisReqDTO.getWorkflowExecutionUuid())){
+            runnerDetail.setWorkflowExecutionUuid(runnerStatisReqDTO.getWorkflowExecutionUuid());
+        }
         log.info("查询Runner表未结束的工作流入参runnerDetail="+ JSON.toJSONString(runnerDetail));
         List<RunnerStatisDTO> runnerDetailList = runnerDetailSpecialBo.queryRunnerDetails(runnerDetail);
         log.info("查询Runner表未结束的工作流出参runnerDetailList="+ JSON.toJSONString(runnerDetailList));
@@ -68,7 +76,7 @@ public class StatisticsServiceImpl implements StatisticsService {
         RunnerDetailQueryWrapper.in("status",statusList);
  
         log.info("查询Runner表未结束的工作流入参RunnerDetailQueryWrapper="+ JSON.toJSONString(RunnerDetailQueryWrapper));
-        List<RunnerDetail> runnerDetailList = runnerDetailBo.selectList(RunnerDetailQueryWrapper);
+        List<RunnerDetail> runnerDetailList = runnerDetailBo.list(RunnerDetailQueryWrapper);
         log.info("查询Runner表未结束的工作流出参runnerDetailList="+ JSON.toJSONString(runnerDetailList));
 
         if(CollectionUtils.isNotEmpty(runnerDetailList)){
@@ -90,7 +98,7 @@ public class StatisticsServiceImpl implements StatisticsService {
                         if("status".equals(metadataKey)){
                             statusStr = statusStr+"#"+metadataEntry.getMetadataValue();
                         }
-                        if("outputs:out[0]".equals(metadataKey)){
+                        if("outputs:out".equals(metadataKey)){
                             resultPath = metadataEntry.getMetadataValue();
                         }
                     }
@@ -115,7 +123,14 @@ public class StatisticsServiceImpl implements StatisticsService {
                         log.info("更新runner数据入参runnerDetailReq="+JSON.toJSONString(runnerDetailReq));
                         Boolean flag = runnerDetailBo.update(runnerDetailReq,updateWrapper);
                         log.info("更新runner数据出参flag="+flag);
-
+                        if(status == 3){
+                            //发送验证邮件
+                            RunnerStatisReqDTO runnerStatisReqDTO = new RunnerStatisReqDTO();
+                            runnerStatisReqDTO.setWorkflowExecutionUuid(weUuid);
+                            RunnerStatisDTO runnerStatisDTO = this.getRunnerDetail(runnerStatisReqDTO).get(0);
+                            String content = runnerStatisDTO.getJobName()+"的"+runnerStatisDTO.getAlgorithmsName()+"算法已经运行结束，";
+                            iMailService.sendResultMail(runnerStatisDTO.getEmail(),"运行结果下载提醒",content);
+                        }
                     }
                 }
             }

@@ -80,7 +80,7 @@ public class MailServiceImpl implements IMailService {
             //邮件主题
             message.setSubject(subject);
             messageHelper.setText("尊敬的用户,您好:<br>"
-                    + "<br>请点击下方的“邮箱激活”，进行注册激活:<br><a href=\'"+systemPath+"/authActive?msg="+content+"\'>邮箱激活</a><br>本次激活链接30分钟内有效，请及时激活。<br>"
+                    + "<br>请点击下方的“邮箱激活”，进行注册激活:<br><a href=\'"+systemPath+"/prd-api/authActive?msg="+content+"\'>邮箱激活</a><br>本次激活链接30分钟内有效，请及时激活。<br>"
                     + "<br>如非本人操作，请忽略该邮件。<br>(这是一封自动发送的邮件，请不要直接回复）", true);
             //发送
             mailSender.send(message);
@@ -90,7 +90,37 @@ public class MailServiceImpl implements IMailService {
             log.error("发送邮件时发生异常！", e);
         }
     }
-
+    /**
+     * 运行结果邮件
+     * @param to      收件人
+     * @param subject 主题
+     * @param content 内容
+     */
+    @Override
+    public void sendResultMail(String to, String subject, String content) {
+        log.info(content+"，发送邮件开始，\n收件人="+to);
+        //获取MimeMessage对象
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper messageHelper;
+        try {
+            messageHelper = new MimeMessageHelper(message, true,"UTF-8");
+            //邮件发送人
+            messageHelper.setFrom(sender);
+            //邮件接收人
+            messageHelper.setTo(to);
+            //邮件主题
+            message.setSubject(subject);
+            messageHelper.setText("尊敬的用户,您好:<br>"
+                    + content+",请点击下方的“登录”链接，跳转到PRS官网下载结果。<br><a href=\'"+systemPath+"\'>登录</a>"
+                    + "<br>如非本人操作，请忽略该邮件。<br>(这是一封自动发送的邮件，请不要直接回复）", true);
+            //发送
+            mailSender.send(message);
+            //日志信息
+            log.info(content+",邮件已经发送。");
+        } catch (Exception e) {
+            log.error("发送邮件时发生异常！", e);
+        }
+    }
     /**
      * 带附件的邮件
      *

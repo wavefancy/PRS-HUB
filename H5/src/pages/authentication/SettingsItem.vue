@@ -158,63 +158,76 @@ export default {
           this.$refs.country.focus()
           return;
         }
-        //加载中
-        this.loading=true
-        //组装数据
-        let subData = {
-          id:this.userId,
-          firstName:this.firstName,
-          lastName:this.lastName,
-          jobTitle:this.jobTitle,
-          city:this.city,
-          country:this.country,
-          organisation:this.organisation,
-          mobile:this.mobile
-        }
-
-        //提交数据
-        Account.updatedUser(subData).then((response) => {
-          const data = response
-          if(!isEmpty(data)){
-              const resultMap = data.data
-              const code = resultMap.code
-              const msg = resultMap.msg
-              if(code === 0){
-                //关闭加载中
-                this.loading=false
-                //提示框
-                this.$MessageBox.alert('modify successfully !', 'prompt', {
-                  confirmButtonText: 'OK',
-                })
-              }else if (code === 4){
-                //关闭加载中
-                this.loading=false
-                //提示框
-                this.$MessageBox.alert(msg, 'prompt', {
-                  confirmButtonText: 'OK',
-                  callback: () => {
-                    this.$refs.email.focus()
-                  }
-                })
-              }else{
-                //todo 跳转错误页面
-                //关闭加载中
-                this.loading=false
-                //提示框
-                this.$MessageBox.alert('The system is busy. Please try again later', 'prompt', {
-                  confirmButtonText: 'OK'
-                })
+        
+        //提示框
+        this.$MessageBox.alert("Are you sure to modify it?", 'prompt', {
+          confirmButtonText: 'OK',
+          callback: (val) => {
+            console.info(val)
+            if(val === "confirm"){
+              //加载中
+              this.loading=true
+              // //组装数据
+              let subData = {
+                id:this.userId,
+                firstName:this.firstName,
+                lastName:this.lastName,
+                jobTitle:this.jobTitle,
+                city:this.city,
+                country:this.country,
+                organisation:this.organisation,
+                mobile:this.mobile
               }
-          }else{
-            //todo 跳转错误页面
-            //关闭加载中
-            this.loading=false
-            //提示框
-            this.$MessageBox.alert('The system is busy. Please try again later', 'prompt', {
-              confirmButtonText: 'OK'
-            })
+
+              //提交数据
+              Account.updatedUser(subData).then((response) => {
+                const data = response
+                if(!isEmpty(data)){
+                    const resultMap = data.data
+                    const code = resultMap.code
+                    const msg = resultMap.msg
+                    if(code === 0){
+                      //关闭加载中
+                      this.loading=false
+                      //提示框
+                      this.$MessageBox.alert('modify successfully !', 'prompt', {
+                        confirmButtonText: 'OK',
+                      })
+                    }else if (code === 4){
+                      //关闭加载中
+                      this.loading=false
+                      //提示框
+                      this.$MessageBox.alert(msg, 'prompt', {
+                        confirmButtonText: 'OK',
+                        callback: () => {
+                        }
+                      })
+                    }else{
+                      //todo 跳转错误页面
+                      //关闭加载中
+                      this.loading=false
+                      //提示框
+                      this.$MessageBox.alert('The system is busy. Please try again later', 'prompt', {
+                        confirmButtonText: 'OK'
+                      })
+                    }
+                }else{
+                  //todo 跳转错误页面
+                  //关闭加载中
+                  this.loading=false
+                  //提示框
+                  this.$MessageBox.alert('The system is busy. Please try again later', 'prompt', {
+                    confirmButtonText: 'OK'
+                  })
+                }
+              })
+            }else{
+               return;
+            }
           }
         })
+       
+        
       },
       //校验姓名
       checkName(){

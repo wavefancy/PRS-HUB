@@ -13,6 +13,9 @@ import com.prs.hub.file.dto.PrsFileResDTO;
 import com.prs.hub.file.service.FileService;
 import com.prs.hub.practice.entity.PrsFile;
 import com.prs.hub.sftpsystem.service.SFTPSystemService;
+import com.prs.hub.statistics.dto.RunnerStatisDTO;
+import com.prs.hub.statistics.dto.RunnerStatisReqDTO;
+import com.prs.hub.statistics.service.StatisticsService;
 import com.prs.hub.utils.MultipartFileToFileUtil;
 import com.prs.hub.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -26,10 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -48,6 +48,10 @@ public class FileController {
     private String maxSize;
     @Value("${upload.file.path}")
     private String uploadFilePath;
+
+    @Autowired
+    private StatisticsService statisticsService;
+
     /**
      * 获取文件信息
      */
@@ -284,25 +288,37 @@ public class FileController {
     }
     /**
      * 文件下载接口
-     * @param id
      * @param request
      * @param response
      */
     @Authorization
-    @RequestMapping(value = "/download/{id}",method = RequestMethod.GET)
-    public void downloadFiles(@PathVariable("id") String id, HttpServletRequest request, HttpServletResponse response){
+    @RequestMapping(value = "/downloadResult",method = RequestMethod.GET)
+    public void downloadResult(@RequestParam("uuid") String uuid, HttpServletRequest request, HttpServletResponse response){
         OutputStream outputStream=null;
         InputStream inputStream=null;
         try {
-            //先根据id查到文件信息
-            PrsFile file = fileService.getFileById(id);
-            String fileName = file.getFileName();
-            //通过文件信息将文件转化为inputStream
-            inputStream=fileService.getFileInputStream(file);
+            RunnerStatisReqDTO runnerStatisReqDTO = new RunnerStatisReqDTO();
+            runnerStatisReqDTO.setWorkflowExecutionUuid(uuid);
+            List<RunnerStatisDTO> runnerStatisDTOList = statisticsService.getRunnerDetail(runnerStatisReqDTO);
+            if(!CollectionUtils.isNotEmpty(runnerStatisDTOList)){
+                return;
+            }
+            String path = runnerStatisDTOList.get(0).getResultPath();
+            // 读到流中
+            inputStream = new FileInputStream(path);// 文件的存放路径
+            String fileName = new File(path).getName();
+            response.reset();
+            response.setContentType("application/octet-stream");
             //下载文件需要设置的header
             response.setHeader("Content-Disposition", "attachment;filename=" +  new String(fileName.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1));
             // 获取输出流
             outputStream = response.getOutputStream();
+            byte[] b = new byte[1024];
+            int len;
+            //从输入流中读取一定数量的字节，并将其存储在缓冲区字节数组中，读到末尾返回-1
+            while ((len = inputStream.read(b)) > 0) {
+                outputStream.write(b, 0, len);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }finally {

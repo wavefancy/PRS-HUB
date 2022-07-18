@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.prs.hub.algorithms.dto.AlgorithmReqDTO;
+import com.prs.hub.algorithms.dto.AlgorithmsReqDTO;
 import com.prs.hub.algorithms.dto.ParameterEnterReqDTO;
 import com.prs.hub.algorithms.service.ParameterEnterService;
 import com.prs.hub.practice.bo.AlgorithmsBo;
@@ -59,13 +60,15 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
 
     /**
      * 保存用户设置参数
-     * @param algorithmReqDTOList
+     * @param algorithmsReqDTO
      * @return
      */
     @Override
-    public Boolean setParametersInfo(List<AlgorithmReqDTO> algorithmReqDTOList, PrsFile prsFile) throws Exception {
-        log.info("保存用户设置参数开始palgorithmsReqDTOList="+ JSON.toJSONString(algorithmReqDTOList));
+    public Boolean setParametersInfo(AlgorithmsReqDTO algorithmsReqDTO,PrsFile prsFile) throws Exception {
+        log.info("保存用户设置参数开始palgorithmsReqDTOList="+ JSON.toJSONString(algorithmsReqDTO));
         List<ParameterEnter> parameterEnters = new ArrayList<>();
+        List<AlgorithmReqDTO> algorithmReqDTOList = algorithmsReqDTO.getAlgorithmList();
+        String jobName = algorithmsReqDTO.getJobName();
         if(CollectionUtils.isEmpty(algorithmReqDTOList)){
             log.info("保存用户设置参数结束，传入数据为空");
             return false;
@@ -139,6 +142,7 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
                 cromwellId = cromwellResult.get("id").toString();
                 RunnerDetail runnerDetail = new RunnerDetail();
                 runnerDetail.setFileId(fileId);
+                runnerDetail.setJobName(jobName);
                 runnerDetail.setWorkflowExecutionUuid(cromwellId);//工作流uuid
                 runnerDetail.setUserId(prsFile.getUserId());
                 runnerDetail.setStatus(0);//运行状态 4:Finish, 3:Project at risk ,1:In progress,0:Not started

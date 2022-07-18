@@ -9,6 +9,7 @@
         <result column="fileName" property="fileName" />
         <result column="algorithmsName" property="algorithmsName" />
         <result column="runnerStatus" property="runnerStatus" />
+        <result column="jobName" property="jobName" />
         <result column="resultPath" property="resultPath" />
         <result column="runnerProgress" property="runnerProgress" />
         <result column="runnerQueue" property="runnerQueue" />
@@ -25,6 +26,7 @@
         pf.`file_name` fileName,
         al.`NAME` algorithmsName ,
         rd.`status` runnerStatus ,
+        rd.`job_name` jobName ,
         rd.`result_path` resultPath,
         rd.`progress` runnerProgress,
         rd.`queue` runnerQueue,
@@ -39,6 +41,10 @@
         WHERE rd.`is_delete`=0
         <if test="userId!=null and userId!=''">
             AND rd.`user_id`=#{userId}
+        </if>
+        <if test="workflowExecutionUuid!=null and workflowExecutionUuid
+        !=''">
+            AND rd.`workflow_execution_uuid`=#{workflowExecutionUuid}
         </if>
         ORDER BY rd.`created_date` DESC
     </select>

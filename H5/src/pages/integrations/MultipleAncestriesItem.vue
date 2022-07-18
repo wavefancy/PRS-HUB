@@ -131,12 +131,15 @@
           
           <div class="card">
             <div class="card-body">
-              <h4 class="mb-3">Plans</h4>
+              <h4 class="mb-3">Selected</h4>
               <div class="row g-6 mt-n3">
                 <div class="col-xxl-12 col-md-12 col-sm-12" v-for="(plan ,index) in planVals" :key="index">
                   <!-- <div class="position-relative d-flex align-items-center"> -->
-                    <div class="row" >
-                       <p class="plan" :style="plan[2]">{{plan[0]}}</p>  <p class="plan" :style="plan[2]">{{plan[1]}} </p>
+                    <div class="row" v-if="index%2 === 0">
+                       <p class="plan"  style="color:#f56c6c;" >{{plan[0]}}</p>  <p class="plan"  style="color:#f56c6c;" >{{plan[1]}} </p><i class="bi bi-x-lg off-x" style="width:1rem;" data-bs-dismiss="modal" @click="rmPlan(index)" ></i>
+                    </div>
+                    <div class="row" v-if="index%2 === 1" >
+                       <p class="plan" style="color: #67c23a;">{{plan[0]}}</p>  <p class="plan" style="color: #67c23a;">{{plan[1]}} </p><i class="bi bi-x-lg off-x" style="width:1rem;" data-bs-dismiss="modal" @click="rmPlan(index)" ></i>
                     </div>
                     <!-- <div class="me-4">
                       <div class="avatar rounded-circle border-2 border-dashed">
@@ -393,6 +396,9 @@ export default {
             this.planVals.push(planArr)
           }
         }
+      },
+      rmPlan(i){
+        this.planVals.splice(i,1)
       }
     },
     mounted() {
@@ -483,6 +489,6 @@ export default {
   margin-top: 2rem;
 }
 .plan{
-  width: 7rem;
+  width: auto;
 }
 </style>

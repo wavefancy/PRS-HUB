@@ -20,9 +20,9 @@ public class MyFastAutoGenerator {
 //        tables.add("parameter");
 //        tables.add("menu");
 //        tables.add("runner_detail");
-        tables.add("parameter_enter");
+//        tables.add("parameter_enter");
 //        tables.add("prs_file");
-//        tables.add("runner_detail");
+        tables.add("runner_detail");
 
 
         /**

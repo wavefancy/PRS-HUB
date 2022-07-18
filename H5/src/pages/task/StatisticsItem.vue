@@ -48,7 +48,7 @@
                     </td>
                     <td>
                       <div class="d-flex align-items-center">
-                        {{file.name}}
+                        {{file.algorithmsName}}
                       </div>
                     </td>
                     <td>{{file.uploadDate}}</td>
@@ -80,7 +80,7 @@
                     </td>
                     <td class="text-end">
 
-                      <a v-if="file.status==='Finish'" href="#" class="btn btn-sm btn-neutral operate">download</a>
+                      <a v-if="file.status==='Finish'" href="#" class="btn btn-sm btn-neutral operate" @click="downloadResult(file.id,file.name,file.algorithmsName)">download</a>
                       <button
                         type="button"
                         class="
@@ -105,6 +105,11 @@
 
 <script>
 import {Prs} from "@/api"
+import axios from 'axios'
+
+axios.defaults.timeout = 40000
+axios.defaults.baseURL = process.env.VUE_APP_BASE_PRS_EPORTAL
+axios.defaults.headers.post['Content-Type'] = 'application/json charset=UTF-8'
 export default {
   name: "StatisticsItem",
   data() {
@@ -119,6 +124,47 @@ export default {
           }
       }
   },
+  methods: {
+    downloadResult(id,name,algorithmsName){
+      //使用原生的axios请求文件为二进制流 
+      axios({
+          method: "get",
+          url: "/downloadResult",
+          headers: {
+              "content-type": "application/json; charset=utf-8",
+              "accessToken":localStorage.getItem("accessToken")
+          },
+          responseType: "blob",       //设置响应类型为blob，否则二进制流直接转换会出错
+          params: { // 其他参数
+              uuid:id
+          },
+
+      }
+      ).then((response) => {
+        const content = response 
+        const blob = new Blob([content])//构造一个blob对象来处理数据
+        const fileName =name+"_"+algorithmsName+"_result.tar.gz"
+
+        //对于<a>标签，只有 Firefox 和 Chrome（内核） 支持 download 属性
+        //IE10以上支持blob但是依然不支持download
+        if ('download' in document.createElement('a')) { //支持a标签download的浏览器
+          const link = document.createElement('a')//创建a标签
+          link.download = fileName//a标签添加属性
+          link.style.display = 'none'
+          link.href = URL.createObjectURL(blob)
+          document.body.appendChild(link)
+          link.click()//执行下载
+          URL.revokeObjectURL(link.href) //释放url
+          document.body.removeChild(link)//释放标签
+        } else { //其他浏览器
+          navigator.msSaveBlob(blob, fileName)
+        }
+
+      }).catch((err)=>{
+          console.log(err);
+      })
+    }
+  },
   mounted () {
     Prs.getRunnerStatis().then((response) => {
       console.info(response)
@@ -131,7 +177,9 @@ export default {
             let file ={}
             file.id=runnerStatisDTO.uuid
             //文件名
-            file.name=runnerStatisDTO.fileName
+            file.name=runnerStatisDTO.jobName
+            file.algorithmsName=runnerStatisDTO.algorithmsName
+            file.resultPath=runnerStatisDTO.resultPath
             //上传时间
             file.uploadDate = runnerStatisDTO.createdDate
             const runnerStatus = runnerStatisDTO.runnerStatus

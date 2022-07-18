@@ -7,6 +7,7 @@ import com.prs.hub.commons.BaseResult;
 import com.prs.hub.commons.CurrentUser;
 import com.prs.hub.constant.ResultCodeEnum;
 import com.prs.hub.statistics.dto.RunnerStatisDTO;
+import com.prs.hub.statistics.dto.RunnerStatisReqDTO;
 import com.prs.hub.statistics.service.StatisticsService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +44,9 @@ public class StatisticsController {
         log.info("获取runner详情controller开始,userReqDTO=" + JSON.toJSON(userReqDTO));
         Map<String, Object> resultMap = new HashMap<>();
         try {
-            List<RunnerStatisDTO> runnerStatisDTOList = statisticsService.getRunnerDetail(Long.valueOf(userReqDTO.getId()),null);
+            RunnerStatisReqDTO runnerStatisReqDTO = new RunnerStatisReqDTO();
+            runnerStatisReqDTO.setUserId(Long.valueOf(userReqDTO.getId()));
+            List<RunnerStatisDTO> runnerStatisDTOList = statisticsService.getRunnerDetail(runnerStatisReqDTO);
             resultMap.put("code", ResultCodeEnum.SUCCESS.getCode());
             resultMap.put("runnerStatisDTOList",runnerStatisDTOList);
 

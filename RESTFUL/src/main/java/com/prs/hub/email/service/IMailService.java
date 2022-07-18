@@ -22,7 +22,13 @@ public interface IMailService {
      */
     void sendHtmlMail(String to, String subject, String content);
 
-
+    /**
+     * 发送结果提醒邮件
+     * @param to
+     * @param subject
+     * @param content
+     */
+    void sendResultMail(String to, String subject, String content);
     /**
      * 发送带附件的邮件
      *

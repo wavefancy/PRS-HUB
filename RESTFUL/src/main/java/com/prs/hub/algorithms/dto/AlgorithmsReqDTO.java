@@ -19,4 +19,6 @@ public class AlgorithmsReqDTO implements Serializable {
     private List<AlgorithmReqDTO> algorithmList;
     //参考项
     private String referencePanel;
+    //工作名称
+    private String jobName;
 }

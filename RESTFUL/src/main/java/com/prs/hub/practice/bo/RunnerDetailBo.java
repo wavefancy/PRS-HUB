@@ -1,10 +1,7 @@
 package com.prs.hub.practice.bo;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.prs.hub.practice.entity.RunnerDetail;
 import com.baomidou.mybatisplus.extension.service.IService;
-
-import java.util.List;
 
 /**
  * <p>
@@ -12,13 +9,8 @@ import java.util.List;
  * </p>
  *
  * @author fansp
- * @since 2022-06-10
+ * @since 2022-07-15
  */
 public interface RunnerDetailBo extends IService<RunnerDetail> {
-    /**
-     * 按条件查询数据
-     * @param queryWrapper
-     * @return
-     */
-    List<RunnerDetail> selectList(QueryWrapper<RunnerDetail> queryWrapper);
+
 }

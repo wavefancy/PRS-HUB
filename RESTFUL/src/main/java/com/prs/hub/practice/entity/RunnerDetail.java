@@ -16,7 +16,7 @@ import lombok.Setter;
  * </p>
  *
  * @author fansp
- * @since 2022-06-10
+ * @since 2022-07-15
  */
 @Getter
 @Setter
@@ -38,6 +38,10 @@ public class RunnerDetail implements Serializable {
     @TableField("file_id")
     private Long fileId;
 
+    @ApiModelProperty("工作名称")
+    @TableField("job_name")
+    private String jobName;
+
     @ApiModelProperty("工作流uuid")
     @TableField("workflow_execution_uuid")
     private String workflowExecutionUuid;
@@ -54,7 +58,7 @@ public class RunnerDetail implements Serializable {
     @TableField("queue")
     private Integer queue;
 
-    @ApiModelProperty("运行状态 4:Finish, 3:Project at risk ,1:In progress,0:Not started")
+    @ApiModelProperty("运行状态 3:Finish, 2:Project at risk ,1:In progress,0:Not started")
     @TableField("status")
     private Integer status;
 

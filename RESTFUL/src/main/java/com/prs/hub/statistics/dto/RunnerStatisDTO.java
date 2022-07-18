@@ -18,6 +18,7 @@ public class RunnerStatisDTO implements Serializable {
     private String  uuid ;
     private String  email ;
     private String  fileName;
+    private String  jobName;
     private String   algorithmsName ;
     private String   runnerStatus ;
     private String   resultPath;

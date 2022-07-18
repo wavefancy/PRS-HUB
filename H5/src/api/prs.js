@@ -13,5 +13,7 @@ export default {
     extensionFileValidTime(params){return requests.get(`/extensionFileValidTime`,params);},
     //获取运行统计结果
     getRunnerStatis(params){return requests.get(`/getRunnerStatis`,params);},
+    //下载运行结果
+    downloadResult(params){return requests.get(`/downloadResult`,params);},
     
 }
