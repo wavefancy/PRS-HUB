@@ -83,11 +83,8 @@
                       <a v-if="file.status==='Finish'" href="#" class="btn btn-sm btn-neutral operate" @click="downloadResult(file.id,file.name,file.algorithmsName)">download</a>
                       <button
                         type="button"
-                        class="
-                          operate
-                          btn btn-sm btn-square btn-neutral
-                          text-danger-hover
-                        "
+                        class=" operate btn btn-sm btn-square btn-neutral text-danger-hover "
+                        @click="deleteRunner(file.id,file.status)"
                       >
                         <i class="bi bi-trash"></i>
                       </button>
@@ -106,6 +103,7 @@
 <script>
 import {Prs} from "@/api"
 import axios from 'axios'
+import {isEmpty }  from "@/utils/validate"
 
 axios.defaults.timeout = 40000
 axios.defaults.baseURL = process.env.VUE_APP_BASE_PRS_EPORTAL
@@ -116,9 +114,7 @@ export default {
       return {
           files:{
               //正在分析的总数
-              total:'10',
-              //我的任务排名
-              ranking:'3',
+              total:0,
               fileList:[
               ]
           }
@@ -163,67 +159,95 @@ export default {
       }).catch((err)=>{
           console.log(err);
       })
+    },
+    init(){
+       Prs.getRunnerStatis().then((response) => {
+        if(response.code === 0){
+          const data = response.data
+          if(data.code === 0){
+
+            this.files.total = data.totalResultsCount
+
+            const runnerList = data.runnerList
+            let fileListRes = []
+            runnerList.forEach(runnerDTO => {
+              let file ={}
+              file.id=runnerDTO.uuid
+              //文件名
+              file.name=runnerDTO.jobName
+              file.algorithmsName=runnerDTO.algorithmsName
+              file.resultPath=runnerDTO.resultPath
+              //上传时间
+              file.uploadDate = runnerDTO.createdDate
+              const runnerStatus = runnerDTO.runnerStatus
+              if(runnerStatus === "0"){
+                //状态
+                file.status = "Not started"
+                //不同状态对应的样式
+                file.colorClass = "bg-secondary"
+                //进度 整数:100~0
+                file.progress = "0"
+              }else if(runnerStatus === "1"){
+                file.status = "In progress"
+                file.colorClass = "bg-warning"
+                file.progress = "10"
+              }else if(runnerStatus === "2"){
+                file.status = "Project at risk"
+                file.colorClass = "bg-danger"
+                file.progress = "50"
+              }else if(runnerStatus === "3"){
+                file.status = "Finish"
+                file.colorClass = "bg-success"
+                file.progress = "100"
+              }
+              
+              file.ranking= isEmpty(runnerDTO.queue)? "--" : runnerDTO.queue
+              fileListRes.push(file)
+            });
+            this.files.fileList = fileListRes
+          }
+        }else{
+          //跳转登录页面
+              //提示框
+              this.$MessageBox.alert("The login status is invalid, please log in again !", 'prompt', {
+                confirmButtonText: 'OK',
+                callback: () => {
+                  //跳转登录页面
+                  this.$router.push({
+                    name:'login'
+                  });
+                }
+
+              })
+              return
+        }
+      })
+    },
+    deleteRunner(uuid,status){
+      let subData = {
+        uuid:uuid,
+        status:status
+      }
+      Prs.deleteRunner(subData).then((response) => {
+        if(response.code === 0){
+          const data = response.data
+          if(data.code === 0){
+            //提示框
+              this.$MessageBox.alert("Deleting data Succeeded !", 'prompt', {
+                confirmButtonText: 'OK',
+                callback: () => {
+                  //刷新页面数据
+                  this.init();
+                }
+
+              })
+          }
+        }
+      })
     }
   },
   mounted () {
-    Prs.getRunnerStatis().then((response) => {
-      console.info(response)
-      if(response.code === 0){
-        const data = response.data
-        if(data.code === 0){
-          const runnerStatisDTOList = data.runnerStatisDTOList
-          let fileListRes = []
-          runnerStatisDTOList.forEach(runnerStatisDTO => {
-            let file ={}
-            file.id=runnerStatisDTO.uuid
-            //文件名
-            file.name=runnerStatisDTO.jobName
-            file.algorithmsName=runnerStatisDTO.algorithmsName
-            file.resultPath=runnerStatisDTO.resultPath
-            //上传时间
-            file.uploadDate = runnerStatisDTO.createdDate
-            const runnerStatus = runnerStatisDTO.runnerStatus
-            if(runnerStatus === "0"){
-              //状态
-              file.status = "Not started"
-              //不同状态对应的样式
-              file.colorClass = "bg-secondary"
-              //进度 整数:100~0
-              file.progress = "0"
-            }else if(runnerStatus === "1"){
-              file.status = "In progress"
-              file.colorClass = "bg-warning"
-              file.progress = "10"
-            }else if(runnerStatus === "2"){
-              file.status = "Project at risk"
-              file.colorClass = "bg-danger"
-              file.progress = "50"
-            }else if(runnerStatus === "3"){
-              file.status = "Finish"
-              file.colorClass = "bg-success"
-              file.progress = "100"
-            }
-            file.ranking="--"
-            fileListRes.push(file)
-          });
-          this.files.fileList = fileListRes
-        }
-      }else{
-        //跳转登录页面
-            //提示框
-            this.$MessageBox.alert("The login status is invalid, please log in again !", 'prompt', {
-              confirmButtonText: 'OK',
-              callback: () => {
-                //跳转登录页面
-                this.$router.push({
-                  name:'login'
-                });
-              }
-
-            })
-            return
-      }
-    })
+    this.init()
   }
 };
 </script>

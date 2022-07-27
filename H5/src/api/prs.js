@@ -15,5 +15,7 @@ export default {
     getRunnerStatis(params){return requests.get(`/getRunnerStatis`,params);},
     //下载运行结果
     downloadResult(params){return requests.get(`/downloadResult`,params);},
+    //删除运行数据
+    deleteRunner(params){return requests.get(`/deleteRunner`,params);},
     
 }
