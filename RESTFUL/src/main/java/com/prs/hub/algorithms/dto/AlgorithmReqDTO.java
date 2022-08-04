@@ -25,6 +25,10 @@ public class AlgorithmReqDTO implements Serializable {
     /**概要**/
     private String summary;
     /**
+     * 类型 多个multiple,单一single
+     */
+    private String type;
+    /**
      * 参数
      */
     private List<ParameterEnterReqDTO> parameters;

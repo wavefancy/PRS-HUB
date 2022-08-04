@@ -110,9 +110,7 @@ public class MailServiceImpl implements IMailService {
             messageHelper.setTo(to);
             //邮件主题
             message.setSubject(subject);
-            messageHelper.setText("尊敬的用户,您好:<br>"
-                    + content+",请点击下方的“登录”链接，跳转到PRS官网下载结果。<br><a href=\'"+systemPath+"\'>登录</a>"
-                    + "<br>如非本人操作，请忽略该邮件。<br>(这是一封自动发送的邮件，请不要直接回复）", true);
+            messageHelper.setText(content, true);
             //发送
             mailSender.send(message);
             //日志信息

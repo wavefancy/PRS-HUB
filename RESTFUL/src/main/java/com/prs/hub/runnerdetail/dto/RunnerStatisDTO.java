@@ -1,11 +1,10 @@
-package com.prs.hub.statistics.dto;
+package com.prs.hub.runnerdetail.dto;
 
 import com.prs.hub.practice.dto.ParameterEnterDTO;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -15,9 +14,12 @@ import java.util.List;
 @Getter
 @Setter
 public class RunnerStatisDTO implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private String  uuid ;
     private String  email ;
-    private String  fileName;
+    private String  fileNameGWAS;
+    private String  fileNameLD;
     private String  jobName;
     private String   algorithmsName ;
     private String   runnerStatus ;

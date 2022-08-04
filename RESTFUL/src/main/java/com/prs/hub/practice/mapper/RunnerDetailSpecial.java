@@ -1,10 +1,8 @@
 package com.prs.hub.practice.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.prs.hub.practice.dto.AlgorithmsDTO;
-import com.prs.hub.practice.entity.Algorithms;
 import com.prs.hub.practice.entity.RunnerDetail;
-import com.prs.hub.statistics.dto.RunnerStatisDTO;
+import com.prs.hub.runnerdetail.dto.RunnerStatisDTO;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;

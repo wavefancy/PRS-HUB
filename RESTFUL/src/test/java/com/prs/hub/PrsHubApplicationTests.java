@@ -1,6 +1,9 @@
 package com.prs.hub;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.prs.hub.sftpsystem.service.SFTPSystemService;
+import com.prs.hub.utils.CromwellUtil;
 import com.prs.hub.utils.HttpClientUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +29,14 @@ class PrsHubApplicationTests {
 //        filePathMap.put("workflowInputs",inputsFile);
 //        String remote_url = "http://39.103.140.193:8000/api/workflows/v1";// 第三方服务器请求地址
 //        HttpClientUtil.httpClientUploadFileByfile(filePathMap,remote_url);
-
+//        Map<String,String> map = new HashMap<String,String>();
+//        map.put("status","Succeeded");
+////        HashMap<String, Object> resMap = HttpClientUtil.get(map,"http://192.168.118.93:9000/api/workflows/v1/query");
+//        JSONObject json = new JSONObject();
+//        json.put("id","5e0d56bd-16da-4e44-80be-3e1f8f61658d");
+//        HashMap<String, Object> resMap = HttpClientUtil.post(json,"http://192.168.118.93:9000/api/workflows/v1/uuid/status".replace("uuid","5e0d56bd-16da-4e44-80be-3e1f8f61658d"));
+//        JSONObject res = (JSONObject) JSON.parse((String) resMap.get("result"));
+//        System.out.println(res.toJSONString());
     }
 
 

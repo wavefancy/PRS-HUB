@@ -113,7 +113,7 @@ export default {
                 //关闭加载中
                 this.loading=false
                 //提示框
-                this.$MessageBox.alert(msg, 'prompt', {
+                this.$MessageBox.alert(msg, 'Message', {
                   confirmButtonText: 'OK'
                 })
               }
@@ -121,7 +121,7 @@ export default {
             //关闭加载中
             this.loading=false
             //提示框
-            this.$MessageBox.alert('The system is busy. Please try again later', 'prompt', {
+            this.$MessageBox.alert('The system is busy. Please try again later', 'Message', {
               confirmButtonText: 'OK'
             })
           }

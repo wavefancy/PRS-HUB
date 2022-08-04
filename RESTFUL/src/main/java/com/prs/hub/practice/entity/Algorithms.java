@@ -16,7 +16,7 @@ import lombok.Setter;
  * </p>
  *
  * @author fansp
- * @since 2022-05-26
+ * @since 2022-07-28
  */
 @Getter
 @Setter
@@ -42,9 +42,13 @@ public class Algorithms implements Serializable {
     @TableField("fixed_parameter")
     private String fixedParameter;
 
-    @ApiModelProperty("wdl脚本地址")
+    @ApiModelProperty("wdl脚本地址 1-开头的代表数据是动态变化的 2-开头的代表是用户上传的文件地址全路径 0-开头的是固定值")
     @TableField("wdl_path")
     private String wdlPath;
+
+    @ApiModelProperty("类型：多个multiple,单一single")
+    @TableField("type")
+    private String type;
 
     @TableField("created_user")
     private String createdUser;

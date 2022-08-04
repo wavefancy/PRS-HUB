@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.prs.hub.algorithms.dto.AlgorithmReqDTO;
 import com.prs.hub.algorithms.dto.AlgorithmResDTO;
 import com.prs.hub.algorithms.dto.ParameterResDTO;
 import com.prs.hub.algorithms.service.AlgorithmsService;
@@ -38,12 +39,15 @@ public class AlgorithmsServiceImpl implements AlgorithmsService {
     private AlgorithmsBo algorithmsBo;
 
     @Override
-    public List<AlgorithmResDTO> queryAlgorithmsDetails() {
+    public List<AlgorithmResDTO> queryAlgorithmsDetails(AlgorithmReqDTO algorithmReqDTO) {
         log.info("service查询算法详细信息开始");
         log.info("service调用Bo查询算法详细信息开始");
 //        List<AlgorithmsDTO> algorithmsDTOList = algorithmsSpecialBo.queryAlgorithmsDetails();
         QueryWrapper<Algorithms> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("is_delete",0);
+        if(StringUtils.isNotEmpty(algorithmReqDTO.getType())){
+            queryWrapper.eq("type",algorithmReqDTO.getType());
+        }
         List<Algorithms> algorithmsList = algorithmsBo.list(queryWrapper);
         log.info("service调用Bo查询算法详细信息结束algorithmsList="+ JSON.toJSONString(algorithmsList));
         List<AlgorithmResDTO> algorithmResDTOList = new ArrayList<>();

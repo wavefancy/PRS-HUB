@@ -16,7 +16,7 @@ import lombok.Setter;
  * </p>
  *
  * @author fansp
- * @since 2022-07-15
+ * @since 2022-08-02
  */
 @Getter
 @Setter
@@ -37,6 +37,10 @@ public class RunnerDetail implements Serializable {
     @ApiModelProperty("上传文件id")
     @TableField("file_id")
     private Long fileId;
+
+    @ApiModelProperty("file表类型为LD的id，值为用户上传")
+    @TableField("LD_file_id")
+    private Long ldFileId;
 
     @ApiModelProperty("工作名称")
     @TableField("job_name")

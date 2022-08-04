@@ -11,6 +11,11 @@ import VueElementLoading from 'vue-element-loading'
 import {Message , MessageBox,Tooltip  } from 'element-ui'
 //引入element-ui全局样式
 import 'element-ui/lib/theme-chalk/index.css'
+
+import VModal from 'vue-js-modal'
+ 
+Vue.use(VModal, {dialog: true, dynamic: true})
+
 //导入bootstrap
 // import 'bootstrap/dist/css/bootstrap.css'
 

@@ -10,12 +10,14 @@ import com.prs.hub.practice.bo.RunnerDetailBo;
 import com.prs.hub.practice.bo.RunnerDetailSpecialBo;
 import com.prs.hub.practice.entity.MetadataEntry;
 import com.prs.hub.practice.entity.RunnerDetail;
-import com.prs.hub.statistics.dto.RunnerStatisDTO;
-import com.prs.hub.statistics.dto.RunnerStatisReqDTO;
+import com.prs.hub.runnerdetail.dto.RunnerStatisDTO;
+import com.prs.hub.runnerdetail.dto.RunnerStatisReqDTO;
 import com.prs.hub.statistics.service.StatisticsService;
+import com.prs.hub.utils.CromwellUtil;
 import com.prs.hub.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -40,7 +42,15 @@ public class StatisticsServiceImpl implements StatisticsService {
     private MetadataEntryBo metadataEntryBo;
 
     @Autowired
-    IMailService iMailService;
+    private IMailService iMailService;
+    /**
+     * 访问地址
+     */
+    @Value("${system.path}")
+    private String systemPath;
+
+    @Value("${cromwell.workflows.status.url}")
+    private  String workflowsStatusUrl;
     /**
      * 查询runner数据
      * @return
@@ -65,9 +75,9 @@ public class StatisticsServiceImpl implements StatisticsService {
     /**
      * 定时任务：实时更新runner数据定
      */
-    @Scheduled(cron = "30 * * * * ?")
+    @Scheduled(cron = "10 * * * * ?")
     private void realTimeUpdateRunnerDetail(){
-        log.info("实时更新runner数据定时任务开始每30秒执行一次");
+        log.info("实时更新runner数据定时任务开始每10秒执行一次");
 
         QueryWrapper<RunnerDetail> RunnerDetailQueryWrapper = new QueryWrapper<>();
         List<Integer> statusList = new ArrayList<>();
@@ -83,56 +93,63 @@ public class StatisticsServiceImpl implements StatisticsService {
             for (RunnerDetail runnerDetail:runnerDetailList) {
 
                 String weUuid = runnerDetail.getWorkflowExecutionUuid();
-                QueryWrapper<MetadataEntry> metadataEntryWrapper = new QueryWrapper<>();
-                metadataEntryWrapper.eq("WORKFLOW_EXECUTION_UUID",weUuid);
+                String statusStr = CromwellUtil.workflowsStatus(workflowsStatusUrl,weUuid);
+                //运行状态 4:中止 3:完成，2:项目处于风险中，1:在进行中，0:未启动
+                Integer status = 0;
+                if("Succeeded".equals(statusStr)){
+                    status = 3;
+                }else if("Failed".equals(statusStr)){
+                    status = 2;
+                }else if("Running".equals(statusStr)){
+                    status = 1;
+                }else if("Aborted".equals(statusStr)){
+                    status = 4;
+                }
+                if(status.intValue() != runnerDetail.getStatus()){
+                    //更新条件
+                    UpdateWrapper<RunnerDetail> updateWrapper = new UpdateWrapper();
+                    updateWrapper.eq("workflow_execution_uuid",weUuid);
 
-                log.info("查询工作流详情入参metadataEntryWrapper="+ JSON.toJSONString(metadataEntryWrapper));
-                List<MetadataEntry> metadataEntryList = metadataEntryBo.selectList(metadataEntryWrapper);
-                log.info("查询工作流详情出参metadataEntryList="+ JSON.toJSONString(metadataEntryList));
+                    //更新数据
+                    RunnerDetail runnerDetailReq = new RunnerDetail();
+                    if(status == 3){
+                        QueryWrapper<MetadataEntry> metadataEntryWrapper = new QueryWrapper<>();
+                        metadataEntryWrapper.eq("WORKFLOW_EXECUTION_UUID",weUuid);
+                        metadataEntryWrapper.eq("METADATA_KEY","outputs:out");
+                        log.info("查询工作流详情入参metadataEntryWrapper="+ JSON.toJSONString(metadataEntryWrapper));
+                        List<MetadataEntry> metadataEntryList = metadataEntryBo.selectList(metadataEntryWrapper);
+                        log.info("查询工作流详情出参metadataEntryList="+ JSON.toJSONString(metadataEntryList));
 
-                if(CollectionUtils.isNotEmpty(metadataEntryList)){
-                    String statusStr = "";
-                    String resultPath = "";
-                    for (MetadataEntry metadataEntry:metadataEntryList) {
-                        String metadataKey = metadataEntry.getMetadataKey();
-                        if("status".equals(metadataKey)){
-                            statusStr = statusStr+"#"+metadataEntry.getMetadataValue();
+                        String resultPath = "";
+                        if(CollectionUtils.isNotEmpty(metadataEntryList)){
+                            for (MetadataEntry metadataEntry:metadataEntryList) {
+                                String metadataKey = metadataEntry.getMetadataKey();
+                                if("outputs:out".equals(metadataKey)){
+                                    resultPath = metadataEntry.getMetadataValue();
+                                    break;
+                                }
+                            }
+
                         }
-                        if("outputs:out".equals(metadataKey)){
-                            resultPath = metadataEntry.getMetadataValue();
-                        }
-                    }
-                    //运行状态 3:完成，2:项目处于风险中，1:在进行中，0:未启动
-                    Integer status = 0;
-                    if(statusStr.indexOf("Succeeded") != -1){
-                        status = 3;
-                    }else if(statusStr.indexOf("Failed") != -1){
-                        status = 2;
-                    }else if(statusStr.indexOf("Running") != -1){
-                        status = 1;
-                    }
-                    if(status.intValue() != runnerDetail.getStatus()){
-                        //更新条件
-                        UpdateWrapper<RunnerDetail> updateWrapper = new UpdateWrapper();
-                        updateWrapper.eq("workflow_execution_uuid",weUuid);
-
-                        //更新数据
-                        RunnerDetail runnerDetailReq = new RunnerDetail();
                         runnerDetailReq.setResultPath(resultPath);
-                        runnerDetailReq.setStatus(status);
-                        log.info("更新runner数据入参runnerDetailReq="+JSON.toJSONString(runnerDetailReq));
-                        Boolean flag = runnerDetailBo.update(runnerDetailReq,updateWrapper);
-                        log.info("更新runner数据出参flag="+flag);
-                        if(status == 3){
-                            //发送验证邮件
-                            RunnerStatisReqDTO runnerStatisReqDTO = new RunnerStatisReqDTO();
-                            runnerStatisReqDTO.setWorkflowExecutionUuid(weUuid);
-                            RunnerStatisDTO runnerStatisDTO = this.getRunnerDetail(runnerStatisReqDTO).get(0);
-                            String content = runnerStatisDTO.getJobName()+"的"+runnerStatisDTO.getAlgorithmsName()+"算法已经运行结束，";
-                            iMailService.sendResultMail(runnerStatisDTO.getEmail(),"运行结果下载提醒",content);
-                        }
+                    }
+                    runnerDetailReq.setStatus(status);
+                    log.info("更新runner数据入参runnerDetailReq="+JSON.toJSONString(runnerDetailReq));
+                    Boolean flag = runnerDetailBo.update(runnerDetailReq,updateWrapper);
+                    log.info("更新runner数据出参flag="+flag);
+                    if(status == 3){
+                        //发送验证邮件
+                        RunnerStatisReqDTO runnerStatisReqDTO = new RunnerStatisReqDTO();
+                        runnerStatisReqDTO.setWorkflowExecutionUuid(weUuid);
+                        RunnerStatisDTO runnerStatisDTO = this.getRunnerDetail(runnerStatisReqDTO).get(0);
+                        String content ="尊敬的用户,您好:<br>"
+                                + runnerStatisDTO.getJobName()+"的"+runnerStatisDTO.getAlgorithmsName()
+                                +"算法已经运行结束，,请点击下方的“登录”链接，跳转到PRS官网下载结果。<br><a href=\'"+systemPath+"\'>登录</a>"
+                                + "<br>如非本人操作，请忽略该邮件。<br>(这是一封自动发送的邮件，请不要直接回复）";
+                        iMailService.sendResultMail(runnerStatisDTO.getEmail(),"运行结果下载提醒",content);
                     }
                 }
+
             }
         }
 

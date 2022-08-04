@@ -1,5 +1,6 @@
 package com.prs.hub.algorithms.service;
 
+import com.prs.hub.algorithms.dto.AlgorithmReqDTO;
 import com.prs.hub.algorithms.dto.AlgorithmResDTO;
 import com.prs.hub.practice.entity.Algorithms;
 
@@ -14,7 +15,7 @@ public interface AlgorithmsService {
      * 查询算法详细信息
      * @return
      */
-    List<AlgorithmResDTO> queryAlgorithmsDetails();
+    List<AlgorithmResDTO> queryAlgorithmsDetails(AlgorithmReqDTO algorithmReqDTO);
 
     /**
      * 根据id查询算法

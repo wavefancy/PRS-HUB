@@ -1,7 +1,7 @@
 <template>
     <div  class="row">
+        <h4 class="mb-4">Step 2 Select LD reference panel:</h4>
         <div class="col-xl-3 col-sm-4">
-            <h4 class="mb-4">Step 2 Select LD reference panel:</h4>
             <select class="form-select" v-model="referencePanel" @change="referenceSelect">
                 <option value="">please select</option>
                 <option v-for="reference in referenceList" :key="reference.id" :value="reference.name">{{reference.name}}</option>

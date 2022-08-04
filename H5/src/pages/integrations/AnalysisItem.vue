@@ -262,14 +262,14 @@ export default {
       dataSubmit(){
         if(isEmpty(this.gwasFileId)){//未上传文件
           //提示框
-          this.$MessageBox.alert('Please Select GWAS summary statistics !', 'prompt', {
+          this.$MessageBox.alert('Please Select GWAS summary statistics !', 'Message', {
             confirmButtonText: 'OK',
           })
           return
         }
         if(isEmpty(this.referencePanel)){
           //提示框
-          this.$MessageBox.alert('Please Select LD reference panel !', 'prompt', {
+          this.$MessageBox.alert('Please Select LD reference panel !', 'Message', {
             confirmButtonText: 'OK',
           })
           return
@@ -290,19 +290,29 @@ export default {
             const resData = data.data;
             if(resData.code === 0){
               //关闭加载中
-                this.loading=false
-                //提示框
-                this.$MessageBox.alert('Submit successfully .', 'prompt', {
-                  confirmButtonText: 'OK',
-                  callback: () => {
-                   this.toStatistics()
-                  }
-                })
+              this.loading=false
+              //提示框
+              this.$MessageBox.alert('Submit successfully .', 'Message', {
+                confirmButtonText: 'OK',
+                callback: () => {
+                  this.toStatistics()
+                }
+              })
+            }else{
+              //关闭加载中
+              this.loading=false
+              //提示框
+              this.$MessageBox.alert('Please wait until the system is abnormal .', 'Message', {
+                confirmButtonText: 'OK',
+                callback: () => {
+                  // this.toStatistics()
+                }
+              })
             }
           }else  if(data.code==="400"){
             //跳转登录页面
             //提示框
-            this.$MessageBox.alert("The login status is invalid, please log in again !", 'prompt', {
+            this.$MessageBox.alert("The login status is invalid, please log in again !", 'Message', {
               confirmButtonText: 'OK',
               callback: () => {
                 //跳转登录页面
@@ -333,6 +343,9 @@ export default {
       
     },
     mounted() {
+      console.info("AnalysisItem")
+      
+      this.$store.dispatch("algorithmsData/deleteAllAlgorithmsData")
       //为总线绑定函数
       this.$bus.$on('algorithmChecked',this.algorithmChecked)
       this.$bus.$on('changeShowParModal',this.changeShowParModal)
@@ -341,12 +354,15 @@ export default {
       this.$bus.$on('referenceSelect',this.referenceSelect)
       this.$bus.$on('gwasPanelSelect',this.gwasPanelSelect)
       //获取算法数据
-      Prs.getAlgorithmsInfo().then((response) => {
+      let subData = {
+        type:"single"
+      }
+      Prs.getAlgorithmsInfo(subData).then((response) => {
         const code = response.code
         if(code==="400"){
           //跳转登录页面
           //提示框
-          // this.$MessageBox.alert("The login status is invalid, please log in again !", 'prompt', {
+          // this.$MessageBox.alert("The login status is invalid, please log in again !", 'Message', {
           //   confirmButtonText: 'OK',
           //   callback: () => {
           //     //跳转登录页面
@@ -401,7 +417,7 @@ export default {
 
 </script>
 
-<style>
+<style scoped >
 .algorithm{
   border-bottom: 1px solid #c9c9d2;
 }
@@ -414,6 +430,7 @@ export default {
 }
 .off-x{
   text-align: right;
-    padding-right: 0.3rem;
+  margin-right: 0.5rem;
+  margin-top: 0.5rem;
 }
 </style>

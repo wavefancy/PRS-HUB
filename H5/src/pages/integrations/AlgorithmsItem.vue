@@ -15,13 +15,10 @@
                     <div class="form-check form-switch me-n2">
                         <input class="form-check-input" type="checkbox" role="switch" 
                         @change="algorithmSelected($event,algorithm.id)"
-                        :id= "algorithm.name">
+                        :id= "algorithm.name" :ref="algorithm.name"  v-model="algorithm.checkVal">
                     </div>
                     </div>
                 </div>
-                <!-- <div class="mt-6">
-                    <p class="text-sm text-muted" v-html="algorithm.summary"></p>
-                </div> -->
                 <hr class="my-5" />
                 <div class="text-end" >
                     <p class="discription text-heading text-primary-hover text-sm font-semibold"
@@ -29,7 +26,7 @@
                     data-bs-target="#discription" 
                     @click="changeShowDiscription(algorithm.summary)"> 
                         <i class="bi bi-chat-square-text"></i>
-                         discription</p>
+                         Description </p>
                     <p class="setting lh-none text-heading text-primary-hover text-sm font-semibold" 
                     :data-bs-toggle="algorithm.toggleName" 
                     @click="clickSettings(algorithm.id)"
@@ -59,7 +56,7 @@ export default {
         changeShowDiscription(val){
             this.$bus.$emit('changeShowDiscription',val)
         }
-    },
+    }
 }
 </script>
 

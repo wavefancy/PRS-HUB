@@ -1,4 +1,4 @@
-package com.prs.hub.statistics.dto;
+package com.prs.hub.runnerdetail.dto;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;

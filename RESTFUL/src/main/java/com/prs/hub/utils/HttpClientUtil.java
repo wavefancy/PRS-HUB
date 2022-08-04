@@ -1,23 +1,28 @@
 package com.prs.hub.utils;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.net.URI;
+import java.io.*;
 import java.nio.charset.Charset;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 public class HttpClientUtil {
@@ -124,5 +129,164 @@ public class HttpClientUtil {
         }
         log.info("上传文件result="+result);
         return result;
+    }
+
+    /**
+     * httpget无参数请求
+     * @param url
+     * @return
+     */
+    public static HashMap<String,Object>  get(String url){
+
+        Boolean flag = true;
+        HashMap<String,Object> resMap = new HashMap<>();
+
+        String result = "";
+        HttpGet get = new HttpGet(url);
+        try{
+            CloseableHttpClient httpClient = HttpClients.createDefault();
+
+            HttpResponse response = httpClient.execute(get);
+            result = getHttpEntityContent(response);
+
+            if(response.getStatusLine().getStatusCode()!= HttpStatus.SC_OK){
+                result = "服务器异常";
+                flag=false;
+            }
+            resMap.put("result",result);
+            resMap.put("flag",flag);
+        } catch (Exception e){
+            log.info("url="+url+"请求异常");
+            throw new RuntimeException(e);
+        } finally{
+            get.abort();
+        }
+        log.info("get请求结果resMap="+JSONObject.toJSONString(resMap));
+        return resMap;
+    }
+
+    /**
+     * httpget有参数请求
+     * @param paramMap
+     * @param url
+     * @return
+     */
+    public static HashMap<String,Object>  get(Map<String, String> paramMap, String url){
+
+        Boolean flag = true;
+        HashMap<String,Object> resMap = new HashMap<>();
+
+        String result = "";
+        HttpGet get = new HttpGet(url);
+        try{
+            CloseableHttpClient httpClient = HttpClients.createDefault();
+            List<NameValuePair> params = setHttpParams(paramMap);
+            String param = URLEncodedUtils.format(params, "UTF-8");
+            get.setURI(URI.create(url + "?" + param));
+            HttpResponse response = httpClient.execute(get);
+            result = getHttpEntityContent(response);
+
+            if(response.getStatusLine().getStatusCode()!=HttpStatus.SC_OK){
+                result = "服务器异常";
+                flag=false;
+            }
+            resMap.put("result",result);
+            resMap.put("flag",flag);
+        } catch (Exception e){
+            log.info("url="+url+"请求异常");
+            throw new RuntimeException(e);
+        } finally{
+            get.abort();
+        }
+        log.info("有参get请求结果resMap="+JSONObject.toJSONString(resMap));
+        return resMap;
+    }
+
+    public static List<NameValuePair> setHttpParams(Map<String, String> paramMap){
+        List<NameValuePair> params = new ArrayList<NameValuePair>();
+        Set<Map.Entry<String, String>> set = paramMap.entrySet();
+        for(Map.Entry<String, String> entry : set){
+            params.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
+        }
+        return params;
+    }
+    /**
+     * httppost请求
+     * @param json
+     * @param url
+     * @return
+     */
+    public static HashMap<String,Object>  post(JSONObject json, String url){
+        log.info("httppost请求json"+json.toJSONString());
+        log.info("httppost请求url="+url);
+        Boolean flag = true;
+        HashMap<String,Object> resMap = new HashMap<>();
+
+        HttpPost post = new HttpPost(url);
+        BufferedReader br=null;
+        InputStream inputStream=null;
+        try{
+            CloseableHttpClient httpClient = HttpClients.createDefault();
+
+            StringEntity postingString = new StringEntity(json.toString(),"utf-8");
+            post.setEntity(postingString);
+            post.setHeader("Content-Type","application/json;charset=utf-8");
+
+            HttpResponse response = httpClient.execute(post);
+            log.info("post结果response="+JSONObject.toJSONString(response));
+
+            inputStream = response.getEntity().getContent();
+            br = new BufferedReader(new InputStreamReader(inputStream, "utf-8"));
+            StringBuilder strber= new StringBuilder();
+            String line = null;
+            while((line = br.readLine())!=null){
+                strber.append(line+'\n');
+            }
+
+            String res = strber.toString();
+            if(response.getStatusLine().getStatusCode()!=HttpStatus.SC_OK){
+                res = "服务器异常";
+                flag = false;
+            }
+            resMap.put("result",res);
+            resMap.put("flag",flag);
+        } catch (Exception e){
+            log.info("url="+url+"请求异常");
+            throw new RuntimeException(e);
+        } finally{
+            //关闭流
+            try {
+                if (inputStream!=null){
+                    inputStream.close();
+                }
+                if (br!=null){
+                    br.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            post.abort();
+        }
+        log.info("post结果resMap="+JSONObject.toJSONString(resMap));
+        return resMap;
+    }
+    public static String getHttpEntityContent(HttpResponse response) throws UnsupportedOperationException, IOException{
+        String result = "";
+        HttpEntity entity = response.getEntity();
+        if(entity != null){
+            InputStream in = entity.getContent();
+            BufferedReader br = new BufferedReader(new InputStreamReader(in, "utf-8"));
+            StringBuilder strber= new StringBuilder();
+            String line = null;
+            while((line = br.readLine())!=null){
+                strber.append(line+'\n');
+            }
+            br.close();
+            in.close();
+            result = strber.toString();
+        }
+
+        return result;
+
     }
 }

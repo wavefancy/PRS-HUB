@@ -87,6 +87,7 @@ public class FileServiceImpl implements FileService {
         if(StringUtils.isNotEmpty(prsFile.getFileType())){
             queryWrapper.eq("file_type",prsFile.getFileType());
         }
+        queryWrapper.orderByDesc("created_date");
         log.info("调用bo查询新增文件的信息开始queryWrapper="+JSON.toJSON(queryWrapper));
         List<PrsFile> prsFileList = fileBo.list(queryWrapper);
         log.info("调用bo查询新增文件的信息结束prsFileList="+JSON.toJSON(prsFileList));

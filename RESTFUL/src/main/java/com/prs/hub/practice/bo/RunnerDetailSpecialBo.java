@@ -1,9 +1,7 @@
 package com.prs.hub.practice.bo;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.service.IService;
 import com.prs.hub.practice.entity.RunnerDetail;
-import com.prs.hub.statistics.dto.RunnerStatisDTO;
+import com.prs.hub.runnerdetail.dto.RunnerStatisDTO;
 
 import java.util.List;
 

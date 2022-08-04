@@ -82,6 +82,12 @@
               <!-- Title -->
               <h5 class="text-center mt-6 mb-4">Please check the algorithms you set and its parameters</h5>
             </div>
+            <div class="col-md-12">
+              <div>
+                <h6>Job Name</h6>
+                <input type="text" class="form-control" ref="jobName" v-model.trim="jobName" placeholder="Your Job Name">
+              </div>
+            </div>
             <div class="mt-4 algorithm" v-for="algorithm in algorithmsData" :key="algorithm.id">
               <!-- Heading -->
               <h6>{{algorithm.name}}:</h6>
@@ -196,6 +202,8 @@ export default {
         //算法的介绍
         showDiscription:'',
         loading:false,
+        //工作名称
+        jobName:"",
         planVals:[]
       }
     },
@@ -288,14 +296,14 @@ export default {
       dataSubmit(){
         if(isEmpty(this.gwasFileId)){//未上传文件
           //提示框
-          this.$MessageBox.alert('Please Select GWAS summary statistics !', 'prompt', {
+          this.$MessageBox.alert('Please Select GWAS summary statistics !', 'Message', {
             confirmButtonText: 'OK',
           })
           return
         }
         if(isEmpty(this.referencePanel)){
           //提示框
-          this.$MessageBox.alert('Please Select LD reference panel !', 'prompt', {
+          this.$MessageBox.alert('Please Select LD reference panel !', 'Message', {
             confirmButtonText: 'OK',
           })
           return
@@ -317,7 +325,7 @@ export default {
               //关闭加载中
                 this.loading=false
                 //提示框
-                this.$MessageBox.alert('Submit successfully .', 'prompt', {
+                this.$MessageBox.alert('Submit successfully .', 'Message', {
                   confirmButtonText: 'OK',
                   callback: () => {
                    this.toStatistics()
@@ -327,7 +335,7 @@ export default {
           }else  if(data.code==="400"){
             //跳转登录页面
             //提示框
-            this.$MessageBox.alert("The login status is invalid, please log in again !", 'prompt', {
+            this.$MessageBox.alert("The login status is invalid, please log in again !", 'Message', {
               confirmButtonText: 'OK',
               callback: () => {
                 //跳转登录页面
@@ -360,14 +368,14 @@ export default {
         let plan = null
         if(isEmpty(this.gwasFileId)){//未上传文件
           //提示框
-          this.$MessageBox.alert('Please Select GWAS summary statistics !', 'prompt', {
+          this.$MessageBox.alert('Please Select GWAS summary statistics !', 'Message', {
             confirmButtonText: 'OK',
           })
           return
         }
         if(isEmpty(this.referencePanel)){
           //提示框
-          this.$MessageBox.alert('Please Select LD reference panel !', 'prompt', {
+          this.$MessageBox.alert('Please Select LD reference panel !', 'Message', {
             confirmButtonText: 'OK',
           })
           return
@@ -402,6 +410,8 @@ export default {
       }
     },
     mounted() {
+      
+      this.$store.dispatch("algorithmsData/deleteAllAlgorithmsData")
       //为总线绑定函数
       this.$bus.$on('algorithmChecked',this.algorithmChecked)
       this.$bus.$on('changeShowParModal',this.changeShowParModal)
@@ -410,12 +420,15 @@ export default {
       this.$bus.$on('referenceSelect',this.referenceSelect)
       this.$bus.$on('gwasPanelSelect',this.gwasPanelSelect)
       //获取算法数据
-      Prs.getAlgorithmsInfo().then((response) => {
+      let subData = {
+        type:"multiple"
+      }
+      Prs.getAlgorithmsInfo(subData).then((response) => {
         const code = response.code
         if(code==="400"){
           //跳转登录页面
           //提示框
-          // this.$MessageBox.alert("The login status is invalid, please log in again !", 'prompt', {
+          // this.$MessageBox.alert("The login status is invalid, please log in again !", 'Message', {
           //   confirmButtonText: 'OK',
           //   callback: () => {
           //     //跳转登录页面

@@ -160,7 +160,7 @@ export default {
         }
         
         //提示框
-        this.$MessageBox.alert("Are you sure to modify it?", 'prompt', {
+        this.$MessageBox.alert("Are you sure to modify it?", 'Message', {
           confirmButtonText: 'OK',
           callback: (val) => {
             console.info(val)
@@ -190,14 +190,14 @@ export default {
                       //关闭加载中
                       this.loading=false
                       //提示框
-                      this.$MessageBox.alert('modify successfully !', 'prompt', {
+                      this.$MessageBox.alert('modify successfully !', 'Message', {
                         confirmButtonText: 'OK',
                       })
                     }else if (code === 4){
                       //关闭加载中
                       this.loading=false
                       //提示框
-                      this.$MessageBox.alert(msg, 'prompt', {
+                      this.$MessageBox.alert(msg, 'Message', {
                         confirmButtonText: 'OK',
                         callback: () => {
                         }
@@ -207,7 +207,7 @@ export default {
                       //关闭加载中
                       this.loading=false
                       //提示框
-                      this.$MessageBox.alert('The system is busy. Please try again later', 'prompt', {
+                      this.$MessageBox.alert('The system is busy. Please try again later', 'Message', {
                         confirmButtonText: 'OK'
                       })
                     }
@@ -216,7 +216,7 @@ export default {
                   //关闭加载中
                   this.loading=false
                   //提示框
-                  this.$MessageBox.alert('The system is busy. Please try again later', 'prompt', {
+                  this.$MessageBox.alert('The system is busy. Please try again later', 'Message', {
                     confirmButtonText: 'OK'
                   })
                 }
@@ -249,7 +249,7 @@ export default {
           if(code==="400"){
             //跳转登录页面
             //提示框
-            this.$MessageBox.alert("The login status is invalid, please log in again !", 'prompt', {
+            this.$MessageBox.alert("The login status is invalid, please log in again !", 'Message', {
               confirmButtonText: 'OK',
               callback: () => {
                 //跳转登录页面

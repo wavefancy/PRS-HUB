@@ -3,10 +3,11 @@
 <mapper namespace="com.prs.hub.practice.mapper.RunnerDetailSpecial">
 
     <!-- 通用查询映射结果 -->
-    <resultMap id="BaseResultMap" type="com.prs.hub.statistics.dto.RunnerStatisDTO">
+    <resultMap id="BaseResultMap" type="com.prs.hub.runnerdetail.dto.RunnerStatisDTO">
         <result column="uuid" property="uuid" />
         <result column="email" property="email" />
-        <result column="fileName" property="fileName" />
+        <result column="fileNameGWAS" property="fileNameGWAS" />
+        <result column="fileNameLD" property="fileNameLD" />
         <result column="algorithmsName" property="algorithmsName" />
         <result column="runnerStatus" property="runnerStatus" />
         <result column="jobName" property="jobName" />
@@ -23,7 +24,8 @@
         SELECT
         rd.`workflow_execution_uuid` uuid,
         pu.`email` email ,
-        pf.`file_name` fileName,
+        (SELECT pf.`file_name`FROM prs_file pf WHERE rd.`file_id`=pf.`id`) fileNameGWAS,
+        (SELECT pf.`file_name`FROM prs_file pf WHERE rd.`LD_file_id`=pf.`id`) fileNameLD,
         al.`NAME` algorithmsName ,
         rd.`status` runnerStatus ,
         rd.`job_name` jobName ,
@@ -35,15 +37,13 @@
         pe.`parameter_value` as children_parameterValue
         FROM runner_detail rd
         LEFT JOIN PRS_USER pu ON rd.`user_id`=pu.`id`
-        LEFT JOIN prs_file pf ON rd.`file_id`=pf.`id`
         LEFT JOIN parameter_enter pe ON rd.`workflow_execution_uuid`=pe.`workflow_execution_uuid`
         LEFT JOIN algorithms al ON pe.`algorithms_id`=al.`id`
         WHERE rd.`is_delete`=0
         <if test="userId!=null and userId!=''">
             AND rd.`user_id`=#{userId}
         </if>
-        <if test="workflowExecutionUuid!=null and workflowExecutionUuid
-        !=''">
+        <if test="workflowExecutionUuid!=null and workflowExecutionUuid !=''">
             AND rd.`workflow_execution_uuid`=#{workflowExecutionUuid}
         </if>
         ORDER BY rd.`created_date` DESC

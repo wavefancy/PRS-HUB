@@ -22,7 +22,7 @@ public class MyFastAutoGenerator {
 //        tables.add("runner_detail");
 //        tables.add("parameter_enter");
 //        tables.add("prs_file");
-        tables.add("runner_detail");
+//        tables.add("runner_detail");
 
 
         /**

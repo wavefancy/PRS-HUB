@@ -1,6 +1,7 @@
 <template>
   <!-- Content -->
   <div class="flex-lg-1 h-screen overflow-y-lg-auto">
+    <vue-element-loading :active="loading" :is-full-screen="true" spinner="ring"/>
     <!-- Navbar -->
     <header>
       <div class="container-fluid">
@@ -40,10 +41,11 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="file in files.fileList" :key="file.id">  
+                  <tr v-for="file in files.fileList" :key="file.id"   
+                      @click="setEnterDetail(file)" >  
                     <td>
                       <div class="d-flex align-items-center">
-                        {{file.name}}
+                         {{file.name}}
                       </div>
                     </td>
                     <td>
@@ -78,13 +80,15 @@
                     <td>
                       {{file.ranking}}
                     </td>
-                    <td class="text-end">
+                    <td class="text-end" >
 
-                      <a v-if="file.status==='Finish'" href="#" class="btn btn-sm btn-neutral operate" @click="downloadResult(file.id,file.name,file.algorithmsName)">download</a>
+                      <a v-if="file.status==='Finished'" href="#" class="btn btn-sm btn-neutral operate" :class="file.btnClass" @click.stop="downloadResult(file.id,file.name,file.algorithmsName)">download</a>
+                      <a v-if="file.status==='Not started' || file.status=== 'In progress'" href="#" class="btn btn-sm btn-neutral operate" @click.stop="abortRunner(file.id)">stop</a>
                       <button
+                        v-if="file.status==='Finished' || file.status=== 'Project at risk' || file.status=== 'Stopped'"
                         type="button"
                         class=" operate btn btn-sm btn-square btn-neutral text-danger-hover "
-                        @click="deleteRunner(file.id,file.status)"
+                        @click.stop="deleteRunner(file.id,file.status)"
                       >
                         <i class="bi bi-trash"></i>
                       </button>
@@ -94,6 +98,30 @@
               </table>
             </div>
           </div>
+          <modal name="as-modal" :scrollable="true" height="auto" >
+              <div class="content">
+                <i class="bi bi-x-lg off-x" @click="hideModal"  ></i>
+                <div class="px-12" style="padding-top: 1rem;" >
+                  <h6>Selected:</h6>
+                  <div class="list-unstyled mt-2 mb-2 mle"  >
+                    <p class="py-1 d-flex align-items-center">
+                      <b class="mre" >GWAS:</b>{{ showDetail.fileNameGWAS }}
+                    </p>
+                  </div>
+                  <div class="list-unstyled mt-2 mb-2 mle"  >
+                    <p class="py-1 d-flex align-items-center">
+                    <b class="mre"> LD:</b>{{ showDetail.fileNameLD }}
+                    </p>
+                  </div>
+                  <h6>Parameters:</h6>
+                  <div class="list-unstyled mt-2 mb-2 mle" v-for="(parameter,index) in showDetail.parameterEnterDTOS" :key="index">
+                    <p class="py-1 d-flex align-items-center">
+                      <b class="mre">{{ parameter.parameterName }}:</b>{{ parameter.parameterValue }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+          </modal>
         </div>
       </div>
     </main>
@@ -117,7 +145,9 @@ export default {
               total:0,
               fileList:[
               ]
-          }
+          },
+        loading:false,
+        showDetail:{},
       }
   },
   methods: {
@@ -196,12 +226,21 @@ export default {
                 file.colorClass = "bg-danger"
                 file.progress = "50"
               }else if(runnerStatus === "3"){
-                file.status = "Finish"
+                file.status = "Finished"
                 file.colorClass = "bg-success"
+                file.btnClass = "download"
                 file.progress = "100"
+              }else if(runnerStatus === "4"){
+                file.status = "Stopped"
+                file.colorClass = "bg-secondary"
+                file.btnClass = "stop"
+                file.progress = "20"
               }
               
               file.ranking= isEmpty(runnerDTO.queue)? "--" : runnerDTO.queue
+              file.parameterEnterDTOS = runnerDTO.parameterEnterDTOS
+              file.fileNameGWAS = runnerDTO.fileNameGWAS
+              file.fileNameLD = runnerDTO.fileNameLD
               fileListRes.push(file)
             });
             this.files.fileList = fileListRes
@@ -209,7 +248,7 @@ export default {
         }else{
           //跳转登录页面
               //提示框
-              this.$MessageBox.alert("The login status is invalid, please log in again !", 'prompt', {
+              this.$MessageBox.alert("The login status is invalid, please log in again !", 'Message', {
                 confirmButtonText: 'OK',
                 callback: () => {
                   //跳转登录页面
@@ -228,12 +267,44 @@ export default {
         uuid:uuid,
         status:status
       }
+    
+      //加载中
+      this.loading=true
       Prs.deleteRunner(subData).then((response) => {
+        //加载中
+        this.loading=false
         if(response.code === 0){
           const data = response.data
           if(data.code === 0){
             //提示框
-              this.$MessageBox.alert("Deleting data Succeeded !", 'prompt', {
+              this.$MessageBox.alert("Deleting data Succeeded !", 'Message', {
+                confirmButtonText: 'OK',
+                callback: () => {
+                              
+                  //刷新页面数据
+                  this.init();
+                }
+
+              })
+          }
+        }
+      })
+    },
+    abortRunner(uuid){
+      let subData = {
+        uuid:uuid
+      }
+      
+      //加载中
+      this.loading=true
+      Prs.abortRunner(subData).then((response) => {
+        //加载中
+        this.loading=false
+        if(response.code === 0){
+          const data = response.data
+          if(data.code === 0){
+            //提示框
+              this.$MessageBox.alert("Abort Succeeded !", 'Message', {
                 confirmButtonText: 'OK',
                 callback: () => {
                   //刷新页面数据
@@ -244,6 +315,13 @@ export default {
           }
         }
       })
+    },
+    setEnterDetail(file){
+      this.$modal.show('as-modal')
+      this.showDetail = file 
+    },
+    hideModal(){
+      this.$modal.hide('as-modal')
     }
   },
   mounted () {
@@ -252,9 +330,30 @@ export default {
 };
 </script>
 
-<style>
+<style scoped >
 .operate{
   margin-left: 0.5rem;
 
+}
+.download{
+  background-color: #13227a;
+  color: #ffffff;
+}
+.stop{
+  background-color: rgb(255, 89, 89);
+  color: #ffffff;
+}
+.enterDetail{
+    text-align: left;
+    width: 50%;
+    float: left;
+}
+.mre{
+  margin-right: 1rem;
+}
+.bi{
+  float: right;  
+  margin-top: 0.5rem; 
+  margin-right: 0.5rem;
 }
 </style>

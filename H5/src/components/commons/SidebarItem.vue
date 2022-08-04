@@ -165,7 +165,7 @@ export default {
                 path:"/multipleAncestries"
               },
               {
-                name:"Statistics",
+                name:"Jobs",
                 sign:"bi-table",
                 path:"/statistics"
               }

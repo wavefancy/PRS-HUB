@@ -96,7 +96,6 @@
           </div>
         </div>
         <div class="vstack gap-6 mt-3">
-          <h4 class="mt-3">My {{pageTitle}} Panel</h4>
           <!-- Table -->
           <div class="card">
             <div class="card-header row">
@@ -272,7 +271,7 @@
                 this.getFileList()
               }else{
                 //提示框
-                this.$MessageBox.alert(msg, 'prompt', {
+                this.$MessageBox.alert(msg, 'Message', {
                   confirmButtonText: 'OK',
                   callback: () => {
                     inputDom.value=""//同一文件可重复上传
@@ -281,7 +280,7 @@
 
               }
             }else{
-              this.$MessageBox.alert('System is busy, please try again later !', 'prompt', {
+              this.$MessageBox.alert('System is busy, please try again later !', 'Message', {
                   confirmButtonText: 'OK',
                   callback: () => {
                     inputDom.value=""//同一文件可重复上传
@@ -317,7 +316,7 @@
           fileList.forEach(file => {
             const fileName = file.fileName;
             if(fileName === this.fileName){
-              this.$MessageBox.alert('The file name already exists !', 'prompt', {
+              this.$MessageBox.alert('The file name already exists !', 'Message', {
                 confirmButtonText: 'OK',
                   callback: () => {
                     this.fileName = '';

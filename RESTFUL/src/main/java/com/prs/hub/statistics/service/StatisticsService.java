@@ -1,8 +1,7 @@
 package com.prs.hub.statistics.service;
 
-import com.prs.hub.practice.entity.RunnerDetail;
-import com.prs.hub.statistics.dto.RunnerStatisDTO;
-import com.prs.hub.statistics.dto.RunnerStatisReqDTO;
+import com.prs.hub.runnerdetail.dto.RunnerStatisDTO;
+import com.prs.hub.runnerdetail.dto.RunnerStatisReqDTO;
 
 import java.util.List;
 

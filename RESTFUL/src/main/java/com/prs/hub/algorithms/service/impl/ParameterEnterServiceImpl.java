@@ -2,6 +2,7 @@ package com.prs.hub.algorithms.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.prs.hub.algorithms.dto.AlgorithmReqDTO;
 import com.prs.hub.algorithms.dto.AlgorithmsReqDTO;
@@ -10,10 +11,7 @@ import com.prs.hub.algorithms.service.ParameterEnterService;
 import com.prs.hub.practice.bo.AlgorithmsBo;
 import com.prs.hub.practice.bo.ParameterEnterBo;
 import com.prs.hub.practice.bo.RunnerDetailBo;
-import com.prs.hub.practice.entity.Algorithms;
-import com.prs.hub.practice.entity.ParameterEnter;
-import com.prs.hub.practice.entity.PrsFile;
-import com.prs.hub.practice.entity.RunnerDetail;
+import com.prs.hub.practice.entity.*;
 import com.prs.hub.sftpsystem.dto.SFTPPropertiesDTO;
 import com.prs.hub.sftpsystem.service.SFTPSystemService;
 import com.prs.hub.utils.FileUtil;
@@ -179,6 +177,35 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
         Boolean flag = parameterEnterBo.saveBatch(parameterEnters);
         log.info("调用bo保存用户设置参数结束flag="+flag);
         log.info("保存用户设置参数结束flag="+flag);
+        return flag;
+    }
+
+    /**
+     * 删除录入参数记录
+     * @param parameterEnterReqDTO
+     * @return
+     */
+    @Override
+    public Boolean deleteParameterEnter(ParameterEnterReqDTO parameterEnterReqDTO){
+        log.info("删除录入参数记录parameterEnterReqDTO="+JSON.toJSONString(parameterEnterReqDTO));
+        Boolean flag = false;
+        QueryWrapper<ParameterEnter> queryWrapper = new QueryWrapper<>();
+        if(StringUtils.isNotEmpty(parameterEnterReqDTO.getWorkflowExecutionUuid())){
+            queryWrapper.eq("workflow_execution_uuid",parameterEnterReqDTO.getWorkflowExecutionUuid());
+        }
+        if(parameterEnterReqDTO.getId() != null){
+            queryWrapper.eq("id",parameterEnterReqDTO.getId());
+        }
+        if(parameterEnterReqDTO.getFileId() != null){
+            queryWrapper.eq("file_id",parameterEnterReqDTO.getFileId());
+        }
+        try {
+            log.info("删除录入参数记录queryWrapper="+JSON.toJSONString(queryWrapper));
+            flag = parameterEnterBo.remove(queryWrapper);
+        }catch (Exception e){
+            log.error("删除录入参数记录异常",e);
+        }
+        log.info("删除录入参数记录flag"+flag);
         return flag;
     }
 }

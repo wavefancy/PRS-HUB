@@ -1,5 +1,6 @@
 package com.prs.hub.algorithms.dto;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -26,5 +27,7 @@ public class ParameterEnterReqDTO implements Serializable {
 
     /**参数名**/
     private String name;
+    /**工作流uuid**/
+    private String workflowExecutionUuid;
 
 }

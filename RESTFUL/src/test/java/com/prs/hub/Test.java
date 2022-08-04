@@ -108,17 +108,23 @@ public class Test {
 //        // 获得今天是这个月的第几周
 //        System.out.println("现在是第：" + c.get(Calendar.DAY_OF_WEEK_IN_MONTH) + "周" );
 
-        String fileName="E:\\test\\P+T\\Height.QC.gz";
-        Long x = System.currentTimeMillis();
-//使用GZIPInputStream解压GZ文件
-        InputStream in = new GZIPInputStream(new FileInputStream(fileName));
-        Scanner sc=new Scanner(in);
-        List<String> lines=new ArrayList();
-        while(sc.hasNextLine()){
-            lines.add(sc.nextLine());
-        }
-        Long y = System.currentTimeMillis();
-        System.out.println(y-x);
+//        String fileName="E:\\test\\P+T\\Height.QC.gz";
+//        Long x = System.currentTimeMillis();
+////使用GZIPInputStream解压GZ文件
+//        InputStream in = new GZIPInputStream(new FileInputStream(fileName));
+//        Scanner sc=new Scanner(in);
+//        List<String> lines=new ArrayList();
+//        while(sc.hasNextLine()){
+//            lines.add(sc.nextLine());
+//        }
+//        Long y = System.currentTimeMillis();
+//        System.out.println(y-x);
+        String path = "/p300s/wangmx_group/chenxy/cromwell/cromwell-executions/PandT/d981ccbb-60c6-4c9f-ab85-98075b2d40fc/call-zip/execution/result_P+T.tar.gz";
+        String uuid = "d981ccbb-60c6-4c9f-ab85-98075b2d40fc";
+        System.out.println(path.indexOf(uuid));
+        System.out.println(path.substring(0,path.lastIndexOf(uuid))+uuid);
+
+
 
     }
 

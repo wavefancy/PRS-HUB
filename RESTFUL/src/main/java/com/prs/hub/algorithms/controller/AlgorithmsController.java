@@ -16,10 +16,7 @@ import com.prs.hub.file.service.FileService;
 import com.prs.hub.practice.entity.PrsFile;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -50,11 +47,13 @@ public class AlgorithmsController {
      */
     @RequestMapping(value = "/getAlgorithmsInfo", method = RequestMethod.GET)
     @Authorization
-    public BaseResult getAlgorithmsInfo(HttpServletRequest req, HttpServletResponse res, @CurrentUser UserReqDTO userReqDTO){
+    public BaseResult getAlgorithmsInfo(HttpServletRequest req, HttpServletResponse res, @CurrentUser UserReqDTO userReqDTO, @RequestParam("type") String type){
         log.info("获取算法详情controller开始,userReqDTO="+ JSON.toJSON(userReqDTO));
         Map<String,Object> resultMap = new HashMap<>();
         try {
-            List<AlgorithmResDTO> algorithmResDTOList = algorithmsService.queryAlgorithmsDetails();
+            AlgorithmReqDTO algorithmReqDTO = new AlgorithmReqDTO();
+            algorithmReqDTO.setType(type);
+            List<AlgorithmResDTO> algorithmResDTOList = algorithmsService.queryAlgorithmsDetails(algorithmReqDTO);
             resultMap.put("code", ResultCodeEnum.SUCCESS.getCode());
             resultMap.put("data" , algorithmResDTOList);
             log.info("获取算法详情controller结束,resultMap="+JSON.toJSONString(resultMap));

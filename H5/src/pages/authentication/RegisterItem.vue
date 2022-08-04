@@ -214,7 +214,7 @@ export default {
                 //关闭加载中
                 this.loading=false
                 //提示框
-                this.$MessageBox.alert('Please click the activation link in the activation email to activate your account !', 'prompt', {
+                this.$MessageBox.alert('Please click the activation link in the activation email to activate your account !', 'Message', {
                   confirmButtonText: 'OK',
                   callback: action => {
                     if("confirm" === action){//点击确定
@@ -227,7 +227,7 @@ export default {
                 //关闭加载中
                 this.loading=false
                 //提示框
-                this.$MessageBox.alert(msg, 'prompt', {
+                this.$MessageBox.alert(msg, 'Message', {
                   confirmButtonText: 'OK',
                   callback: () => {
                     this.$refs.email.focus()
@@ -238,7 +238,7 @@ export default {
                 //关闭加载中
                 this.loading=false
                 //提示框
-                this.$MessageBox.alert('The system is busy. Please try again later', 'prompt', {
+                this.$MessageBox.alert('The system is busy. Please try again later', 'Message', {
                   confirmButtonText: 'OK'
                 })
               }
@@ -247,7 +247,7 @@ export default {
             //关闭加载中
             this.loading=false
             //提示框
-            this.$MessageBox.alert('The system is busy. Please try again later', 'prompt', {
+            this.$MessageBox.alert('The system is busy. Please try again later', 'Message', {
               confirmButtonText: 'OK'
             })
           }

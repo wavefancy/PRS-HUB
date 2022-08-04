@@ -19,6 +19,10 @@ export default {
         //删除一个算法参数
         deleteAlgorithmsData(context,id){
             context.commit('DELETE_ALGORITHMS_DATA',id)
+        },
+        //删除所有算法参数
+        deleteAllAlgorithmsData(context){
+            context.commit('DELETE_ALL_ALGORITHMS_DATA')
         }
     },
     mutations:{
@@ -43,6 +47,11 @@ export default {
             if(algorithmsData.length){
                 state.algorithmsData = algorithmsData.filter(algorithm => algorithm["id"] !== id)
             }
+        },
+        //删除所有算法参数
+        DELETE_ALL_ALGORITHMS_DATA(state){
+            
+            state.algorithmsData=[]
         }
     },
     state:{

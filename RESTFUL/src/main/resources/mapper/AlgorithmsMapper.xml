@@ -9,6 +9,7 @@
         <result column="summary" property="summary" />
         <result column="fixed_parameter" property="fixedParameter" />
         <result column="wdl_path" property="wdlPath" />
+        <result column="type" property="type" />
         <result column="created_user" property="createdUser" />
         <result column="created_date" property="createdDate" />
         <result column="modified_user" property="modifiedUser" />

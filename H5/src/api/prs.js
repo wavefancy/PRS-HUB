@@ -17,5 +17,7 @@ export default {
     downloadResult(params){return requests.get(`/downloadResult`,params);},
     //删除运行数据
     deleteRunner(params){return requests.get(`/deleteRunner`,params);},
+    //中止运行
+    abortRunner(params){return requests.get(`/abortRunner`,params);},
     
 }
