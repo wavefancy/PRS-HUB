@@ -23,7 +23,10 @@ public class PrsFileResDTO implements Serializable {
 
     /**用户id**/
     private Long userId;
-
+    /**
+     * 文件标识
+     */
+    private String identifier;
     /**路径**/
     private String filePath;
 

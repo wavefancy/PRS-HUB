@@ -21,8 +21,9 @@ public class MyFastAutoGenerator {
 //        tables.add("menu");
 //        tables.add("runner_detail");
 //        tables.add("parameter_enter");
-//        tables.add("prs_file");
+        tables.add("prs_file");
 //        tables.add("runner_detail");
+//        tables.add("file_chunk");
 
 
         /**
@@ -52,7 +53,7 @@ public class MyFastAutoGenerator {
                 })
                 .strategyConfig(builder -> {//策略配置
                     builder.addInclude(tables)//要生成代码的表名
-                            .addTablePrefix("prs_")//过滤表名前缀
+//                            .addTablePrefix("prs_")//过滤表名前缀
                             .serviceBuilder()//service策略配置
                             .formatServiceFileName("%sBo")//bo类名 %根据表名替换
                             .formatServiceImplFileName("%sBoImpl")//同上

@@ -16,7 +16,7 @@ import lombok.Setter;
  * </p>
  *
  * @author fansp
- * @since 2022-04-13
+ * @since 2022-08-10
  */
 @Getter
 @Setter
@@ -33,6 +33,10 @@ public class PrsFile implements Serializable {
     @ApiModelProperty("用户id")
     @TableField("user_id")
     private Long userId;
+
+    @ApiModelProperty("文件标识")
+    @TableField("identifier")
+    private String identifier;
 
     @ApiModelProperty("路径")
     @TableField("file_path")
@@ -65,6 +69,9 @@ public class PrsFile implements Serializable {
 
     @TableField("modified_date")
     private LocalDateTime modifiedDate;
+
+    @TableField("delete_date")
+    private LocalDateTime deleteDate;
 
     @ApiModelProperty("0：未删除，1：已删除")
     @TableField("is_delete")

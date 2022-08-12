@@ -89,15 +89,15 @@ public class StatisticsController {
             Integer totalResultsCount = 0;
             if((Boolean) resMap.get("flag")){
                 JSONObject resultJson = (JSONObject) JSON.parse((String) resMap.get("result"));
-                totalResultsCount = (Integer) resultJson.get("totalResultsCount");
                 JSONArray jsonArray = (JSONArray)resultJson.get("results");
-                if(totalResultsCount > 0){
+                if((Integer) resultJson.get("totalResultsCount") > 0){
                     List<RunnerStatisResDTO> runnerStatisResDTOS = new ArrayList<RunnerStatisResDTO>();
                     for (RunnerStatisDTO runnerStatisDTO : runnerStatisDTOList) {
                         RunnerStatisResDTO runnerStatisResDTO = new RunnerStatisResDTO();
                         BeanUtils.copyProperties(runnerStatisDTO,runnerStatisResDTO);
                         //运行状态 3:Succeeded, 2:failed,1:Running,0:Submitted
                         if("1".equals(runnerStatisDTO.getRunnerStatus())){
+                            totalResultsCount = (Integer) resultJson.get("totalResultsCount");
                             String uuid = runnerStatisDTO.getUuid();
                             for(int i = 0 ; i < jsonArray.size() ; i++){
                                 JSONObject runJB = (JSONObject)jsonArray.get(i);

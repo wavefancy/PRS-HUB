@@ -12,7 +12,9 @@ import java.util.List;
 public interface FileService {
     /**
      * 文件上传
-     * @param multipartFile
+     * @param filePath
+     * @param fileName
+     * @param file
      * @return
      */
     BaseResult upLoadFiles(String filePath,String fileName, MultipartFile file);

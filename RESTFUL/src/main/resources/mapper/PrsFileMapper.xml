@@ -6,6 +6,7 @@
     <resultMap id="BaseResultMap" type="com.prs.hub.practice.entity.PrsFile">
         <id column="id" property="id" />
         <result column="user_id" property="userId" />
+        <result column="identifier" property="identifier" />
         <result column="file_path" property="filePath" />
         <result column="file_name" property="fileName" />
         <result column="file_suffix" property="fileSuffix" />
@@ -15,6 +16,7 @@
         <result column="created_date" property="createdDate" />
         <result column="modified_user" property="modifiedUser" />
         <result column="modified_date" property="modifiedDate" />
+        <result column="delete_date" property="deleteDate" />
         <result column="is_delete" property="isDelete" />
     </resultMap>
 

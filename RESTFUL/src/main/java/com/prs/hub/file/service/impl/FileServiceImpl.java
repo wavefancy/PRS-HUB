@@ -4,18 +4,24 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.prs.hub.authentication.dto.UserReqDTO;
 import com.prs.hub.commons.BaseResult;
 import com.prs.hub.constant.ResultCodeEnum;
+import com.prs.hub.file.dto.FileChunkReqDTO;
 import com.prs.hub.file.dto.PrsFileReqDTO;
+import com.prs.hub.file.service.FileChunkService;
 import com.prs.hub.file.service.FileService;
 import com.prs.hub.practice.bo.PrsFileBo;
 import com.prs.hub.practice.entity.ParameterEnter;
 import com.prs.hub.practice.entity.PrsFile;
+import com.prs.hub.utils.MultipartFileToFileUtil;
 import com.prs.hub.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -24,16 +30,20 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Slf4j
 @Service
+@EnableScheduling
 public class FileServiceImpl implements FileService {
 
     @Autowired
     private PrsFileBo fileBo;
+    @Autowired
+    private FileChunkService fileChunkService;
 
     @Override
     public BaseResult upLoadFiles(String filePath,String fileName, MultipartFile file) {
@@ -162,10 +172,12 @@ public class FileServiceImpl implements FileService {
 
         Boolean flag = false;
         //将这些文件的信息写入到数据库中
+        LocalDateTime now = LocalDateTime.now();
         prsFile.setCreatedUser("system");
-        prsFile.setCreatedDate(LocalDateTime.now());
+        prsFile.setCreatedDate(now);
         prsFile.setModifiedUser("system");
-        prsFile.setModifiedDate(LocalDateTime.now());
+        prsFile.setModifiedDate(now);
+        prsFile.setDeleteDate(now.plusDays(30));
         prsFile.setIsDelete(0);
 
         log.info("调用bo新增文件的信息开始prsFile="+JSON.toJSON(prsFile));
@@ -189,13 +201,29 @@ public class FileServiceImpl implements FileService {
         return resInt;
     }
 
+    /**
+     * 根据id删除文件
+     * @param fileId
+     * @return
+     * @throws Exception
+     */
     @Override
     public Boolean deleteByFileId(String fileId) throws Exception {
         log.info("物理删除文件fileId="+fileId);
-        PrsFile prsFile = new PrsFile();
-        prsFile.setId(Long.valueOf(fileId));
-        Boolean removeRes =  fileBo.removeById(prsFile);
-        log.info("物理删除文件removeRes="+removeRes);
+
+        //查询要删除的文件信息
+        log.info("根据fileId="+fileId+"查询要删除的文件信息");
+        PrsFile prsFileRes = fileBo.getById(fileId);
+        log.info("查询要删除的文件信息返回prsFileRes="+prsFileRes);
+
+        if(prsFileRes == null){
+            log.info("该文件不存在");
+            return true;
+        }
+
+        //删除文件
+        Boolean removeRes =  deletePrsFile(prsFileRes);
+
         return removeRes;
     }
 
@@ -222,6 +250,9 @@ public class FileServiceImpl implements FileService {
         if(prsFileReqDTO.getCreatedDate()!=null){
             prsFile.setCreatedDate(prsFileReqDTO.getCreatedDate());
         }
+        if(prsFileReqDTO.getDeleteDate()!=null){
+            prsFile.setDeleteDate(prsFileReqDTO.getDeleteDate());
+        }
 
         //更新条件
         UpdateWrapper<PrsFile> updateWrapper = new UpdateWrapper<PrsFile>();
@@ -231,5 +262,59 @@ public class FileServiceImpl implements FileService {
 
         log.info("修改文件updateRes="+updateRes);
         return updateRes;
+    }
+
+    /**
+     * 定时任务：每天0点5秒时清理过期的file表数据
+     */
+    @Scheduled(cron = "5 0 0 * * ?")
+    private void  deleteExpiredFile(){
+        log.info("每天0点5秒时清理过期的file表数据");
+
+        QueryWrapper<PrsFile> queryWrapper = new QueryWrapper();
+        queryWrapper.eq("is_delete",0);
+
+        LocalDateTime now = LocalDateTime.now();
+        queryWrapper.between("delete_date",now,now.plusDays(1));
+        log.info("查询到期日在今天范围内的file数据");
+        List<PrsFile> prsFileList = fileBo.list(queryWrapper);
+        log.info("查询到期日在今天范围内的file数据返回prsFileList="+JSON.toJSONString(prsFileList));
+        if(CollectionUtils.isNotEmpty(prsFileList)){
+            for (PrsFile prsFile : prsFileList) {
+                //删除文件
+                deletePrsFile(prsFile);
+                //删除分片记录
+                String identifier = prsFile.getIdentifier();
+                if(StringUtils.isNotEmpty(identifier)){
+                    FileChunkReqDTO fileChunkReqDTO = new FileChunkReqDTO();
+                    fileChunkReqDTO.setIdentifier(identifier);
+                    log.info("调用fileChunkService删除文件开始identifier="+identifier);
+                    Boolean deleteFileChunk = fileChunkService.deleteFileChunk(fileChunkReqDTO);
+                    log.info("调用fileChunkService删除文件结束deleteFileChunk="+deleteFileChunk);
+                }
+            }
+        }
+    }
+
+    /**
+     * 物理删除文件
+     * @param prsFile
+     * @return
+     */
+    private Boolean deletePrsFile(PrsFile prsFile){
+        //文件全路径
+        String fileFullPath = prsFile.getFilePath()+prsFile.getFileName()+prsFile.getFileSuffix();
+        log.info("要删除的文件全路径fileFullPath="+fileFullPath);
+
+        //删除文件
+        File delteFile = new File(fileFullPath);
+        Boolean delteFlag = MultipartFileToFileUtil.delteTempFile(delteFile);
+        log.info("删除文件delteFlag="+delteFlag);
+
+        log.info("物理删除文件记录开始prsFile="+JSON.toJSONString(prsFile));
+        Boolean removeRes =  fileBo.removeById(prsFile);
+        log.info("物理删除文件记录结束removeRes="+removeRes);
+
+        return removeRes;
     }
 }

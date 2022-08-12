@@ -5,6 +5,8 @@ export default {
     setParametersInfo(params){return requests.post(`/algorithms/setParametersInfo`,params);},
     //获取算法数据
     getAlgorithmsInfo(params){return requests.get(`/algorithms/getAlgorithmsInfo`,params);},
+    //保存上传文件信息
+    savePrsFileInfo(params){return requests.post(`/savePrsFileInfo`,params);},
     //获取上传文件信息
     getFileList(params){return requests.get(`/getFileList`,params);},
     //删除文件

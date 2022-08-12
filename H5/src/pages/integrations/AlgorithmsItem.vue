@@ -29,7 +29,7 @@
                          Description </p>
                     <p class="setting lh-none text-heading text-primary-hover text-sm font-semibold" 
                     :data-bs-toggle="algorithm.toggleName" 
-                    @click="clickSettings(algorithm.id)"
+                    @click.prevent="clickSettings(algorithm.id)"
                     data-bs-target="#modalInstallApp" >
                     <i class="bi bi-gear-fill me-2 text-muted"></i>Settings
                     </p>

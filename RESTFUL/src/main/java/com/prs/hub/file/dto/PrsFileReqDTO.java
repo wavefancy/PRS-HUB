@@ -48,7 +48,7 @@ public class PrsFileReqDTO implements Serializable {
     /**
      * 失效日期
      */
-    private String deleteDate;
+    private LocalDateTime deleteDate;
     /**
      * 修改日期
      */

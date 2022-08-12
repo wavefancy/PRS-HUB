@@ -122,7 +122,9 @@ public class AuthController extends BaseController {
          */
         String accessToken = this.getAccessToken(user);
         log.info("token="+accessToken);
+
         //发送验证邮件
+        log.info("发送验证邮件email="+email);
         iMailService.sendHtmlMail(email,"注册激活",accessToken);
 
         resultMap.put("code",ResultCodeEnum.SUCCESS.getCode());
@@ -270,13 +272,34 @@ public class AuthController extends BaseController {
         //组装service入参数据
         User user = new User();
         user.setId(Long.valueOf(userShowReqDTO.getId()));
-        user.setFirstName(userShowReqDTO.getFirstName());
-        user.setLastName(userShowReqDTO.getLastName());
-        user.setJobTitle(userShowReqDTO.getJobTitle());
-        user.setCity(userShowReqDTO.getCity());
-        user.setCountry(userShowReqDTO.getCountry());
-        user.setOrganisation(userShowReqDTO.getOrganisation());
-        user.setMobile(userShowReqDTO.getMobile());
+        if(StringUtils.isNotEmpty(userShowReqDTO.getFirstName())){
+            user.setFirstName(userShowReqDTO.getFirstName());
+        }
+        if(StringUtils.isNotEmpty(userShowReqDTO.getLastName())){
+            user.setLastName(userShowReqDTO.getLastName());
+        }
+        if(StringUtils.isNotEmpty(userShowReqDTO.getJobTitle())){
+            user.setJobTitle(userShowReqDTO.getJobTitle());
+        }
+        if(StringUtils.isNotEmpty(userShowReqDTO.getCity())){
+            user.setCity(userShowReqDTO.getCity());
+        }
+        if(StringUtils.isNotEmpty(userShowReqDTO.getCountry())){
+            user.setCountry(userShowReqDTO.getCountry());
+        }
+        if(StringUtils.isNotEmpty(userShowReqDTO.getOrganisation())){
+            user.setOrganisation(userShowReqDTO.getOrganisation());
+        }
+        if(StringUtils.isNotEmpty(userShowReqDTO.getMobile())){
+            user.setMobile(userShowReqDTO.getMobile());
+        }
+        //修改邮箱，密码
+        if(userShowReqDTO.getChangeEP()){
+            user.setPassword(MD5Util.MD5Encode(userShowReqDTO.getPassword(),"utf-8"));
+            if(StringUtils.isNotEmpty(userShowReqDTO.getEmail())){
+                user.setEmail(userShowReqDTO.getEmail());
+            }
+        }
         log.info("修改用户信息调用authService的saveOrUpdateUser方法开始，user="+JSON.toJSONString(user));
         BaseResult serviceResult = authService.saveOrUpdateUser(user);
         log.info("修改用户信息调用authService的saveOrUpdateUser方法结束，serviceResult="+JSON.toJSONString(serviceResult));

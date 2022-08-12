@@ -17,6 +17,9 @@ public class UserShowReqDTO implements Serializable {
     /**邮箱地址**/
     private String email;
 
+    /**是否修改邮箱地址，密码**/
+    private Boolean changeEP;
+
     /**密码**/
     private String password;
 

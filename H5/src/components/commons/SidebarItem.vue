@@ -33,7 +33,7 @@
                   {{menu.val}}
                 </router-link>
                 <hr class="dropdown-divider">
-                <a href="#" class="dropdown-item">Logout</a>
+                <a href="#" class="dropdown-item" @click.prevent="logout">Logout</a>
               </div>
             </div>
           </div>
@@ -100,7 +100,7 @@
                     </router-link>
                   </div>
                   <div class="dropdown-divider"></div>
-                  <a class="dropdown-item" href="#">
+                  <a class="dropdown-item" href="#" @click.prevent="logout">
                     <i class="bi bi-box-arrow-left me-3"></i>Logout
                   </a>
                 </div>
@@ -204,6 +204,25 @@ export default {
         //   }
         // ]
         
+      }
+    },
+    methods: {
+      logout(){
+        //提示框
+        this.$MessageBox.alert("Are you sure you want to log out ?", 'Message', {
+          confirmButtonText: 'OK',
+          callback: (val) => {
+            console.info(val)
+            if(val === "confirm"){
+              //清空accessToken
+              localStorage.setItem('accessToken',"")
+              //跳转登录页面
+              this.$router.push({
+                name:'login'
+              });
+            }
+          }
+        })
       }
     },
     mounted () {

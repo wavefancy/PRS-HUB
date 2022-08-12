@@ -68,11 +68,15 @@ public class MultipartFileToFileUtil {
      *
      * @param file
      */
-    public static void delteTempFile(File file) {
+    public static Boolean delteTempFile(File file) {
+        Boolean flag = false;
+
         if (file != null) {
-            Boolean flag = file.delete();
-            log.info("删除本地临时文件flag="+flag);
+            flag = file.delete();
         }
+        log.info("删除本地临时文件flag="+flag);
+
+        return flag;
     }
 }
 

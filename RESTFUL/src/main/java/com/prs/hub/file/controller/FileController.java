@@ -7,9 +7,12 @@ import com.prs.hub.commons.Authorization;
 import com.prs.hub.commons.BaseResult;
 import com.prs.hub.commons.CurrentUser;
 import com.prs.hub.constant.ResultCodeEnum;
+import com.prs.hub.file.dto.FileChunkReqDTO;
 import com.prs.hub.file.dto.PrsFileReqDTO;
 import com.prs.hub.file.dto.PrsFileResDTO;
+import com.prs.hub.file.service.FileChunkService;
 import com.prs.hub.file.service.FileService;
+import com.prs.hub.practice.entity.FileChunk;
 import com.prs.hub.practice.entity.PrsFile;
 import com.prs.hub.sftpsystem.service.SFTPSystemService;
 import com.prs.hub.runnerdetail.dto.RunnerStatisDTO;
@@ -47,6 +50,9 @@ public class FileController {
     @Autowired
     private StatisticsService statisticsService;
 
+    @Autowired
+    private FileChunkService fileChunkService;
+
     /**
      * 获取文件信息
      */
@@ -69,14 +75,19 @@ public class FileController {
                     BeanUtils.copyProperties(prsFileRes,prsFileResDTO);
 
                     LocalDateTime modifiedDate = prsFileRes.getModifiedDate();
+                    LocalDateTime createdDate = prsFileRes.getCreatedDate();
+                    LocalDateTime deleteDate = prsFileRes.getDeleteDate();
                     if(modifiedDate!=null){
                         DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-                        prsFileResDTO.setUploadDate(prsFileRes.getCreatedDate().format(df));
-                        LocalDateTime deleteDate = modifiedDate.plusDays(30);
+                        prsFileResDTO.setUploadDate(createdDate.format(df));
+                        //检查是否延长过有效期
+                        LocalDateTime checkDate = createdDate.plusDays(60);
                         prsFileResDTO.setDeleteDate(deleteDate.format(df));
                         LocalDateTime now = LocalDateTime.now();
                         if(now.isAfter(deleteDate)&&!(now.format(df).equals(deleteDate.format(df)))){
-                            prsFileResDTO.setStatus("expired");
+                            prsFileResDTO.setStatus("expired");//失效
+                        }else if(checkDate.format(df).equals(deleteDate.format(df))){
+                            prsFileResDTO.setStatus("refreshed");//已延期
                         }else{
                             prsFileResDTO.setStatus("validity");
                         }
@@ -106,10 +117,7 @@ public class FileController {
      */
     @Authorization
     @RequestMapping(value = "/uploadFiles",method = RequestMethod.POST)
-    public BaseResult uploadFiles(@CurrentUser UserReqDTO userReqDTO,
-                                  @RequestParam("file")MultipartFile multipartFile,
-                                  HttpServletRequest req
-    ){
+    public BaseResult uploadFiles(@CurrentUser UserReqDTO userReqDTO, @RequestParam("file")MultipartFile multipartFile,  HttpServletRequest req ){
         log.info("文件上传接口Controller开始fileType="+req.getParameter("fileType"));
         log.info("userReqDTO="+ JSON.toJSON(userReqDTO));
         Map<String,Object> resultMap = new HashMap<>();
@@ -192,6 +200,66 @@ public class FileController {
         return BaseResult.ok("接口调用成功",resultMap);
     }
 
+    /**
+     * 保存上传文件信息
+     * @param userReqDTO
+     * @param req
+     * @return
+     */
+    @Authorization
+    @RequestMapping(value = "/savePrsFileInfo",method = RequestMethod.POST)
+    public BaseResult savePrsFileInfo(@CurrentUser UserReqDTO userReqDTO,  HttpServletRequest req ){
+        Map<String,Object> resultMap = new HashMap<>();
+        //文件名
+        String fileName = req.getParameter("fileName");
+        //文件描述
+        String descrition = req.getParameter("descrition");
+        //文件类型
+        String fileType = req.getParameter("fileType");
+        //存储路径
+        String filePath = req.getParameter("filePath");
+        //文件后缀
+        String suffixName = req.getParameter("suffixName");
+        //文件分片存储标识
+        String identifier = req.getParameter("identifier");
+        log.info("保存上传文件信息controller:\nfileName="+fileName+"\ndescrition="+descrition+"\nfileType="+fileType+"\nfilePath="+filePath+"\nsuffixName="+suffixName);
+        if(StringUtils.isEmpty(fileName) || StringUtils.isEmpty(fileType) || StringUtils.isEmpty(filePath)){
+            resultMap.put("code", ResultCodeEnum.FILE_NAME_EMPTY.getCode());
+            resultMap.put("msg",ResultCodeEnum.FILE_NAME_EMPTY.getName());
+            return BaseResult.ok("文件上传接口调用成功",resultMap);
+        }
+
+        try {
+            //将上传文件信息存储到数据库
+            PrsFile prsFile = new PrsFile();
+
+            prsFile.setDescrition(descrition);
+            prsFile.setFileType(fileType);
+            prsFile.setFilePath(filePath);
+            prsFile.setFileName(fileName);
+            prsFile.setFileSuffix(suffixName);
+            prsFile.setIdentifier(identifier);
+            prsFile.setUserId(Long.valueOf(userReqDTO.getId()));
+            log.info("调用fileService将上传文件信息存储到数据库开始");
+            Long fileId = fileService.saveFileDetail(prsFile);
+            log.info("调用fileService将上传文件信息存储到数据库结束fileId="+fileId);
+            if(fileId !=null){
+                resultMap.put("code",ResultCodeEnum.SUCCESS.getCode());
+                resultMap.put("msg","sftp文件上传成功");
+                resultMap.put("fileId",fileId);
+            }else {
+                resultMap.put("code",ResultCodeEnum.FAIL.getCode());
+                resultMap.put("msg","sftp文件上传失败");
+            }
+        }catch (Exception e){
+            log.error("文件上传controller异常",e);
+            resultMap.put("code",ResultCodeEnum.EXCEPTION.getCode());
+            resultMap.put("msg","文件上传异常");
+            return BaseResult.ok("接口调用成功",resultMap);
+        }
+        return BaseResult.ok("接口调用成功",resultMap);
+
+    }
     /**
      * sftp文件上传接口
      */
@@ -339,10 +407,12 @@ public class FileController {
      */
     @Authorization
     @RequestMapping(value = "/deleteFile",method = RequestMethod.GET)
-    public BaseResult deleteFile( @RequestParam("fileId") String fileId, HttpServletRequest request, HttpServletResponse response){
+    public BaseResult deleteFile( @RequestParam("fileId") String fileId,@RequestParam(value = "identifier", required=false ) String identifier ,HttpServletRequest request, HttpServletResponse response){
         log.info("删除文件fileId="+fileId);
+        log.info("删除文件identifier="+identifier);
         Map<String,Object> resultMap = new HashMap<>();
         if(StringUtils.isEmpty(fileId)){
+            log.info("必要参数fileId为空"+fileId);
             return new BaseResult(ResultCodeEnum.FILE_ID_EMPTY.getCode(),ResultCodeEnum.FILE_ID_EMPTY.getName(),null);
         }
 
@@ -352,6 +422,13 @@ public class FileController {
             log.info("调用fileService删除文件结束deleteRes="+deleteRes);
 
             if(deleteRes){
+                //删除分片记录
+                FileChunkReqDTO fileChunkReqDTO = new FileChunkReqDTO();
+                fileChunkReqDTO.setIdentifier(identifier);
+                log.info("调用fileChunkService删除文件开始identifier="+identifier);
+                Boolean deleteFileChunk = fileChunkService.deleteFileChunk(fileChunkReqDTO);
+                log.info("调用fileChunkService删除文件结束deleteFileChunk="+deleteFileChunk);
+
                 resultMap.put("code",ResultCodeEnum.SUCCESS.getCode());
                 resultMap.put("msg","删除文件成功");
             }else {
@@ -390,14 +467,14 @@ public class FileController {
             Boolean updateRes = false;
             if(prsFileRes != null){
                 DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-                LocalDateTime modifiedDate = prsFileRes.getModifiedDate();
-
+                LocalDateTime deleteDate = prsFileRes.getDeleteDate();
                 LocalDateTime createdDate = prsFileRes.getCreatedDate();
-                if(createdDate.format(df).equals(modifiedDate.format(df))){
+
+                if(createdDate.plusDays(30).format(df).equals(deleteDate.format(df))){//没有延期过的才进行延期修改
                     PrsFileReqDTO prsFileUpdate = new PrsFileReqDTO();
                     prsFileUpdate.setId(prsFileRes.getId());
-                    prsFileUpdate.setModifiedDate(createdDate.plusDays(30));
-                    prsFileUpdate.setCreatedDate(createdDate);
+                    prsFileUpdate.setModifiedDate(LocalDateTime.now());
+                    prsFileUpdate.setDeleteDate(deleteDate.plusDays(30));
                     log.info("调用fileService延长文件有效时间开始prsFileUpdate="+JSON.toJSONString(prsFileUpdate));
                     updateRes = fileService.updateFile(prsFileUpdate);
                     log.info("调用fileService延长文件有效时间结束updateRes="+updateRes);

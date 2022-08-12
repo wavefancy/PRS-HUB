@@ -7,6 +7,7 @@ import AnalysisItem from '@/pages/integrations/AnalysisItem'
 import MultipleAncestriesItem from '@/pages/integrations/MultipleAncestriesItem'
 import StatisticsItem from '@/pages/task/StatisticsItem'
 import ReferenceItem from '@/pages/integrations/ReferenceItem'
+import GWASSummaryStatistics from '@/pages/integrations/GWASSummaryStatistics'
 import LoginItem from '@/pages/authentication/LoginItem'
 import RegisterItem from '@/pages/authentication/RegisterItem'
 import SettingsItem from '@/pages/authentication/SettingsItem'
@@ -34,13 +35,7 @@ export default new VueRouter({
                 {
                     name:"gwasreference",
                     path:'/gwasreference',
-                    component:ReferenceItem,
-                    props(){
-                        return {
-                            pageTitle:'GWAS Summary Statistics',
-                            type:'GWAS'
-                        }
-                    }
+                    component:GWASSummaryStatistics,
                 }
                 ,
                 {
