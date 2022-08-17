@@ -119,12 +119,16 @@ public class Test {
 //        }
 //        Long y = System.currentTimeMillis();
 //        System.out.println(y-x);
-        String path = "/p300s/wangmx_group/chenxy/cromwell/cromwell-executions/PandT/d981ccbb-60c6-4c9f-ab85-98075b2d40fc/call-zip/execution/result_P+T.tar.gz";
-        String uuid = "d981ccbb-60c6-4c9f-ab85-98075b2d40fc";
-        System.out.println(path.indexOf(uuid));
-        System.out.println(path.substring(0,path.lastIndexOf(uuid))+uuid);
-
-
+//        String path = "/p300s/wangmx_group/chenxy/cromwell/cromwell-executions/PandT/d981ccbb-60c6-4c9f-ab85-98075b2d40fc/call-zip/execution/result_P+T.tar.gz";
+//        String uuid = "d981ccbb-60c6-4c9f-ab85-98075b2d40fc";
+//        System.out.println(path.indexOf(uuid));
+//        System.out.println(path.substring(0,path.lastIndexOf(uuid))+uuid);
+        float[] valfloatArr = new float[4];
+        valfloatArr[0] = Float.valueOf("0.1");
+        valfloatArr[1] = Float.valueOf("0.101");
+        valfloatArr[2] = Float.valueOf("1");
+        valfloatArr[3] = Float.valueOf("1.001");
+        System.out.println(valfloatArr.toString());
 
     }
 

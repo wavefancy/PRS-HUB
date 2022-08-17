@@ -14,20 +14,21 @@ import com.prs.hub.practice.entity.MetadataEntry;
 import com.prs.hub.practice.entity.RunnerDetail;
 import com.prs.hub.runnerdetail.dto.RunnerStatisDTO;
 import com.prs.hub.runnerdetail.dto.RunnerStatisReqDTO;
-import com.prs.hub.runnerdetail.dto.RunnerStatisResDTO;
 import com.prs.hub.statistics.service.StatisticsService;
 import com.prs.hub.utils.CromwellUtil;
 import com.prs.hub.utils.HttpClientUtil;
 import com.prs.hub.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author fanshupeng

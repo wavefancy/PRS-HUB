@@ -81,9 +81,12 @@
                       {{file.ranking}}
                     </td>
                     <td class="text-end" >
-
-                      <a v-if="file.status==='Finished'" href="#" class="btn btn-sm btn-neutral operate" :class="file.btnClass" @click.stop="downloadResult(file.id,file.name,file.algorithmsName)">download</a>
-                      <a v-if="file.status==='Not started' || file.status=== 'In progress'" href="#" class="btn btn-sm btn-neutral operate" @click.stop="abortRunner(file.id)">stop</a>
+                      <a v-if="file.status==='Finished'" href="#" class="btn btn-sm btn-neutral operate bg-yellow-500 text-white" 
+                        
+                        @click.stop="downloadResult(file.id,file.name,file.algorithmsName)">
+                        download
+                      </a>
+                      <a v-if="file.status==='Not started' || file.status=== 'Running'" href="#" class="btn btn-sm btn-neutral operate" @click.stop="abortRunner(file.id)">stop</a>
                       <button
                         v-if="file.status==='Finished' || file.status=== 'Project at risk' || file.status=== 'Stopped'"
                         type="button"
@@ -100,7 +103,7 @@
           </div>
           <modal name="as-modal" :scrollable="true" height="auto" >
               <div class="content">
-                <i class="bi bi-x-lg off-x" @click="hideModal"  ></i>
+                <i class="bi mybi bi-x-lg off-x" @click="hideModal"  ></i>
                 <div class="px-12" style="padding-top: 1rem;" >
                   <h6>Selected:</h6>
                   <div class="list-unstyled mt-2 mb-2 mle"  >
@@ -390,7 +393,7 @@ export default {
 .mre{
   margin-right: 1rem;
 }
-.bi{
+.mybi{
   float: right;  
   margin-top: 0.5rem; 
   margin-right: 0.5rem;

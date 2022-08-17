@@ -72,13 +72,22 @@ public class AlgorithmsServiceImpl implements AlgorithmsService {
                         ParameterResDTO parameterResDTO = new ParameterResDTO();
                         String key = entry.getKey().toString();
                         if(key.indexOf("_1_value" )!= -1){
+                            //截取参数名
                             String name = key.replace("_1_value","").replace(algorithmName+".","");
                             parameterResDTO.setName(name);
+                            //获取参数类型
+                            String type = (String)jsonObject.get(algorithmName+"."+name+"_1_type");
+
                             if(entry.getValue()!=null){
-                                parameterResDTO.setDefaultValue(entry.getValue().toString().replace("[","").replace("]",""));
+                                String defaulValue = entry.getValue().toString().replace("[","").replace("]","");
+                                //如果时string类型去除"引号
+                                if(StringUtils.isNotEmpty(type) && type.indexOf("string") != -1){
+                                    defaulValue = defaulValue.replace("\"","");
+                                }
+                                parameterResDTO.setDefaultValue(defaulValue);
                             }
-                            parameterResDTO.setId(Integer.toUnsignedLong(i));
-                            i++;
+                            parameterResDTO.setId(Integer.toUnsignedLong(i++));
+
                             parameterResDTO.setDescription(jsonObject.get(algorithmName+"."+name+"_1_description")!=null?jsonObject.get(algorithmName+"."+name+"_1_description").toString():"");
                             parameterResDTOList.add(parameterResDTO);
                         }

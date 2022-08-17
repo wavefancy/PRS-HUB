@@ -112,18 +112,48 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
                 parameterEnter.setModifiedDate(now);
                 parameterEnter.setIsDelete(0);
                 parameterEnters.add(parameterEnter);
-                //拼装json
-                jsonObject.put(name+"."+parameterEnterReqDTO.getName()+"_1_value",parameterEnterReqDTO.getValue().split(","));
+
+                String[] valArr = parameterEnterReqDTO.getValue().split(",");
+
+                //获取参数类型
+                String type = (String)jsonObject.get(name+"."+parameterEnterReqDTO.getName()+"_1_type");
+                //参数类型为int float时
+                if(StringUtils.isNotEmpty(type) && type.indexOf("float") != -1){
+                    float[] valFloatArr = new float[valArr.length];
+                    for (int i = 0;i < valArr.length;i++){
+                        if(Float.valueOf(valArr[i]) != null){
+                            valFloatArr[i] = Float.valueOf(valArr[i].trim()).floatValue();
+                        }
+                    }
+                    //拼装json
+                    jsonObject.put(name+"."+parameterEnterReqDTO.getName()+"_1_value",valFloatArr);
+                }else if(StringUtils.isNotEmpty(type) && type.indexOf("int") != -1){
+                    int[] valIntArr = new int[valArr.length];
+                    for (int i = 0;i < valArr.length;i++){
+                        if(Integer.valueOf(valArr[i]) != null){
+                            valIntArr[i] = Integer.valueOf(valArr[i].trim()).intValue();
+                        }
+                    }
+                    //拼装json
+                    jsonObject.put(name+"."+parameterEnterReqDTO.getName()+"_1_value",valIntArr);
+                }else{
+                    //拼装json
+                    jsonObject.put(name+"."+parameterEnterReqDTO.getName()+"_1_value",valArr);
+                }
+
             }
             jsonObject.put(name+"."+"summary_statistic_2",uploadFilePath);
-            log.info("将参数写入文件中");
-            FileUtil.writerJsonFile(filePath+fileName,jsonObject);
+
+            //参数文件地址
+            String inputPath = filePath+System.currentTimeMillis()+fileName;
+            log.info("将参数写入文件中inputPath="+inputPath);
+            FileUtil.writerJsonFile(inputPath,jsonObject);
 //            // 将文件上传到指定服务器
-//            log.info("参数文件上传,targetPath="+filePath+fileName);
-//            sftpSystemService.uploadFile(filePath+fileName,new FileInputStream(fileName));
+//            log.info("参数文件上传,targetPath="+inputPath);
+//            sftpSystemService.uploadFile(inputPath,new FileInputStream(fileName));
 //            log.info("参数文件上传成功");
 
-            File inputFile = new File(filePath+fileName);
+            File inputFile = new File(inputPath);
 //            File wdlFile = new File("E:\\temp\\files\\P+T.wdl");
             File wdlFile = new File(wdlPath);
 
