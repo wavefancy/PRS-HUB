@@ -59,6 +59,12 @@ public interface FileService {
      * @throws Exception
      */
     Boolean deleteByFileId(String fileId)throws Exception;
+    /**
+     * 物理删除文件
+     * @param prsFile
+     * @return
+     */
+    Boolean deletePrsFile(PrsFile prsFile);
 
     /**
      * 修改文件信息

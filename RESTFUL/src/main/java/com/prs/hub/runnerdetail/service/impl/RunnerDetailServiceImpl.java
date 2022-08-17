@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.prs.hub.practice.bo.MetadataEntryBo;
 import com.prs.hub.practice.bo.RunnerDetailBo;
 import com.prs.hub.practice.bo.RunnerDetailSpecialBo;
 import com.prs.hub.practice.entity.MetadataEntry;
@@ -28,6 +29,8 @@ public class RunnerDetailServiceImpl implements RunnerDetailService {
     private RunnerDetailBo runnerDetailBo;
     @Autowired
     private RunnerDetailSpecialBo runnerDetailSpecialBo;
+    @Autowired
+    private MetadataEntryBo metadataEntryBo;
 
     /**
      * 查询数据
@@ -68,18 +71,32 @@ public class RunnerDetailServiceImpl implements RunnerDetailService {
         if(runnerStatisReqDTO.getId() != null){
             queryWrapper.eq("id",runnerStatisReqDTO.getId());
         }
-        if(StringUtils.isNotEmpty(runnerStatisReqDTO.getWorkflowExecutionUuid() )){
-            queryWrapper.eq("workflow_execution_uuid",runnerStatisReqDTO.getWorkflowExecutionUuid());
+        String uuid = runnerStatisReqDTO.getWorkflowExecutionUuid();
+        if(StringUtils.isNotEmpty(uuid)){
+            queryWrapper.eq("workflow_execution_uuid",uuid);
+        }
+        Long userId = runnerStatisReqDTO.getUserId();
+        if(userId != null){
+            queryWrapper.eq("user_id",userId);
         }
         try {
             flag = runnerDetailBo.remove(queryWrapper);
+
+            //删除metadataEntry表数据
+            if(flag && StringUtils.isNotEmpty(uuid)){
+                QueryWrapper<MetadataEntry> metadataEntryQueryWrapper = new QueryWrapper<>();
+                metadataEntryQueryWrapper.eq("WORKFLOW_EXECUTION_UUID",uuid);
+                log.info("删除metadataEntry表数据WORKFLOW_EXECUTION_UUID="+uuid);
+                Boolean metadataFlag = metadataEntryBo.remove(metadataEntryQueryWrapper);
+                log.info("删除metadataEntry表数据metadataFlag="+metadataFlag);
+            }
+
         }catch (Exception e){
             log.error("删除数据异常",e);
         }
         log.info("删除数据flag="+flag);
         return flag;
     }
-
     /**
      * 修改数据
      * @param runnerStatisReqDTO
@@ -97,8 +114,12 @@ public class RunnerDetailServiceImpl implements RunnerDetailService {
 
             //更新数据
             RunnerDetail runnerDetailReq = new RunnerDetail();
-
-            runnerDetailReq.setStatus(runnerStatisReqDTO.getStatus());
+            if(runnerStatisReqDTO.getStatus() !=null){
+                runnerDetailReq.setStatus(runnerStatisReqDTO.getStatus());
+            }
+            if(StringUtils.isNotEmpty(runnerStatisReqDTO.getResultPath())){
+                runnerDetailReq.setResultPath(runnerStatisReqDTO.getResultPath());
+            }
             log.info("更新runner数据入参runnerDetailReq="+JSON.toJSONString(runnerDetailReq));
             flag = runnerDetailBo.update(runnerDetailReq,updateWrapper);
             log.info("更新runner数据出参flag="+flag);

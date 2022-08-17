@@ -45,14 +45,14 @@
               <h6>Parameters:</h6>
               <div class="list-unstyled mb-4 mle" v-for="parameter in showParameters" :key="parameter.id">
                 <p class="py-1 d-flex align-items-center">
-                  {{ parameter.name }}:{{ parameter.description }}
+                  {{ parameter.name }}: {{ parameter.description }}
                 </p>
                 <div class="input-group input-group-sm input-group-inline">
                   <input
                     type="text"
                     class="form-control"
                     v-model.trim="parameter.setValue"
-                    :placeholder='"Default:"+parameter.defaultValue'
+                    :placeholder='parameter.defaultValue === "" ? "" : "Default: "+parameter.defaultValue'
                   />
                 </div>
                 <p v-show="parameter.errorFlag" class="errorMsg" name="errorMsg">
@@ -95,7 +95,7 @@
               <div class="parameters row" >
                 <label class="mt-2 col-12 control-label" style="font-size: smaller"
                        v-for="parameter in algorithm.parameters" :key="parameter.id">
-                  <b style="margin-right:10px">{{parameter.name}}:</b>{{parameter.value}}
+                  <b style="margin-right:10px">{{parameter.name}}: </b>{{parameter.value}}
                 </label>
               </div>
             </div>

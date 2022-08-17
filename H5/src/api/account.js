@@ -8,5 +8,7 @@ export default {
     //初始化用户数据
     getUserInfo(params){return requests.get(`/getUserInfo`,params);},
     //修改用户数据
-    updatedUser(params){return requests.get(`/updatedUser`,params);}
+    updatedUser(params){return requests.get(`/updatedUser`,params);},
+    //删除用户数据
+    deleteUser(params){return requests.get(`/deleteUser`,params);}
 }

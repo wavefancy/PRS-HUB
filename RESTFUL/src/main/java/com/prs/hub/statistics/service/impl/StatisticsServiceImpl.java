@@ -1,6 +1,8 @@
 package com.prs.hub.statistics.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
@@ -12,18 +14,20 @@ import com.prs.hub.practice.entity.MetadataEntry;
 import com.prs.hub.practice.entity.RunnerDetail;
 import com.prs.hub.runnerdetail.dto.RunnerStatisDTO;
 import com.prs.hub.runnerdetail.dto.RunnerStatisReqDTO;
+import com.prs.hub.runnerdetail.dto.RunnerStatisResDTO;
 import com.prs.hub.statistics.service.StatisticsService;
 import com.prs.hub.utils.CromwellUtil;
+import com.prs.hub.utils.HttpClientUtil;
 import com.prs.hub.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author fanshupeng
@@ -51,6 +55,8 @@ public class StatisticsServiceImpl implements StatisticsService {
 
     @Value("${cromwell.workflows.status.url}")
     private  String workflowsStatusUrl;
+    @Value("${cromwell.workflows.query.url}")
+    private String workflowsQueryUrl;
     /**
      * 查询runner数据
      * @return
@@ -73,6 +79,23 @@ public class StatisticsServiceImpl implements StatisticsService {
     }
 
     /**
+     * 统计runner数据
+     * @param runnerStatisReqDTO
+     * @return
+     */
+    @Override
+    public Long count(RunnerStatisReqDTO runnerStatisReqDTO){
+        log.info("统计runner数据开始runnerStatisReqDTO"+JSON.toJSONString(runnerStatisReqDTO));
+        QueryWrapper<RunnerDetail> runnerDetailQueryWrapper = new QueryWrapper<>();
+        runnerDetailQueryWrapper.eq("status",runnerStatisReqDTO.getStatus());
+
+        log.info("调用runnerDetailBo统计runner数据开始");
+        Long countNum = runnerDetailBo.count(runnerDetailQueryWrapper);
+        log.info("调用runnerDetailBo统计runner数据结束countNum="+countNum);
+        return countNum;
+    }
+
+    /**
      * 定时任务：实时更新runner数据定
      */
     @Scheduled(cron = "10 * * * * ?")
@@ -84,7 +107,6 @@ public class StatisticsServiceImpl implements StatisticsService {
         statusList.add(0);
         statusList.add(1);
         RunnerDetailQueryWrapper.in("status",statusList);
- 
         log.info("查询Runner表未结束的工作流入参RunnerDetailQueryWrapper="+ JSON.toJSONString(RunnerDetailQueryWrapper));
         List<RunnerDetail> runnerDetailList = runnerDetailBo.list(RunnerDetailQueryWrapper);
         log.info("查询Runner表未结束的工作流出参runnerDetailList="+ JSON.toJSONString(runnerDetailList));
@@ -105,13 +127,15 @@ public class StatisticsServiceImpl implements StatisticsService {
                 }else if("Aborted".equals(statusStr)){
                     status = 4;
                 }
-                if(status.intValue() != runnerDetail.getStatus()){
+                if(status.intValue() != 0){
                     //更新条件
                     UpdateWrapper<RunnerDetail> updateWrapper = new UpdateWrapper();
                     updateWrapper.eq("workflow_execution_uuid",weUuid);
 
                     //更新数据
                     RunnerDetail runnerDetailReq = new RunnerDetail();
+
+                    //当结果为成功时获取结果地址
                     if(status == 3){
                         QueryWrapper<MetadataEntry> metadataEntryWrapper = new QueryWrapper<>();
                         metadataEntryWrapper.eq("WORKFLOW_EXECUTION_UUID",weUuid);
@@ -119,7 +143,7 @@ public class StatisticsServiceImpl implements StatisticsService {
                         log.info("查询工作流详情入参metadataEntryWrapper="+ JSON.toJSONString(metadataEntryWrapper));
                         List<MetadataEntry> metadataEntryList = metadataEntryBo.selectList(metadataEntryWrapper);
                         log.info("查询工作流详情出参metadataEntryList="+ JSON.toJSONString(metadataEntryList));
-
+                        //结果地址
                         String resultPath = "";
                         if(CollectionUtils.isNotEmpty(metadataEntryList)){
                             for (MetadataEntry metadataEntry:metadataEntryList) {
@@ -133,6 +157,38 @@ public class StatisticsServiceImpl implements StatisticsService {
                         }
                         runnerDetailReq.setResultPath(resultPath);
                     }
+
+                    if(status == 1){
+                        //查询工作流中正在执行的流程信息
+                        //设置Running状态的排序
+                        Map<String,String> map = new HashMap<String,String>();
+                        map.put("status","Running");
+
+                        log.info("调用workflowsQuery接口查询工作流中正在Running的流程信息");
+                        HashMap<String, Object> resMap = HttpClientUtil.get(map,workflowsQueryUrl);
+                        log.info("调用workflowsQuery接口查询工作流中正在Running的流程信息结束resMap="+JSON.toJSONString(resMap));
+
+                        if((Boolean) resMap.get("flag")){
+                            JSONObject resultJson = (JSONObject) JSON.parse((String) resMap.get("result"));
+                            JSONArray jsonArray = (JSONArray)resultJson.get("results");
+                            //总running的条数
+                            Integer totalResultsCount = (Integer) resultJson.get("totalResultsCount");
+                            if(totalResultsCount > 0){
+                                for(int i = 0 ; i < jsonArray.size() ; i++){
+                                    JSONObject runJB = (JSONObject)jsonArray.get(i);
+                                    String id = (String) runJB.get("id");
+                                    if(weUuid.equals(id)){
+                                        //设置Running状态的排序
+                                        runnerDetailReq.setQueue(totalResultsCount-i);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }else{
+                        runnerDetailReq.setQueue(0);
+                    }
+
                     runnerDetailReq.setStatus(status);
                     log.info("更新runner数据入参runnerDetailReq="+JSON.toJSONString(runnerDetailReq));
                     Boolean flag = runnerDetailBo.update(runnerDetailReq,updateWrapper);

@@ -91,5 +91,19 @@ public class AuthServiceImpl implements AuthService {
         return BaseResult.ok("根据传入信息获取用户信息成功",userOne);
     }
 
+    @Override
+    public BaseResult deleteUser(User user) {
+        log.info("删除用户Service开始user="+JSON.toJSONString(user));
+        Boolean flag = false;
+        try {
+            flag =  userBo.removeById(user);
+        }catch (Exception e){
+            log.error("删除用户异常"+e.getMessage());
+            return BaseResult.error("删除用户异常");
+        }
+        log.info("删除用户Service结束flag="+flag);
+        return BaseResult.ok("删除用户成功",flag);
+    }
+
 
 }

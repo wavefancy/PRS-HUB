@@ -1,6 +1,7 @@
 package com.prs.hub.authentication.controller;
 
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.prs.hub.authentication.dto.UserReqDTO;
 import com.prs.hub.authentication.dto.UserShowReqDTO;
 import com.prs.hub.authentication.service.AuthService;
@@ -10,7 +11,14 @@ import com.prs.hub.commons.BaseResult;
 import com.prs.hub.commons.CurrentUser;
 import com.prs.hub.constant.ResultCodeEnum;
 import com.prs.hub.email.service.IMailService;
+import com.prs.hub.file.dto.FileChunkReqDTO;
+import com.prs.hub.file.service.FileChunkService;
+import com.prs.hub.file.service.FileService;
+import com.prs.hub.practice.entity.PrsFile;
+import com.prs.hub.practice.entity.RunnerDetail;
 import com.prs.hub.practice.entity.User;
+import com.prs.hub.runnerdetail.dto.RunnerStatisReqDTO;
+import com.prs.hub.runnerdetail.service.RunnerDetailService;
 import com.prs.hub.utils.MD5Util;
 import com.prs.hub.utils.StringUtils;
 import com.prs.hub.utils.TokenUtil;
@@ -43,12 +51,36 @@ import java.util.Map;
 @RequestMapping(value = "/prs/hub")
 public class AuthController extends BaseController {
 
+    /**
+     * 注册
+     */
     @Autowired
     private AuthService authService;
+    /**
+     * 发送邮件
+     */
     @Autowired
-    IMailService iMailService;
+    private IMailService iMailService;
+    /**
+     * 用户上传文件记录
+     */
+    @Autowired
+    private FileService fileService;
+    /**
+     * runner数据
+     */
+    @Autowired
+    private RunnerDetailService runnerDetailService;
+    /**
+     * 文件分片上传数据数据
+     */
+    @Autowired
+    private FileChunkService fileChunkService;
+
     @Value("${system.loginUrl}")
     private String loginUrl;
+
+
     /**
      * 注册Controller
      * @param req
@@ -77,21 +109,27 @@ public class AuthController extends BaseController {
         //组装service入参数据
         User user = new User();
         user.setEmail(email);
-
-        /**
-         * 校验是否有相同邮箱的用户
-         */
-        log.info("注册auth方法调用authService的getUserInfo方法开始，user="+JSON.toJSONString(user));
-        BaseResult userInfo = authService.getUserInfo(user);
-        log.info("注册auth方法调用authService的getUserInfo方法结束，userInfo="+JSON.toJSONString(userInfo));
-        if(userInfo.getData() != null){
-            log.info("存在相同email，注册失败");
-            resultMap.put("code",ResultCodeEnum.EXISTING.getCode());
-            //存在相同email，注册失败
-            resultMap.put("msg","The same email already exists, please change it!");
-            BaseResult  result = BaseResult.ok("接口调用成功",resultMap);
-            log.info("注册auth方法查询存在相同用户注册失败\n"+JSON.toJSONString(result));
-            return result;
+        try {
+            /**
+             * 校验是否有相同邮箱的用户
+             */
+            log.info("注册auth方法调用authService的getUserInfo方法开始，user="+JSON.toJSONString(user));
+            BaseResult userInfo = authService.getUserInfo(user);
+            log.info("注册auth方法调用authService的getUserInfo方法结束，userInfo="+JSON.toJSONString(userInfo));
+            if(userInfo.getData() != null){
+                log.info("存在相同email，注册失败");
+                resultMap.put("code",ResultCodeEnum.EXISTING.getCode());
+                //存在相同email，注册失败
+                resultMap.put("msg","The same email already exists, please change it!");
+                BaseResult  result = BaseResult.ok("接口调用成功",resultMap);
+                log.info("注册auth方法查询存在相同用户注册失败\n"+JSON.toJSONString(result));
+                return result;
+            }
+        }catch (Exception e){
+            log.error("注册auth方法调用authService的getUserInfo方法异常",e);
+            resultMap.put("code",ResultCodeEnum.EXCEPTION.getCode());
+            resultMap.put("msg","注册auth方法调用authService的getUserInfo方法异常");
+            return BaseResult.ok("接口调用成功",resultMap);
         }
 
         /**
@@ -105,16 +143,23 @@ public class AuthController extends BaseController {
         user.setCountry(userShowReqDTO.getCountry());
         user.setOrganisation(userShowReqDTO.getOrganisation());
         user.setStatus(0);//未激活
-        log.info("注册auth方法调用authService的saveOrUpdateUser方法开始，user="+JSON.toJSONString(user));
-        BaseResult serviceResult = authService.saveOrUpdateUser(user);
-        log.info("注册auth方法调用authService的saveOrUpdateUser方法结束，serviceResult="+JSON.toJSONString(serviceResult));
+        try {
+            log.info("注册auth方法调用authService的saveOrUpdateUser方法开始，user="+JSON.toJSONString(user));
+            BaseResult serviceResult = authService.saveOrUpdateUser(user);
+            log.info("注册auth方法调用authService的saveOrUpdateUser方法结束，serviceResult="+JSON.toJSONString(serviceResult));
 
-        if (serviceResult.getCode() != 0){
-            resultMap.put("code",ResultCodeEnum.FAIL.getCode());
-            resultMap.put("msg","注册失败");
-            BaseResult  result = BaseResult.ok("接口调用成功",resultMap);
-            log.info("注册失败"+JSON.toJSONString(result));
-            return result;
+            if (serviceResult.getCode() != 0){
+                resultMap.put("code",ResultCodeEnum.FAIL.getCode());
+                resultMap.put("msg","注册失败");
+                BaseResult  result = BaseResult.ok("接口调用成功",resultMap);
+                log.info("注册失败"+JSON.toJSONString(result));
+                return result;
+            }
+        }catch (Exception e){
+            log.error("注册auth方法调用authService的saveOrUpdateUser方法异常",e);
+            resultMap.put("code",ResultCodeEnum.EXCEPTION.getCode());
+            resultMap.put("msg","注册auth方法调用authService的saveOrUpdateUser方法异常");
+            return BaseResult.ok("接口调用成功",resultMap);
         }
 
         /**
@@ -122,10 +167,16 @@ public class AuthController extends BaseController {
          */
         String accessToken = this.getAccessToken(user);
         log.info("token="+accessToken);
-
-        //发送验证邮件
-        log.info("发送验证邮件email="+email);
-        iMailService.sendHtmlMail(email,"注册激活",accessToken);
+        try {
+            //发送验证邮件
+            log.info("发送验证邮件email="+email);
+            iMailService.sendHtmlMail(email,"注册激活",accessToken);
+        }catch (Exception e){
+            log.error("发送验证邮件email异常",e);
+            resultMap.put("code",ResultCodeEnum.EXCEPTION.getCode());
+            resultMap.put("msg","发送验证邮件email异常");
+            return BaseResult.ok("接口调用成功",resultMap);
+        }
 
         resultMap.put("code",ResultCodeEnum.SUCCESS.getCode());
         resultMap.put("msg","注册成功");
@@ -164,10 +215,20 @@ public class AuthController extends BaseController {
 
         User user = new User();
         user.setEmail(resMap.get("email"));
-        user.setStatus(1);//1：已激活
         try {
-            log.info("注册激活开始，user="+JSON.toJSONString(user));
-            BaseResult serviceResult = authService.saveOrUpdateUser(user);
+            log.info("注册激活查询，user="+JSON.toJSONString(user));
+            BaseResult reqResult = authService.getUserInfo(user);
+            log.info("注册激活查询，reqResult="+JSON.toJSONString(reqResult));
+            if(reqResult.getCode() != 0){
+                log.info("不存在该用户");
+                return null;
+            }
+            User resUser = (User)reqResult.getData();
+            User userActive = new User();
+            userActive.setId(resUser.getId());
+            userActive.setStatus(1);//1：已激活
+            log.info("注册激活开始，user="+JSON.toJSONString(userActive));
+            BaseResult serviceResult = authService.saveOrUpdateUser(userActive);
             log.info("注册激活结束，serviceResult="+JSON.toJSONString(serviceResult));
 
             if (serviceResult.getCode() != 0){
@@ -212,17 +273,24 @@ public class AuthController extends BaseController {
         user.setEmail(email);
         user.setPassword(MD5Util.MD5Encode(password,"utf-8"));
         user.setStatus(1);//激活成功的用户才可以登录
-        log.info("登录login方法调用authService的getUserInfo方法开始，user="+JSON.toJSONString(user));
-        BaseResult userInfo = authService.getUserInfo(user);
-        log.info("登录login方法调用authService的getUserInfo方法结束，userInfo="+JSON.toJSONString(userInfo));
-        if(userInfo.getData() == null){
-            log.info("该用户不存在");
-            resultMap.put("code",ResultCodeEnum.FAIL.getCode());
-            //该用户不存在，登录失败
-            resultMap.put("msg","The user does not exist or the password is incorrect");
-            BaseResult  result = BaseResult.ok("接口调用成功",resultMap);
-            log.info("登录login失败\n"+JSON.toJSONString(result));
-            return result;
+        try {
+            log.info("登录login方法调用authService的getUserInfo方法开始，user="+JSON.toJSONString(user));
+            BaseResult userInfo = authService.getUserInfo(user);
+            log.info("登录login方法调用authService的getUserInfo方法结束，userInfo="+JSON.toJSONString(userInfo));
+            if(userInfo.getData() == null){
+                log.info("该用户不存在");
+                resultMap.put("code",ResultCodeEnum.FAIL.getCode());
+                //该用户不存在，登录失败
+                resultMap.put("msg","The user does not exist or the password is incorrect");
+                BaseResult  result = BaseResult.ok("接口调用成功",resultMap);
+                log.info("登录login失败\n"+JSON.toJSONString(result));
+                return result;
+            }
+        }catch (Exception e){
+            log.error("登录login方法调用authService的getUserInfo方法异常",e);
+            resultMap.put("code",ResultCodeEnum.EXCEPTION.getCode());
+            resultMap.put("msg","登录login方法调用authService的getUserInfo方法异常");
+            return BaseResult.ok("接口调用成功",resultMap);
         }
         /**
          * 生成token
@@ -300,16 +368,23 @@ public class AuthController extends BaseController {
                 user.setEmail(userShowReqDTO.getEmail());
             }
         }
-        log.info("修改用户信息调用authService的saveOrUpdateUser方法开始，user="+JSON.toJSONString(user));
-        BaseResult serviceResult = authService.saveOrUpdateUser(user);
-        log.info("修改用户信息调用authService的saveOrUpdateUser方法结束，serviceResult="+JSON.toJSONString(serviceResult));
+        try {
+            log.info("修改用户信息调用authService的saveOrUpdateUser方法开始，user="+JSON.toJSONString(user));
+            BaseResult serviceResult = authService.saveOrUpdateUser(user);
+            log.info("修改用户信息调用authService的saveOrUpdateUser方法结束，serviceResult="+JSON.toJSONString(serviceResult));
 
-        if (serviceResult.getCode() != 0){
-            resultMap.put("code",ResultCodeEnum.FAIL.getCode());
-            resultMap.put("msg","修改用户信息失败");
-            BaseResult  result = BaseResult.ok("接口调用成功",resultMap);
-            log.info("修改用户信息失败"+JSON.toJSONString(result));
-            return result;
+            if (serviceResult.getCode() != 0){
+                resultMap.put("code",ResultCodeEnum.FAIL.getCode());
+                resultMap.put("msg","修改用户信息失败");
+                BaseResult  result = BaseResult.ok("接口调用成功",resultMap);
+                log.info("修改用户信息失败"+JSON.toJSONString(result));
+                return result;
+            }
+        }catch (Exception e){
+            log.error("修改用户信息调用authService的saveOrUpdateUser方法异常",e);
+            resultMap.put("code",ResultCodeEnum.EXCEPTION.getCode());
+            resultMap.put("msg","修改用户信息调用authService的saveOrUpdateUser方法异常");
+            return BaseResult.ok("接口调用成功",resultMap);
         }
 
 
@@ -317,6 +392,111 @@ public class AuthController extends BaseController {
         resultMap.put("msg","修改用户信息成功");
         BaseResult  result = BaseResult.ok("接口调用成功",resultMap);
         log.info("修改用户信息成功"+JSON.toJSONString(result));
+        return result;
+    }
+
+    /**
+     * 删除用户
+     * @param req
+     * @param res
+     * @param userShowReqDTO
+     */
+    @RequestMapping(value = "/deleteUser", method = RequestMethod.GET)
+    @Authorization
+    public BaseResult deleteUser(HttpServletRequest req, HttpServletResponse res,UserShowReqDTO userShowReqDTO) {
+        log.info("删除用户开始，userShowReqDTO="+JSON.toJSONString(userShowReqDTO));
+        Map<String,Object> resultMap = new HashMap<>();
+        if(userShowReqDTO  == null) {
+            log.info("删除用户结束，页面传入的用户数据为空");
+            resultMap.put("code", ResultCodeEnum.EMPTY.getCode());
+            resultMap.put("msg","用户数据为空");
+            return BaseResult.ok("接口调用成功",resultMap);
+        }
+
+        //组装service入参数据
+        User user = new User();
+        user.setId(Long.valueOf(userShowReqDTO.getId()));
+        if(StringUtils.isNotEmpty(userShowReqDTO.getEmail())){
+            user.setEmail(userShowReqDTO.getEmail());
+        }
+        try {
+            log.info("删除用户调用authService的saveOrUpdateUser方法开始，user="+JSON.toJSONString(user));
+            BaseResult serviceResult = authService.deleteUser(user);
+            log.info("删除用户调用authService的saveOrUpdateUser方法结束，serviceResult="+JSON.toJSONString(serviceResult));
+
+            if (serviceResult.getCode() != 0){
+                resultMap.put("code",ResultCodeEnum.FAIL.getCode());
+                resultMap.put("msg","删除用户失败");
+                BaseResult  result = BaseResult.ok("接口调用成功",resultMap);
+                log.info("删除用户失败"+JSON.toJSONString(result));
+                return result;
+            }
+        }catch (Exception e){
+            log.error("删除用户调用authService的saveOrUpdateUser方法异常",e);
+            resultMap.put("code",ResultCodeEnum.EXCEPTION.getCode());
+            resultMap.put("msg","删除用户调用authService的saveOrUpdateUser方法异常");
+            return BaseResult.ok("接口调用成功",resultMap);
+        }
+
+        /**
+         * 删除该用户上传的文件
+         *  1.根据用户id查询所有上传的文件
+         *  2.遍历文件信息调用删除文件方法逐一删除文件和删除分片记录
+         */
+        PrsFile prsFile = new PrsFile();
+        prsFile.setUserId(user.getId());
+        try {
+            log.info("根据用户id查询所有上传的文件userId="+user.getId());
+            List<PrsFile> prsFileList = fileService.getFileList(prsFile);
+            log.info("根据用户id查询所有上传的文件prsFileList="+JSON.toJSONString(prsFileList));
+            if(CollectionUtils.isNotEmpty(prsFileList)){
+                for (PrsFile file :prsFileList) {
+                    String fileId = file.getId().toString();
+                    String identifier = file.getIdentifier();
+
+                    log.info("删除用户的同时删除该用户上传的文件fileId="+fileId);
+                    Boolean deleteByFileId = fileService.deleteByFileId(fileId);
+                    log.info("删除用户的同时删除该用户上传的文件deleteByFileId="+deleteByFileId);
+
+                    if(StringUtils.isNotEmpty(identifier)&&deleteByFileId){
+                        //删除分片记录
+                        FileChunkReqDTO fileChunkReqDTO = new FileChunkReqDTO();
+                        fileChunkReqDTO.setIdentifier(identifier);
+                        log.info("调用fileChunkService删除文件开始identifier="+identifier);
+                        Boolean deleteFileChunk = fileChunkService.deleteFileChunk(fileChunkReqDTO);
+                        log.info("调用fileChunkService删除文件结束deleteFileChunk="+deleteFileChunk);
+                    }
+                }
+            }
+
+        }catch (Exception e){
+            log.error("删除用户的同时删除该用户上传的文件异常",e);
+            resultMap.put("code",ResultCodeEnum.EXCEPTION.getCode());
+            resultMap.put("msg","删除用户的同时删除该用户上传的文件异常");
+            return BaseResult.ok("接口调用成功",resultMap);
+        }
+
+
+        /**
+         * 删除该用户的runner数据
+         *  1.根据用户id删除runner
+         */
+        try {
+            RunnerStatisReqDTO runnerStatisReqDTO = new RunnerStatisReqDTO();
+            runnerStatisReqDTO.setUserId(user.getId());
+            log.info("删除该用户的runner数据runnerStatisReqDTO="+JSON.toJSONString(runnerStatisReqDTO));
+            Boolean deleteRunnerDetail = runnerDetailService.deleteRunnerDetail(runnerStatisReqDTO);
+            log.info("删除该用户的runner数据deleteRunnerDetail="+deleteRunnerDetail);
+        }catch (Exception e){
+            log.error("异常",e);
+            resultMap.put("code",ResultCodeEnum.EXCEPTION.getCode());
+            resultMap.put("msg","异常");
+            return BaseResult.ok("接口调用成功",resultMap);
+        }
+        resultMap.put("code",ResultCodeEnum.SUCCESS.getCode());
+        resultMap.put("msg","删除用户成功");
+        BaseResult  result = BaseResult.ok("接口调用成功",resultMap);
+        log.info("删除用户成功"+JSON.toJSONString(result));
         return result;
     }
 }

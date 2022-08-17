@@ -221,7 +221,7 @@ public class FileServiceImpl implements FileService {
             return true;
         }
 
-        //删除文件
+        //删除文件和表数据
         Boolean removeRes =  deletePrsFile(prsFileRes);
 
         return removeRes;
@@ -301,7 +301,8 @@ public class FileServiceImpl implements FileService {
      * @param prsFile
      * @return
      */
-    private Boolean deletePrsFile(PrsFile prsFile){
+    @Override
+    public  Boolean deletePrsFile(PrsFile prsFile){
         //文件全路径
         String fileFullPath = prsFile.getFilePath()+prsFile.getFileName()+prsFile.getFileSuffix();
         log.info("要删除的文件全路径fileFullPath="+fileFullPath);

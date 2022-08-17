@@ -77,43 +77,20 @@ public class StatisticsController {
         try {
             RunnerStatisReqDTO runnerStatisReqDTO = new RunnerStatisReqDTO();
             runnerStatisReqDTO.setUserId(Long.valueOf(userReqDTO.getId()));
+
+            log.info("调用statisticsService获取runner详情runnerStatisReqDTO="+JSON.toJSONString(runnerStatisReqDTO));
             List<RunnerStatisDTO> runnerStatisDTOList = statisticsService.getRunnerDetail(runnerStatisReqDTO);
+            log.info("调用statisticsService获取runner详情runnerStatisDTOList="+JSON.toJSONString(runnerStatisDTOList));
             resultMap.put("runnerList",runnerStatisDTOList);
 
-            //查询工作流中正在执行的流程信息
-            Map<String,String> map = new HashMap<String,String>();
-            map.put("status","Running");
-            log.info("调用workflowsQuery接口查询工作流中正在Running的流程信息");
-            HashMap<String, Object> resMap = HttpClientUtil.get(map,workflowsQueryUrl);
-            log.info("调用workflowsQuery接口查询工作流中正在Running的流程信息结束resMap="+JSON.toJSONString(resMap));
-            Integer totalResultsCount = 0;
-            if((Boolean) resMap.get("flag")){
-                JSONObject resultJson = (JSONObject) JSON.parse((String) resMap.get("result"));
-                JSONArray jsonArray = (JSONArray)resultJson.get("results");
-                if((Integer) resultJson.get("totalResultsCount") > 0){
-                    List<RunnerStatisResDTO> runnerStatisResDTOS = new ArrayList<RunnerStatisResDTO>();
-                    for (RunnerStatisDTO runnerStatisDTO : runnerStatisDTOList) {
-                        RunnerStatisResDTO runnerStatisResDTO = new RunnerStatisResDTO();
-                        BeanUtils.copyProperties(runnerStatisDTO,runnerStatisResDTO);
-                        //运行状态 3:Succeeded, 2:failed,1:Running,0:Submitted
-                        if("1".equals(runnerStatisDTO.getRunnerStatus())){
-                            totalResultsCount = (Integer) resultJson.get("totalResultsCount");
-                            String uuid = runnerStatisDTO.getUuid();
-                            for(int i = 0 ; i < jsonArray.size() ; i++){
-                                JSONObject runJB = (JSONObject)jsonArray.get(i);
-                                String id = (String) runJB.get("id");
-                                if(uuid.equals(id)){
-                                    //设置Running状态的排序
-                                    runnerStatisResDTO.setQueue(String.valueOf(totalResultsCount-i));
-                                    break;
-                                }
-                            }
-                        }
-                        runnerStatisResDTOS.add(runnerStatisResDTO);
-                    }
-                    resultMap.put("runnerList",runnerStatisResDTOS);
-                }
-            }
+            //统计
+            RunnerStatisReqDTO runnerCount = new RunnerStatisReqDTO();
+            runnerCount.setStatus(1);
+
+            log.info("调用statisticsService统计runner数据runnerCount="+JSON.toJSONString(runnerCount));
+            Long totalResultsCount = statisticsService.count(runnerCount);
+            log.info("调用statisticsService统计runner数据totalResultsCount="+totalResultsCount);
+
             resultMap.put("code", ResultCodeEnum.SUCCESS.getCode());
             resultMap.put("totalResultsCount", totalResultsCount);
 

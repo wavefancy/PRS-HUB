@@ -118,7 +118,7 @@
                   <p class="text-sm text-muted mb-4">
                     Permanently remove your account and all of its contents. This action is not reversible – please be certain.
                   </p>
-                  <button type="button" class="btn btn-sm btn-danger">Delete my account</button>
+                  <button type="button" class="btn btn-sm btn-danger" @click="deletedUser">Delete my account</button>
                 </div>
               </div>
             </div>
@@ -169,7 +169,7 @@ export default {
       }
     },
     methods: {
-      //注册
+      //修改
       updatedUser(){
         //校验数据
         if(isEmpty(this.showuserInfo.firstName)||this.showuserInfo.errorName){
@@ -282,7 +282,6 @@ export default {
         this.$MessageBox.alert("Are you sure to modify it?", 'Message', {
           confirmButtonText: 'OK',
           callback: (val) => {
-            console.info(val)
             if(val === "confirm"){
 
               //加载中
@@ -347,8 +346,70 @@ export default {
             }
           }
         })
-       
-        
+      },
+      //删除用户
+      deletedUser(){
+        // //组装数据
+        let subData = {
+          id:this.showuserInfo.userId
+        }
+        //提示框
+        this.$MessageBox.alert("Are you sure you want to delete your account ?", 'Message', {
+          confirmButtonText: 'OK',
+          callback: (val) => {
+            if(val === "confirm"){
+
+              //加载中
+              this.loading=true
+              //提交数据
+              Account.deleteUser(subData).then((response) => {
+                const data = response
+                if(!isEmpty(data)){
+                    const resultMap = data.data
+                    const code = resultMap.code
+                    const msg = resultMap.msg
+                    if(code === 0){
+                      //关闭加载中
+                      this.loading=false
+                      //清空accessToken
+                      localStorage.setItem('accessToken',"")
+                      //跳转登录页面
+                      this.$router.push({
+                        name:'login'
+                      })
+                    }else if (code === 4){
+                      //关闭加载中
+                      this.loading=false
+                      //提示框
+                      this.$MessageBox.alert(msg, 'Message', {
+                        confirmButtonText: 'OK',
+                        callback: () => {
+                        }
+                      })
+                    }else{
+                      //todo 跳转错误页面
+                      //关闭加载中
+                      this.loading=false
+                      //提示框
+                      this.$MessageBox.alert('The system is busy. Please try again later', 'Message', {
+                        confirmButtonText: 'OK'
+                      })
+                    }
+                }else{
+                  //todo 跳转错误页面
+                  //关闭加载中
+                  this.loading=false
+                  //提示框
+                  this.$MessageBox.alert('The system is busy. Please try again later', 'Message', {
+                    confirmButtonText: 'OK'
+                  })
+                }
+              })
+            }else{
+               return;
+            }
+          }
+        })
       },
       //校验姓名
       checkName(){

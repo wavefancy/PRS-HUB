@@ -26,4 +26,11 @@ public interface AuthService {
      */
     BaseResult getUserInfo(User user);
 
+    /**
+     * 删除用户
+     * @param user
+     * @return
+     */
+    BaseResult deleteUser(User user);
+
 }

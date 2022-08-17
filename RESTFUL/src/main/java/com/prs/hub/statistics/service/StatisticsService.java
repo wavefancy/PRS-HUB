@@ -11,4 +11,10 @@ import java.util.List;
  */
 public interface StatisticsService {
     List<RunnerStatisDTO> getRunnerDetail(RunnerStatisReqDTO runnerStatisReqDTO);
+    /**
+     * 统计runner数据
+     * @param runnerStatisReqDTO
+     * @return
+     */
+    Long count(RunnerStatisReqDTO runnerStatisReqDTO);
 }

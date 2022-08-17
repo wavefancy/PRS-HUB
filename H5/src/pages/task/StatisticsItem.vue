@@ -200,6 +200,10 @@ export default {
 
             const runnerList = data.runnerList
             let fileListRes = []
+
+            //定时任务flag
+            let stopedTimerFlag = true
+
             runnerList.forEach(runnerDTO => {
               let file ={}
               file.id=runnerDTO.uuid
@@ -207,8 +211,10 @@ export default {
               file.name=runnerDTO.jobName
               file.algorithmsName=runnerDTO.algorithmsName
               file.resultPath=runnerDTO.resultPath
+
               //上传时间
               file.uploadDate = runnerDTO.createdDate
+
               const runnerStatus = runnerDTO.runnerStatus
               if(runnerStatus === "0"){
                 //状态
@@ -217,10 +223,12 @@ export default {
                 file.colorClass = "bg-secondary"
                 //进度 整数:100~0
                 file.progress = "0"
+                stopedTimerFlag = false
               }else if(runnerStatus === "1"){
-                file.status = "In progress"
+                file.status = "Running"
                 file.colorClass = "bg-warning"
                 file.progress = "10"
+                stopedTimerFlag = false
               }else if(runnerStatus === "2"){
                 file.status = "Project at risk"
                 file.colorClass = "bg-danger"
@@ -237,13 +245,19 @@ export default {
                 file.progress = "20"
               }
               
-              file.ranking= isEmpty(runnerDTO.queue)? "--" : runnerDTO.queue
+              file.ranking= isEmpty(runnerDTO.runnerQueue)||runnerDTO.runnerQueue===0 || runnerDTO.runnerQueue === "0"? "--" : runnerDTO.runnerQueue
               file.parameterEnterDTOS = runnerDTO.parameterEnterDTOS
               file.fileNameGWAS = runnerDTO.fileNameGWAS
               file.fileNameLD = runnerDTO.fileNameLD
               fileListRes.push(file)
             });
             this.files.fileList = fileListRes
+            
+            if(stopedTimerFlag){
+              //如果没有在进行中的数据则清除定时器
+              console.log("如果没有在进行中的数据则清除定时器")
+              clearInterval(this.timer);
+            }
           }
         }else{
           //跳转登录页面
@@ -262,6 +276,7 @@ export default {
         }
       })
     },
+    //删除数据
     deleteRunner(uuid,status){
       let subData = {
         uuid:uuid,
@@ -290,6 +305,7 @@ export default {
         }
       })
     },
+    //中止
     abortRunner(uuid){
       let subData = {
         uuid:uuid
@@ -326,7 +342,30 @@ export default {
   },
   mounted () {
     this.init()
-  }
+
+ /*
+       最初始情况，项目刚打开的时候，这个时候页面是必定没有定时器的，那么逻辑就会走else，这个时候就会注册一个定时器去循环调用相应逻辑代码
+       后续有三种情况
+          情况一：路由跳转，跳走了，就要清除这个定时器，所以在beforeDestroy钩子中要清除定时器
+          情况二：关闭项目，关闭项目了以后，系统就会自动停掉定时器，这个不用管它
+          情况三：刷新页面，这个时候vue组件的钩子是不会执行beforeDestroy和destroyed钩子的，所以
+                 需要加上if判断一下，若还有定时器的话，就清除掉，所以这个就是mounted钩子的if判断的原因
+    */
+    if (this.timer) {
+      //清除定时器
+      clearInterval(this.timer);
+    } else {
+      console.log("开启定时器")
+      this.timer = setInterval(this.init, 10000);//10秒定时刷新数据
+    }
+
+  },
+  
+  beforeDestroy() {
+    //清除定时器
+    console.log("清除定时器")
+    clearInterval(this.timer);
+  },
 };
 </script>
 
