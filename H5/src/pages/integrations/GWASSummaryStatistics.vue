@@ -32,7 +32,7 @@
                 <input type="text" class="form-control" v-model.trim="descrition" ref="descrition"/>
               </div>
             </div>
-            <VueSimpleUploader :fileName="fileName"></VueSimpleUploader>
+            <VueSimpleUploader :fileName="fileName" :aria-disabled="disabled"></VueSimpleUploader>
           </div>
         </div>
         <div class="vstack gap-6 mt-3">
@@ -139,6 +139,7 @@
             colorClass:'bg-success',
             uplodMsg:"",
             hintUrl:"./img/hint.png",
+            disabled:true
         }
     },
     methods: {

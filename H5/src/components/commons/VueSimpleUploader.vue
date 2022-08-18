@@ -9,6 +9,7 @@
       @file-success="onFileSuccess"
       @file-error="onFileError"
       @file-progress="onFileProgress"
+      @complete="onComplete"
       class="">
       <uploader-unsupport></uploader-unsupport>
       <uploader-drop class="d-flex justify-content-center px-5 py-5">
@@ -74,7 +75,7 @@ const CHUNK_SIZE = 10 * 1024 * 1024
             return (dataObj.uploadedChunks || []).indexOf(chunk.offset + 1) >= 0
           }
         },
-        // 修改上传状态
+        // 上传状态
         fileStatusTextObj:{
             success: 'success',
             error: 'error',
@@ -97,10 +98,14 @@ const CHUNK_SIZE = 10 * 1024 * 1024
       onFileAdded(file) {
         if(isEmpty(this.fileName)){
           console.log('录入的文件名fileName=' + this.fileName)
-          file.cancel()
-          alert("Please enter fileName !")
-          this.$refs.fileName.focus()
-          return;
+          //暂停上传
+          file.pause()
+          this.$message({
+            message: "Please enter fileName !",
+            type: 'error',
+            duration: 3 * 1000,
+          })
+          return false;
         }
         // 有时 fileType为空，需截取字符
         console.log('文件类型：' + file.fileType)
