@@ -1,6 +1,7 @@
 package com.prs.hub.file.controller;
 
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.prs.hub.authentication.dto.UserReqDTO;
 import com.prs.hub.commons.Authorization;
@@ -63,14 +64,18 @@ public class FileController {
         log.info("userReqDTO="+ JSON.toJSON(userReqDTO));
         Map<String,Object> resultMap = new HashMap<>();
         try {
-            PrsFile prsFile = new PrsFile();
-            BeanUtils.copyProperties(prsFileReqDTO,prsFile);
-            prsFile.setUserId(Long.valueOf(userReqDTO.getId()));
-            List<PrsFile> prsFileList = fileService.getFileList(prsFile);
-
+//            PrsFile prsFile = new PrsFile();
+//            BeanUtils.copyProperties(prsFileReqDTO,prsFile);
+//            prsFile.setUserId(Long.valueOf(userReqDTO.getId()));
+//            List<PrsFile> prsFileList = fileService.getFileList(prsFile);
+            prsFileReqDTO.setUserId(Long.valueOf(userReqDTO.getId()));
+            log.info("调用service分页查询文件信息开始prsFileReqDTO="+JSON.toJSONString(prsFileReqDTO));
+            IPage<PrsFile> prsFileIPage = fileService.getFileList(prsFileReqDTO);
+            log.info("调用service分页查询文件信息结束prsFileIPage="+JSON.toJSONString(prsFileIPage));
+            Long total = prsFileIPage.getTotal();
             List<PrsFileResDTO> resDTOList = new ArrayList<PrsFileResDTO>();
-            if(CollectionUtils.isNotEmpty(prsFileList)){
-                for (PrsFile prsFileRes:prsFileList) {
+            if(total != 0){
+                for (PrsFile prsFileRes:prsFileIPage.getRecords()) {
                     PrsFileResDTO prsFileResDTO = new PrsFileResDTO();
                     BeanUtils.copyProperties(prsFileRes,prsFileResDTO);
 
@@ -81,9 +86,9 @@ public class FileController {
                         DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
                         prsFileResDTO.setUploadDate(createdDate.format(df));
                         //检查是否延长过有效期
-                        LocalDateTime checkDate = createdDate.plusDays(60);
-                        prsFileResDTO.setDeleteDate(deleteDate.format(df));
                         LocalDateTime now = LocalDateTime.now();
+                        LocalDateTime checkDate = now.plusDays(30);
+                        prsFileResDTO.setDeleteDate(deleteDate.format(df));
                         if(now.isAfter(deleteDate)&&!(now.format(df).equals(deleteDate.format(df)))){
                             prsFileResDTO.setStatus("expired");//失效
                         }else if(checkDate.format(df).equals(deleteDate.format(df))){
@@ -96,6 +101,8 @@ public class FileController {
                     resDTOList.add(prsFileResDTO);
                 }
             }
+            resultMap.put("total",prsFileIPage.getTotal());
+            resultMap.put("current",prsFileIPage.getCurrent());
             resultMap.put("resDTOList",resDTOList);
             resultMap.put("code",ResultCodeEnum.SUCCESS.getCode());
             resultMap.put("msg","获取文件信息成功");
@@ -468,19 +475,25 @@ public class FileController {
             if(prsFileRes != null){
                 DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
                 LocalDateTime deleteDate = prsFileRes.getDeleteDate();
-                LocalDateTime createdDate = prsFileRes.getCreatedDate();
+                LocalDateTime nowDate =  LocalDateTime.now();
 
-                if(createdDate.plusDays(30).format(df).equals(deleteDate.format(df))){//没有延期过的才进行延期修改
-                    PrsFileReqDTO prsFileUpdate = new PrsFileReqDTO();
-                    prsFileUpdate.setId(prsFileRes.getId());
-                    prsFileUpdate.setModifiedDate(LocalDateTime.now());
-                    prsFileUpdate.setDeleteDate(deleteDate.plusDays(30));
-                    log.info("调用fileService延长文件有效时间开始prsFileUpdate="+JSON.toJSONString(prsFileUpdate));
-                    updateRes = fileService.updateFile(prsFileUpdate);
-                    log.info("调用fileService延长文件有效时间结束updateRes="+updateRes);
-
+                /**
+                 * 已经在当前的时间点上延长了30天
+                 */
+                if(nowDate.plusDays(30).format(df).equals(deleteDate.format(df))){//没有延期过的才进行延期修改
+                    log.info("已经在当前的时间点上延长了30天");
+                    resultMap.put("code",ResultCodeEnum.FAIL.getCode());
+                    resultMap.put("msg","已经在当前的时间点上延长了30天");
+                    return BaseResult.ok("接口调用成功",resultMap);
                 }
 
+                PrsFileReqDTO prsFileUpdate = new PrsFileReqDTO();
+                prsFileUpdate.setId(prsFileRes.getId());
+                prsFileUpdate.setModifiedDate(LocalDateTime.now());
+                prsFileUpdate.setDeleteDate(nowDate.plusDays(30));
+                log.info("调用fileService延长文件有效时间开始prsFileUpdate="+JSON.toJSONString(prsFileUpdate));
+                updateRes = fileService.updateFile(prsFileUpdate);
+                log.info("调用fileService延长文件有效时间结束updateRes="+updateRes);
             }
             if(updateRes){
                 resultMap.put("code",ResultCodeEnum.SUCCESS.getCode());

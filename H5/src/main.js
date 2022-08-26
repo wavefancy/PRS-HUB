@@ -8,7 +8,7 @@ import store from './store'
 import router from './router'
 //引入lodaing组件
 import VueElementLoading from 'vue-element-loading'
-import {Message , MessageBox,Tooltip  } from 'element-ui'
+import {Pagination,Message , MessageBox,Tooltip  } from 'element-ui'
 //引入element-ui全局样式
 import 'element-ui/lib/theme-chalk/index.css'
 //
@@ -29,6 +29,7 @@ Vue.component('VueElementLoading', VueElementLoading)
 //ElementUI注册组件的时候，还有一种写法，挂在原型上
 Vue.prototype.$message = Message;
 Vue.prototype.$MessageBox = MessageBox;
+Vue.use(Pagination);
 Vue.use(Tooltip)
 Vue.use(VueRouter)
 

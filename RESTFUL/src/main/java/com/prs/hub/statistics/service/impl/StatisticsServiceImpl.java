@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.prs.hub.email.service.IMailService;
 import com.prs.hub.practice.bo.MetadataEntryBo;
@@ -74,11 +75,31 @@ public class StatisticsServiceImpl implements StatisticsService {
             runnerDetail.setWorkflowExecutionUuid(runnerStatisReqDTO.getWorkflowExecutionUuid());
         }
         log.info("查询Runner表未结束的工作流入参runnerDetail="+ JSON.toJSONString(runnerDetail));
-        List<RunnerStatisDTO> runnerDetailList = runnerDetailSpecialBo.queryRunnerDetails(runnerDetail);
+        List<RunnerStatisDTO>  runnerDetailList = runnerDetailSpecialBo.queryRunnerDetails(runnerDetail);
         log.info("查询Runner表未结束的工作流出参runnerDetailList="+ JSON.toJSONString(runnerDetailList));
         return runnerDetailList;
     }
 
+    /**
+     * 分页查询
+     * @param runnerStatisReqDTO
+     * @return
+     */
+    public IPage<RunnerStatisDTO> queryJobsPage(RunnerStatisReqDTO runnerStatisReqDTO) {
+        log.info("分页查询runner数据开始runnerStatisReqDTO"+JSON.toJSONString(runnerStatisReqDTO));
+
+        RunnerDetail runnerDetail = new RunnerDetail();
+        if(runnerStatisReqDTO.getUserId()!=null){
+            runnerDetail.setUserId(runnerStatisReqDTO.getUserId());
+        }
+        if(StringUtils.isNotEmpty(runnerStatisReqDTO.getWorkflowExecutionUuid())){
+            runnerDetail.setWorkflowExecutionUuid(runnerStatisReqDTO.getWorkflowExecutionUuid());
+        }
+        log.info("分页查询Runner表未结束的工作流入参runnerDetail="+ JSON.toJSONString(runnerDetail));
+        IPage<RunnerStatisDTO>  jobsPage = runnerDetailSpecialBo.queryJobsPage(runnerDetail,runnerStatisReqDTO.getSize(),runnerStatisReqDTO.getCurrent());
+        log.info("分页查询Runner表未结束的工作流出参jobsPage="+ JSON.toJSONString(jobsPage));
+        return jobsPage;
+    }
     /**
      * 统计runner数据
      * @param runnerStatisReqDTO

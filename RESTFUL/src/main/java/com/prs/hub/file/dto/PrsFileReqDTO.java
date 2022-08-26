@@ -1,6 +1,7 @@
 package com.prs.hub.file.dto;
 
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.prs.hub.commons.BasePage;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,9 +14,9 @@ import java.time.LocalDateTime;
  */
 @Getter
 @Setter
-public class PrsFileReqDTO implements Serializable {
+public class PrsFileReqDTO extends BasePage implements Serializable {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 123L;
 
     /**主键**/
     private Long id;

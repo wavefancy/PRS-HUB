@@ -9,11 +9,10 @@
       @file-success="onFileSuccess"
       @file-error="onFileError"
       @file-progress="onFileProgress"
-      @complete="onComplete"
       class="">
       <uploader-unsupport></uploader-unsupport>
       <uploader-drop class="d-flex justify-content-center px-5 py-5">
-            <uploader-btn 
+            <uploader-btn :attrs="attrs"
               class="position-absolute w-full h-full top-0 start-0 cursor-pointer">
             </uploader-btn>
             <div class="text-center">
@@ -32,7 +31,7 @@
 
 <script>
 import SparkMD5 from 'spark-md5'
-  import { isEmpty }  from "@/utils/validate"
+import { isEmpty }  from "@/utils/validate"
 const FILE_UPLOAD_ID_KEY = 'file_upload_id'
 // 分片大小，10MB
 const CHUNK_SIZE = 10 * 1024 * 1024
@@ -40,7 +39,7 @@ const CHUNK_SIZE = 10 * 1024 * 1024
 
   export default {
     name:"VueSimpleUploader",
-    props: ['fileName'],
+    props: ['fileName','attr'],
     data () {
       return {
         options: {
@@ -75,6 +74,9 @@ const CHUNK_SIZE = 10 * 1024 * 1024
             return (dataObj.uploadedChunks || []).indexOf(chunk.offset + 1) >= 0
           }
         },
+        attrs: {
+          accept: this.attr
+        },
         // 上传状态
         fileStatusTextObj:{
             success: 'success',
@@ -92,10 +94,17 @@ const CHUNK_SIZE = 10 * 1024 * 1024
     watch: {
         'fileName': function (val) { //监听props中的属性
             this.options.query.fileNameInput = val;
+        },
+        'attr': function (val) { //监听props中的属性
+            if(!isEmpty(val)){
+              this.attrs.accept = val;
+            }
         }
     },
     methods: {
       onFileAdded(file) {
+        let headers = file.headers
+        console.log(headers)
         if(isEmpty(this.fileName)){
           console.log('录入的文件名fileName=' + this.fileName)
           //暂停上传

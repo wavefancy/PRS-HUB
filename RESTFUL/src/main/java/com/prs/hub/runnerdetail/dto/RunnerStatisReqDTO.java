@@ -2,6 +2,7 @@ package com.prs.hub.runnerdetail.dto;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.prs.hub.commons.BasePage;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,7 +15,7 @@ import java.io.Serializable;
  */
 @Getter
 @Setter
-public class RunnerStatisReqDTO implements Serializable {
+public class RunnerStatisReqDTO extends BasePage implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**主键*/

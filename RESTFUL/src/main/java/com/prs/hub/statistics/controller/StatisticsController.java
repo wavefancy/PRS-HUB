@@ -3,6 +3,8 @@ package com.prs.hub.statistics.controller;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.prs.hub.algorithms.dto.ParameterEnterReqDTO;
 import com.prs.hub.algorithms.service.ParameterEnterService;
 import com.prs.hub.authentication.dto.UserReqDTO;
@@ -71,19 +73,27 @@ public class StatisticsController {
      */
     @RequestMapping(value = "/getRunnerStatis", method = RequestMethod.GET)
     @Authorization
-    public BaseResult getRunnerStatis(HttpServletRequest req, HttpServletResponse res, @CurrentUser UserReqDTO userReqDTO) {
+    public BaseResult getRunnerStatis(HttpServletRequest req, HttpServletResponse res, @CurrentUser UserReqDTO userReqDTO,RunnerStatisReqDTO runnerStatisReqDTO) {
         log.info("获取runner详情controller开始,userReqDTO=" + JSON.toJSONString(userReqDTO));
         Map<String, Object> resultMap = new HashMap<>();
         try {
-            RunnerStatisReqDTO runnerStatisReqDTO = new RunnerStatisReqDTO();
             runnerStatisReqDTO.setUserId(Long.valueOf(userReqDTO.getId()));
 
             log.info("调用statisticsService获取runner详情runnerStatisReqDTO="+JSON.toJSONString(runnerStatisReqDTO));
-            List<RunnerStatisDTO> runnerStatisDTOList = statisticsService.getRunnerDetail(runnerStatisReqDTO);
-            log.info("调用statisticsService获取runner详情runnerStatisDTOList="+JSON.toJSONString(runnerStatisDTOList));
+            IPage<RunnerStatisDTO> jobsPage = statisticsService.queryJobsPage(runnerStatisReqDTO);
+            log.info("调用statisticsService获取runner详情runnerStatisDTOList="+JSON.toJSONString(jobsPage));
+
+            resultMap.put("total",jobsPage.getTotal());
+            resultMap.put("current",jobsPage.getCurrent());
+
+            List<RunnerStatisDTO> runnerStatisDTOList = new ArrayList<>();
+            if(CollectionUtils.isNotEmpty(jobsPage.getRecords())){
+                runnerStatisDTOList = jobsPage.getRecords();
+            }
+
             resultMap.put("runnerList",runnerStatisDTOList);
 
-            //统计
+            //统计正在运行的数据
             RunnerStatisReqDTO runnerCount = new RunnerStatisReqDTO();
             runnerCount.setStatus(1);
 

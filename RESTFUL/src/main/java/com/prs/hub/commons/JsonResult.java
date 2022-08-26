@@ -9,8 +9,8 @@ import lombok.experimental.Accessors;
 import java.io.Serializable;
 
 /**
- * @author lanweihong 986310747@qq.com
- * @date 2021/7/27 13:06
+ *
+ * @param <T>
  */
 @Getter
 @Setter

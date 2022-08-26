@@ -4,7 +4,9 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.prs.hub.authentication.dto.UserReqDTO;
 import com.prs.hub.commons.BaseResult;
 import com.prs.hub.constant.ResultCodeEnum;
@@ -100,10 +102,38 @@ public class FileServiceImpl implements FileService {
         queryWrapper.orderByDesc("created_date");
         log.info("调用bo查询新增文件的信息开始queryWrapper="+JSON.toJSON(queryWrapper));
         List<PrsFile> prsFileList = fileBo.list(queryWrapper);
+//        IPage<PrsFile> iPage = new Page<>();
+//        iPage.setCurrent(1);
+//        iPage.setSize(3);
+//        IPage<PrsFile> prsFileIPage = fileBo.page(iPage,queryWrapper);
+//        log.info("prsFileIPage="+JSON.toJSON(prsFileIPage));
         log.info("调用bo查询新增文件的信息结束prsFileList="+JSON.toJSON(prsFileList));
+
         return prsFileList;
     }
+    @Override
+    public IPage<PrsFile> getFileList(PrsFileReqDTO prsFileReqDTO) throws Exception {
+        log.info("文件service根据prsFileReqDTO分页查询文件信息,prsFileReqDTO="+JSON.toJSONString(prsFileReqDTO));
+        QueryWrapper<PrsFile> queryWrapper = new QueryWrapper<>();
+        if(prsFileReqDTO.getId()!=null){
+            queryWrapper.eq("id",prsFileReqDTO.getId());
+        }
+        if(prsFileReqDTO.getUserId()!=null){
+            queryWrapper.eq("user_id",prsFileReqDTO.getUserId());
+        }
+        if(StringUtils.isNotEmpty(prsFileReqDTO.getFileType())){
+            queryWrapper.eq("file_type",prsFileReqDTO.getFileType());
+        }
+        queryWrapper.orderByDesc("created_date");
+        IPage<PrsFile> iPage = new Page<>();
+        iPage.setCurrent(prsFileReqDTO.getCurrent());
+        iPage.setSize(prsFileReqDTO.getSize());
+        log.info("调用bo分页查询文件的信息开始queryWrapper="+JSON.toJSON(queryWrapper));
+        IPage<PrsFile> prsFileIPage = fileBo.page(iPage,queryWrapper);
+        log.info("调用bo分页查询文件的信息结束prsFileIPage="+JSON.toJSON(prsFileIPage));
 
+        return prsFileIPage;
+    }
     @Override
     public InputStream getFileInputStream(PrsFile prsFile) {
         log.info("文件service将文件转化为InputStream");

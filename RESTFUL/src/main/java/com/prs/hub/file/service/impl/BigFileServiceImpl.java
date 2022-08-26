@@ -1,6 +1,5 @@
 package com.prs.hub.file.service.impl;
 
-import com.alibaba.fastjson.JSON;
 import com.prs.hub.file.dto.ChunkDTO;
 import com.prs.hub.file.dto.FileChunkReqDTO;
 import com.prs.hub.file.service.BigFileService;

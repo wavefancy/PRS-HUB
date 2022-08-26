@@ -32,7 +32,7 @@
                 <input type="text" class="form-control" v-model.trim="descrition" ref="descrition"/>
               </div>
             </div>
-            <VueSimpleUploader :fileName="fileName" :aria-disabled="disabled"></VueSimpleUploader>
+            <VueSimpleUploader :fileName="fileName" attr=".gz"></VueSimpleUploader>
           </div>
         </div>
         <div class="vstack gap-6 mt-3">
@@ -73,8 +73,8 @@
                     <td>
                         <div class="d-flex align-items-center">
                             {{file.status}} 
-                            <el-tooltip class="item" effect="light" placement="right">
-                              <div slot="content">The file is valid for 30 days. <br/>Click "Refresh" for an extension of 30 days !</div>
+                            <el-tooltip class="item" effect="light" placement="right" v-if="file.status === 'validity'">
+                              <div slot="content">The file is valid for 30 days. <br/>Click Refresh to extend the current time by 30 days !</div>
                               <img :src="hintUrl" style="width: 1rem;">
                             </el-tooltip>
                         </div>
@@ -85,7 +85,7 @@
                       </div>
                     </td>
                     <td>
-                      <a href="#" v-if="file.status =='validity'" class="btn btn-sm btn-neutral operate" @click.prevent="extensionFileValidTime(file.id)">Refresh</a>
+                      <a href="#" class="btn btn-sm btn-neutral operate" :class=" file.status==='refreshed'? 'refreshed':'' " @click.prevent="extensionFileValidTime(file.id,file.status)">Refresh</a>
                       <button
                         type="button"
                         class="
@@ -101,6 +101,16 @@
                   </tr>
                 </tbody>
               </table>
+              <div class="pagination">
+                <el-pagination
+                  @current-change="changePage"
+                  :current-page="currentPage"
+                  :background="true"
+                  layout="prev, pager, next"
+                  :total="total"
+                  :page-size="pageSize">
+                </el-pagination>
+              </div>
             </div>
           </div>
         </div>
@@ -113,7 +123,6 @@
   import {Prs} from "@/api"
   import {Decimal} from "decimal.js"
   import { isEmpty }  from "@/utils/validate"
-  import { Message } from 'element-ui'
   
   import VueSimpleUploader from '@/components/commons/VueSimpleUploader'
   Decimal.set({
@@ -139,19 +148,21 @@
             colorClass:'bg-success',
             uplodMsg:"",
             hintUrl:"./img/hint.png",
-            disabled:true
+            total:0,
+            pageSize:3,
+            currentPage:1
         }
     },
     methods: {
       fileChange(data){
         //校验数据
-        if(isEmpty(this.fileName)){
-          alert("Please enter fileName !")
-          this.$refs.fileName.focus()
-          //清空input（file）中已上传的文件
-          this.$refs.file_upload.value = '';
-          return;
-        }
+        // if(isEmpty(this.fileName)){
+        //   alert("Please enter fileName !")
+        //   this.$refs.fileName.focus()
+        //   //清空input（file）中已上传的文件
+        //   this.$refs.file_upload.value = '';
+        //   return;
+        // }
         // if(isEmpty(this.descrition)){
         //   alert("Please enter descrition !")
         //   this.$refs.descrition.focus()
@@ -198,9 +209,11 @@
 
         })
       },
-      getFileList(){
+      getFileList(val){
         let subData = {
           fileType:this.type,
+          size:this.pageSize,
+          current:val
         }
         //提交参数
         Prs.getFileList(subData).then(response => {
@@ -208,7 +221,23 @@
             const resData = response.data;
             if(resData.code===0){
               this.files.fileList=resData.resDTOList;
+              this.total = resData.total
+              this.currentPage=resData.current
             }
+          }else  if(response.code==="400"){
+            //跳转登录页面
+            //提示框
+            this.$MessageBox.alert("The login status is invalid, please log in again !", 'Message', {
+              confirmButtonText: 'OK',
+              callback: () => {
+                //跳转登录页面
+                this.$router.push({
+                  name:'login'
+                });
+              }
+
+            })
+            return
           }
         })
       },
@@ -244,7 +273,7 @@
           if(response.code===0){
             const resData = response.data;
             if(resData.code===0){
-              Message({
+              this.$message({
                 message: "successful delete !",
                 type: 'success',
                 duration: 2 * 1000
@@ -255,7 +284,10 @@
         })
       },
       //延长文件有效时间
-      extensionFileValidTime(id){
+      extensionFileValidTime(id,status){
+        if(status==="refreshed"){
+          return false;
+        }
         let subData = {
           fileId:id,
         }
@@ -263,7 +295,7 @@
           if(response.code===0){
             const resData = response.data;
             if(resData.code===0){
-               Message({
+               this.$message({
                 message: "successful validity !",
                 type: 'success',
                 duration: 2 * 1000
@@ -272,6 +304,10 @@
             }
           }
         })
+      },
+      //翻页
+      changePage(val){
+        this.getFileList(val)
       }
     },
     //数据初始化
@@ -325,5 +361,14 @@
     border-radius: 0.375rem;
     font-size: .875rem;
     padding: 0.5rem 0rem;
+}
+.refreshed{
+   background-color:#dcdfe6;
+}
+.pagination{
+  margin-top: 1rem;
+}
+.el-pagination.is-background .el-pager li:not(.disabled).active {
+    background-color: #796CFF !important;
 }
 </style>

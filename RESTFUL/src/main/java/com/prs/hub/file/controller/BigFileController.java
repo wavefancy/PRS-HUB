@@ -9,8 +9,11 @@ import com.prs.hub.file.dto.FileChunkReqDTO;
 import com.prs.hub.file.dto.FileChunkResDTO;
 import com.prs.hub.file.service.BigFileService;
 import com.prs.hub.file.service.FileChunkService;
+import com.prs.hub.utils.FileUtil;
+import com.prs.hub.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +39,7 @@ public class BigFileController {
     @Autowired
     private FileChunkService fileChunkService;
 
+
     /**
      * 上传校验
      * @param param
@@ -44,8 +49,12 @@ public class BigFileController {
     @GetMapping("/upload")
     public JsonResult<Map<String, Object>> checkUpload(@Valid FileChunkReqDTO param) {
         log.info("文件MD5:" + param.getIdentifier());
+
         List<FileChunkResDTO> list = fileChunkService.listByFileMd5(param.getIdentifier());
+
         Map<String, Object> data = new HashMap<>(1);
+
+
         if (list.size() == 0) {
             data.put("uploaded", false);
             return JsonResult.ok(data);
@@ -83,6 +92,14 @@ public class BigFileController {
         log.info("上传文件identifier="+param.getIdentifier());
         log.info("上传文件ChunkNumber="+param.getChunkNumber());
 
+        if(StringUtils.isEmpty(param.getFileNameInput())){
+            log.info("未录入文件名");
+            return JsonResult.error(MessageEnum.FAIL);
+        }
+        if(1 == param.getChunkNumber() && param.getFilename().indexOf(".gz") != -1){
+            String header = FileUtil.getGZIPHeaderByMultipartFile(param.getFile());
+            log.info("获取文件文本的header="+header);
+        }
         Map<String,Object> resMap = bigFileService.uploadFile(email,param);
         Boolean flag = (Boolean)resMap.get("flag");
         if (!flag) {

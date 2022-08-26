@@ -1,5 +1,6 @@
 package com.prs.hub.file.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.prs.hub.authentication.dto.UserReqDTO;
 import com.prs.hub.commons.BaseResult;
 import com.prs.hub.file.dto.PrsFileReqDTO;
@@ -30,6 +31,14 @@ public interface FileService {
      * @return
      */
     List<PrsFile> getFileList(PrsFile prsFile) throws Exception;
+
+    /**
+     * 分页查询文件信息
+     * @param prsFileReqDTO
+     * @return
+     * @throws Exception
+     */
+    IPage<PrsFile> getFileList(PrsFileReqDTO prsFileReqDTO) throws Exception;
     /**
      * 根据file获取数据流
      * @param prsFile

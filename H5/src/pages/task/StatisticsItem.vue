@@ -99,6 +99,16 @@
                   </tr>
                 </tbody>
               </table>
+              <div class="pagination">
+                <el-pagination
+                  @current-change="changePage"
+                  :current-page="currentPage"
+                  :background="true"
+                  layout="prev, pager, next"
+                  :total="total"
+                  :page-size="pageSize">
+                </el-pagination>
+              </div>
             </div>
           </div>
           <modal name="as-modal" :scrollable="true" height="auto" >
@@ -151,6 +161,9 @@ export default {
           },
         loading:false,
         showDetail:{},
+        total:0,
+        pageSize:3,
+        currentPage:1
       }
   },
   methods: {
@@ -193,12 +206,17 @@ export default {
           console.log(err);
       })
     },
-    init(){
-       Prs.getRunnerStatis().then((response) => {
+    init(val){
+      let subData = {
+          size:this.pageSize,
+          current:val
+        }
+       Prs.getRunnerStatis(subData).then((response) => {
         if(response.code === 0){
           const data = response.data
           if(data.code === 0){
-
+            this.total = data.total
+            this.currentPage=data.current
             this.files.total = data.totalResultsCount
 
             const runnerList = data.runnerList
@@ -261,6 +279,8 @@ export default {
               console.log("如果没有在进行中的数据则清除定时器")
               clearInterval(this.timer);
             }
+          }else{
+            clearInterval(this.timer);
           }
         }else{
           //跳转登录页面
@@ -341,6 +361,10 @@ export default {
     },
     hideModal(){
       this.$modal.hide('as-modal')
+    },
+    //翻页
+    changePage(val){
+      this.init(val)
     }
   },
   mounted () {

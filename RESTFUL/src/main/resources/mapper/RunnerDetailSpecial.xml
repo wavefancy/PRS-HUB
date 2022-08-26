@@ -9,6 +9,7 @@
         <result column="fileNameGWAS" property="fileNameGWAS" />
         <result column="fileNameLD" property="fileNameLD" />
         <result column="algorithmsName" property="algorithmsName" />
+        <result column="algorithmsId" property="algorithmsId" />
         <result column="runnerStatus" property="runnerStatus" />
         <result column="jobName" property="jobName" />
         <result column="resultPath" property="resultPath" />
@@ -19,6 +20,26 @@
             <result column="parameterName" property="parameterName" />
             <result column="parameterValue" property="parameterValue" />
         </collection>
+    </resultMap>
+    <resultMap id="BasePageResultMap" type="com.prs.hub.runnerdetail.dto.RunnerStatisDTO">
+        <result column="uuid" property="uuid" />
+        <result column="email" property="email" />
+        <result column="fileNameGWAS" property="fileNameGWAS" />
+        <result column="fileNameLD" property="fileNameLD" />
+        <result column="algorithmsName" property="algorithmsName" />
+        <result column="algorithmsId" property="algorithmsId" />
+        <result column="runnerStatus" property="runnerStatus" />
+        <result column="jobName" property="jobName" />
+        <result column="resultPath" property="resultPath" />
+        <result column="runnerProgress" property="runnerProgress" />
+        <result column="runnerQueue" property="runnerQueue" />
+        <result column="createdDate" property="createdDate" />
+        <collection ofType="com.prs.hub.practice.dto.ParameterEnterDTO" property="parameterEnterDTOS" column="{uuid=uuid,algorithmsId=algorithmsId}" select="queryChildrenParameter" javaType="ArrayList">
+        </collection>
+    </resultMap>
+    <resultMap id="parameterEnterMap" type="com.prs.hub.practice.dto.ParameterEnterDTO">
+        <result column="parameterName" property="parameterName" />
+        <result column="parameterValue" property="parameterValue" />
     </resultMap>
     <select id="queryRunnerDetails" parameterType="com.prs.hub.practice.entity.RunnerDetail" resultMap="BaseResultMap">
         SELECT
@@ -49,4 +70,39 @@
         ORDER BY rd.`created_date` DESC
     </select>
 
+    <select id="jobsPage"   resultMap="BasePageResultMap">
+        SELECT
+             rd.`workflow_execution_uuid` UUID,
+             pu.`email` email ,
+             (SELECT pf.`file_name`FROM prs_file pf WHERE rd.`file_id`=pf.`id`) fileNameGWAS,
+             (SELECT pf.`file_name`FROM prs_file pf WHERE rd.`LD_file_id`=pf.`id`) fileNameLD,
+             al.`NAME` algorithmsName ,
+             al.`id` algorithmsId,
+             rd.`status` runnerStatus ,
+             rd.`job_name` jobName ,
+             rd.`result_path` resultPath,
+             rd.`progress` runnerProgress,
+             rd.`queue` runnerQueue,
+             DATE_FORMAT(rd.`created_date` , '%Y-%m-%d') createdDate
+         FROM runner_detail  rd
+                  LEFT JOIN PRS_USER pu ON rd.`user_id`=pu.`id`
+                  LEFT JOIN parameter_enter pe ON rd.`workflow_execution_uuid`=pe.`workflow_execution_uuid`
+                  LEFT JOIN algorithms al ON pe.`algorithms_id`=al.`id`
+
+         WHERE rd.`is_delete`=0
+        <if test="userId != null and userId !=''">
+            AND rd.`user_id`=#{userId}
+        </if>
+         GROUP BY rd.`workflow_execution_uuid`,al.`id`
+         ORDER BY rd.`created_date` DESC
+    </select>
+    <select id="queryChildrenParameter" parameterType="java.util.Map" resultMap="parameterEnterMap">
+        select
+            pe.`parameter_name` AS parameterName,
+            pe.`parameter_value` AS parameterValue
+        from parameter_enter pe
+        where pe.`is_delete`=0
+            AND pe.`workflow_execution_uuid`=#{uuid}
+            AND pe.`algorithms_id`=#{algorithmsId}
+    </select>
 </mapper>

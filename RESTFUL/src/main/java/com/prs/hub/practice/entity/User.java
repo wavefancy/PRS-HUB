@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+
+import com.baomidou.mybatisplus.annotation.Version;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
@@ -28,6 +30,7 @@ public class User implements Serializable {
 
     @ApiModelProperty("主键")
     @TableId("id")
+    @Version
     private Long id;
 
     @ApiModelProperty("邮箱地址")

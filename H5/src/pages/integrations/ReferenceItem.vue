@@ -32,7 +32,7 @@
                 <input type="text" class="form-control" v-model.trim="descrition" ref="descrition"/>
               </div>
             </div>
-            <VueSimpleUploader :fileName="fileName"></VueSimpleUploader>
+            <VueSimpleUploader :fileName="fileName"  attr=".pgen,.pgi"></VueSimpleUploader>
             <!-- <div class=" rounded
                 border-2 border-dashed border-primary-hover
                 position-relative " >
@@ -132,7 +132,7 @@
                         <div class="d-flex align-items-center">
                             {{file.status}} 
                             <el-tooltip class="item" effect="light" placement="right">
-                              <div slot="content">The file is valid for 30 days. <br/>Click "Refresh" for an extension of 30 days !</div>
+                              <div slot="content">The file is valid for 30 days. <br/>Click Refresh to extend the current time by 30 days !</div>
                               <img :src="hintUrl" style="width: 1rem;">
                             </el-tooltip>
                         </div>
@@ -143,7 +143,7 @@
                       </div>
                     </td>
                     <td>
-                      <a href="#" v-if="file.status =='validity'" class="btn btn-sm btn-neutral operate" @click.prevent="extensionFileValidTime(file.id)">Refresh</a>
+                      <a href="#"   class="btn btn-sm btn-neutral operate" :class=" file.status==='refreshed'? 'refreshed':'' " @click.prevent="extensionFileValidTime(file.id,file.status)">Refresh</a>
                       <button
                         type="button"
                         class="
@@ -159,6 +159,16 @@
                   </tr>
                 </tbody>
               </table>
+              <div class="pagination">
+                <el-pagination
+                  @current-change="changePage"
+                  :current-page="currentPage"
+                  :background="true"
+                  layout="prev, pager, next"
+                  :total="total"
+                  :page-size="pageSize">
+                </el-pagination>
+              </div>
             </div>
           </div>
         </div>
@@ -201,6 +211,9 @@
             colorClass:'bg-success',
             uplodMsg:"",
             hintUrl:"./img/hint.png",
+            total:0,
+            pageSize:3,
+            currentPage:1
         }
     },
     methods: {
@@ -325,10 +338,12 @@
         //   })
         // }
       },
-      getFileList(){
+      getFileList(val){
         let subData = {
           // fileType:'GWAS',
           fileType:this.type,
+          size:this.pageSize,
+          current:val
         }
         //提交参数
         Prs.getFileList(subData).then(response => {
@@ -383,7 +398,10 @@
         })
       },
       //延长文件有效时间
-      extensionFileValidTime(id){
+      extensionFileValidTime(id,status){
+        if(status==="refreshed"){
+          return false;
+        }
         let subData = {
           fileId:id,
         }
@@ -400,6 +418,10 @@
             }
           }
         })
+      },
+      //翻页
+      changePage(val){
+        this.getFileList(val)
       }
     },
     //数据初始化

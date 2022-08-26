@@ -1,6 +1,7 @@
 package com.prs.hub.practice.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.prs.hub.practice.entity.RunnerDetail;
 import com.prs.hub.runnerdetail.dto.RunnerStatisDTO;
 import org.apache.ibatis.annotations.Mapper;
@@ -23,4 +24,10 @@ public interface RunnerDetailSpecial extends BaseMapper<RunnerDetail> {
      * @return
      */
     List<RunnerStatisDTO> queryRunnerDetails(RunnerDetail runnerDetail);
+    /**
+     * 分页查询runner详细信息
+     * @param userId
+     * @return
+     */
+    IPage<RunnerStatisDTO> jobsPage(IPage<RunnerStatisDTO> page, Long userId);
 }

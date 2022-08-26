@@ -1,5 +1,6 @@
 package com.prs.hub.statistics.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.prs.hub.runnerdetail.dto.RunnerStatisDTO;
 import com.prs.hub.runnerdetail.dto.RunnerStatisReqDTO;
 
@@ -17,4 +18,10 @@ public interface StatisticsService {
      * @return
      */
     Long count(RunnerStatisReqDTO runnerStatisReqDTO);
+    /**
+     * 分页查询
+     * @param runnerStatisReqDTO
+     * @return
+     */
+    IPage<RunnerStatisDTO> queryJobsPage(RunnerStatisReqDTO runnerStatisReqDTO);
 }
