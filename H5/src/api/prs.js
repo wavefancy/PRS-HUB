@@ -21,5 +21,7 @@ export default {
     deleteRunner(params){return requests.get(`/deleteRunner`,params);},
     //中止运行
     abortRunner(params){return requests.get(`/abortRunner`,params);},
+    //校验文件内容的title信息
+    checkFileTitle(params){return requests.post(`/bigfile/checkFileTitle`,params);},
     
 }

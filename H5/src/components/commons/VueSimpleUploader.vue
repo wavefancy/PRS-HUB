@@ -9,6 +9,7 @@
       @file-success="onFileSuccess"
       @file-error="onFileError"
       @file-progress="onFileProgress"
+      @file-complete="onFileComplete"
       class="">
       <uploader-unsupport></uploader-unsupport>
       <uploader-drop class="d-flex justify-content-center px-5 py-5">
@@ -32,6 +33,7 @@
 <script>
 import SparkMD5 from 'spark-md5'
 import { isEmpty }  from "@/utils/validate"
+import {Prs} from "@/api"
 const FILE_UPLOAD_ID_KEY = 'file_upload_id'
 // 分片大小，10MB
 const CHUNK_SIZE = 10 * 1024 * 1024
@@ -39,7 +41,7 @@ const CHUNK_SIZE = 10 * 1024 * 1024
 
   export default {
     name:"VueSimpleUploader",
-    props: ['fileName','attr'],
+    props: ['fileName','attr','type'],
     data () {
       return {
         options: {
@@ -87,7 +89,8 @@ const CHUNK_SIZE = 10 * 1024 * 1024
         },
         uploadIdInfo: null,
         uploadFileList: [],
-        fileChunkList: []
+        fileChunkList: [],
+        fileType:this.type
       }
     },
     
@@ -99,12 +102,13 @@ const CHUNK_SIZE = 10 * 1024 * 1024
             if(!isEmpty(val)){
               this.attrs.accept = val;
             }
+        },
+        'fileType':function(val){
+            this.fileType = val
         }
     },
     methods: {
       onFileAdded(file) {
-        let headers = file.headers
-        console.log(headers)
         if(isEmpty(this.fileName)){
           console.log('录入的文件名fileName=' + this.fileName)
           //暂停上传
@@ -116,6 +120,7 @@ const CHUNK_SIZE = 10 * 1024 * 1024
           })
           return false;
         }
+
         // 有时 fileType为空，需截取字符
         console.log('文件类型：' + file.fileType)
         // 文件大小
@@ -128,7 +133,6 @@ const CHUNK_SIZE = 10 * 1024 * 1024
           if (md5 != '') {
             // 修改文件唯一标识
             file.uniqueIdentifier = md5
-            // 请求后台判断是否上传
             // 恢复上传
             file.resume()
           }
@@ -136,24 +140,60 @@ const CHUNK_SIZE = 10 * 1024 * 1024
       },
       onFileSuccess(rootFile, file, response, chunk) {
         console.log("上传成功")
-        console.log("response="+response)
+        const resJaon = JSON.parse(response)
         console.log("chunk="+chunk)
 
-        const resJaon = JSON.parse(response)
+        
         const data = resJaon.data
 
         if(!isEmpty(data)){
           const flag = data.flag
           if(flag){
-             //触发总线绑定的fileChange函数
-           this.$bus.$emit('fileChange',data)
+            if("GWAS" === this.fileType){
+              let formData = new FormData();
+              formData.append('fileName',data.fileName)
+              formData.append('filePath',data.filePath)
+              formData.append('suffixName',data.suffixName)
+              formData.append('identifier',data.identifier)
+              //校验文件头部信息
+              Prs.checkFileTitle(formData).then(response => {
+                const success = response.success
+                const resMap = response.data
+                const flag = resMap.flag;
+                if(success){
+                  if(flag){
+                    //触发总线绑定的fileChange函数
+                    this.$bus.$emit('fileChange',data)
+                  }else{
+                    // 取消上传且从文件列表中移除
+                    file.cancel()
+                    const msg = resMap.msg;
+                    this.$MessageBox.alert(msg, 'Message', {
+                      confirmButtonText: 'OK'
+                    })
+                  }
+                }else{
+                  //触发总线绑定的fileChange函数
+                  this.$bus.$emit('fileChange',data)
+                }
+              })
+            }else{
+              //触发总线绑定的fileChange函数
+              this.$bus.$emit('fileChange',data)
+            }
           }
         }
 
       },
+      onFileComplete(rootFile){
+        console.log(rootFile)
+        console.log("上传成功Complete")
+      },
       onFileError(rootFile, file, message, chunk) {
         console.log('上传出错：' + message)
         console.log('上传出错chunk：' + chunk)
+        //暂停上传
+        file.pause()
         },
       onFileProgress(rootFile, file, chunk) {
         console.log(`当前进度：${Math.ceil(file._prevProgress * 100)}%`)
@@ -210,5 +250,11 @@ const CHUNK_SIZE = 10 * 1024 * 1024
   }
   .uploader-btn {
       border: 0px solid #fff !important;
+  }
+  .pagination{
+    margin-top: 1rem;
+  }
+  .el-pagination.is-background .el-pager li:not(.disabled).active {
+      background-color: #796CFF !important;
   }
 </style>

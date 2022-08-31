@@ -32,7 +32,7 @@
                 <input type="text" class="form-control" v-model.trim="descrition" ref="descrition"/>
               </div>
             </div>
-            <VueSimpleUploader :fileName="fileName" attr=".gz"></VueSimpleUploader>
+            <VueSimpleUploader :fileName="fileName" attr=".gz" type="GWAS"></VueSimpleUploader>
           </div>
         </div>
         <div class="vstack gap-6 mt-3">
@@ -155,21 +155,6 @@
     },
     methods: {
       fileChange(data){
-        //校验数据
-        // if(isEmpty(this.fileName)){
-        //   alert("Please enter fileName !")
-        //   this.$refs.fileName.focus()
-        //   //清空input（file）中已上传的文件
-        //   this.$refs.file_upload.value = '';
-        //   return;
-        // }
-        // if(isEmpty(this.descrition)){
-        //   alert("Please enter descrition !")
-        //   this.$refs.descrition.focus()
-        //   //清空input（file）中已上传的文件
-        //   this.$refs.file_upload.value = '';
-        //   return;
-        // }
         
         let formData = new FormData();
         formData.append('fileType',this.type)
@@ -190,6 +175,7 @@
               this.descrition=""
               //刷新table
               this.getFileList()
+              return true;
             }else{
               //提示框
               this.$MessageBox.alert(msg, 'Message', {
@@ -197,7 +183,7 @@
                 callback: () => {
                 }
               })
-
+              return false;
             }
           }else{
             this.$MessageBox.alert('System is busy, please try again later !', 'Message', {
@@ -205,6 +191,7 @@
                 callback: () => {
                 }
               })
+              return false;
           }
 
         })

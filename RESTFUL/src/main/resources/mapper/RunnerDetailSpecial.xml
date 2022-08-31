@@ -21,6 +21,7 @@
             <result column="parameterValue" property="parameterValue" />
         </collection>
     </resultMap>
+    <!--分页查询resultMap-->
     <resultMap id="BasePageResultMap" type="com.prs.hub.runnerdetail.dto.RunnerStatisDTO">
         <result column="uuid" property="uuid" />
         <result column="email" property="email" />
@@ -41,6 +42,7 @@
         <result column="parameterName" property="parameterName" />
         <result column="parameterValue" property="parameterValue" />
     </resultMap>
+
     <select id="queryRunnerDetails" parameterType="com.prs.hub.practice.entity.RunnerDetail" resultMap="BaseResultMap">
         SELECT
         rd.`workflow_execution_uuid` uuid,
@@ -69,7 +71,7 @@
         </if>
         ORDER BY rd.`created_date` DESC
     </select>
-
+    <!--分页查询-->
     <select id="jobsPage"   resultMap="BasePageResultMap">
         SELECT
              rd.`workflow_execution_uuid` UUID,

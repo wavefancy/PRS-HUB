@@ -70,15 +70,18 @@ public class FileChunkServiceImpl implements FileChunkService {
                 throw new RuntimeException("id="+id+"数据为空");
             }
         }
+        LocalDateTime now = LocalDateTime.now();
         if (null == fileChunk) {
             fileChunk = new FileChunk();
         } else {
-            fileChunk.setUpdateTime(LocalDateTime.now());
+            fileChunk.setUpdateTime(now);
         }
         BeanUtils.copyProperties(param, fileChunk, "id");
         fileChunk.setFileName(param.getFilename());
         Boolean result;
         if (param.isNew()) {
+            fileChunk.setAddTime(now);
+            fileChunk.setUpdateTime(now);
             result = fileChunkBo.save(fileChunk);
             log.info("保存分片数据结果result="+result);
         } else {

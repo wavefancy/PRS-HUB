@@ -412,7 +412,7 @@ public class AuthController extends BaseController {
             resultMap.put("msg","用户数据为空");
             return BaseResult.ok("接口调用成功",resultMap);
         }
-
+        "aer".contains("s");
         //组装service入参数据
         User user = new User();
         user.setId(Long.valueOf(userShowReqDTO.getId()));

@@ -39,6 +39,6 @@ public class MD5Util {
     }
 
     public static void main(String[] args) {
-        System.out.println( MD5Encode("fsp104102","utf-8"));
+//        System.out.println( MD5Encode("fsp104102","utf-8"));
     }
 }

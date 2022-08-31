@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { Message } from 'element-ui'
 import store from '@/store'
+import { isEmpty }  from "@/utils/validate"
 
 axios.defaults.timeout = 40000
 axios.defaults.baseURL = process.env.VUE_APP_BASE_PRS_EPORTAL
@@ -64,7 +65,10 @@ export default {
           params: params
       })
   },
-  post(url, data = {}) {
+  post(url, data = {},contentType) {
+      if(!isEmpty(contentType)){
+        axios.defaults.headers.post['Content-Type'] = contentType
+      }
       return axios.post(url, data)
   }
 }
