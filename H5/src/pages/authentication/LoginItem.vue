@@ -16,18 +16,18 @@
               </div>
               <div class="mb-5">
                 <label class="form-label" for="email">Email address</label>
-                <input type="email" class="form-control" ref="email" v-model="email" placeholder="Your email address">
+                <input type="email" class="form-control" ref="email" v-model="email" placeholder="Your email address" @keyup.enter="clickEnterKey('email')">
               </div>
               <div class="mb-5">
                 <div class="d-flex align-items-center justify-content-between">
                   <div>
-                    <label class="form-label" for="password">Password</label>
+                    <label class="form-label" for="password" >Password</label>
                   </div>
                   <!-- <div class="mb-2">
                     <a href="./basic-recover.html" class="text-sm text-muted text-primary-hover text-underline">Forgot password?</a>
                   </div> -->
                 </div>
-                <input type="password" class="form-control" ref="password" v-model="password" placeholder="Password" autocomplete="current-password">
+                <input type="password" class="form-control" ref="password" v-model="password" placeholder="Password" autocomplete="current-password"  @keyup.enter="clickEnterKey('password')">
               </div>
               <!-- <div class="mb-5">
                 <div class="form-check">
@@ -72,6 +72,17 @@ export default {
       }
     },
     methods: {
+      clickEnterKey(ref){
+        if("password" === ref){
+          if(!isEmpty(this.password)){
+            this.login()
+          }
+        }else{
+          if(!isEmpty(this.email)){
+            this.$refs.password.focus()
+          }
+        }
+      },
       login(){
         if(isEmpty(this.email)){
           alert("Please enter email address!")
