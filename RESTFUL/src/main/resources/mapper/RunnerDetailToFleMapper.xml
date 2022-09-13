@@ -1,17 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.prs.hub.practice.mapper.RunnerDetailMapper">
+<mapper namespace="com.prs.hub.practice.mapper.RunnerDetailToFleMapper">
 
     <!-- 通用查询映射结果 -->
-    <resultMap id="BaseResultMap" type="com.prs.hub.practice.entity.RunnerDetail">
+    <resultMap id="BaseResultMap" type="com.prs.hub.practice.entity.RunnerDetailToFle">
         <id column="id" property="id" />
-        <result column="user_id" property="userId" />
-        <result column="job_name" property="jobName" />
-        <result column="workflow_execution_uuid" property="workflowExecutionUuid" />
-        <result column="result_path" property="resultPath" />
-        <result column="progress" property="progress" />
-        <result column="queue" property="queue" />
-        <result column="status" property="status" />
+        <result column="runner_id" property="runnerId" />
+        <result column="GWAS_file_id" property="gwasFileId" />
+        <result column="LD_file_id" property="ldFileId" />
         <result column="created_user" property="createdUser" />
         <result column="created_date" property="createdDate" />
         <result column="modified_user" property="modifiedUser" />

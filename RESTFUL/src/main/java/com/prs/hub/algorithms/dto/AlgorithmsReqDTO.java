@@ -15,10 +15,10 @@ import java.util.List;
 public class AlgorithmsReqDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    private Long fileId;
+    private Long fileGWASId;
     private List<AlgorithmReqDTO> algorithmList;
-    //参考项
-    private String referencePanel;
+    private Long fileLDId;
+    private List<String> multipleFileIds;
     //工作名称
     private String jobName;
 }

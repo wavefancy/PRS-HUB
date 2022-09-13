@@ -36,8 +36,6 @@ public class AlgorithmsController {
     private AlgorithmsService algorithmsService;
     @Autowired
     private ParameterEnterService parameterEnterService;
-    @Autowired
-    private FileService fileService;
     /**
      * 获取算法详情
      * @param req
@@ -78,18 +76,16 @@ public class AlgorithmsController {
         log.info("用户设置参数落库controller开始,algorithmsReqDTO="+ JSON.toJSON(algorithmsReqDTO));
         Map<String,Object> resultMap = new HashMap<>();
         List<AlgorithmReqDTO> algorithmReqDTOList = algorithmsReqDTO.getAlgorithmList();
-        Long fileId = algorithmsReqDTO.getFileId();
-        if(CollectionUtils.isEmpty(algorithmReqDTOList)||fileId==null){
+        Long fileGWASId = algorithmsReqDTO.getFileGWASId();
+        if(CollectionUtils.isEmpty(algorithmReqDTOList)||fileGWASId==null){
             log.info("用户设置参数落库controller必传参数为空");
             resultMap.put("code", ResultCodeEnum.EMPTY.getCode());
             resultMap.put("msg" ,"用户设置参数落库controller必传参数为空");
             return BaseResult.ok("接口调用成功",resultMap);
         }
         try {
-            //根据fileId获取file信息
-            PrsFile prsFile = fileService.getFileById(fileId.toString());
 
-            Boolean flag = parameterEnterService.setParametersInfo(algorithmsReqDTO,prsFile);
+            Boolean flag = parameterEnterService.setParametersInfo(algorithmsReqDTO);
             resultMap.put("code", ResultCodeEnum.SUCCESS.getCode());
             resultMap.put("data" ,flag);
         }catch (Exception e){

@@ -16,7 +16,7 @@ import lombok.Setter;
  * </p>
  *
  * @author fansp
- * @since 2022-08-02
+ * @since 2022-09-13
  */
 @Getter
 @Setter
@@ -29,14 +29,6 @@ public class ParameterEnter implements Serializable {
     @ApiModelProperty("主键")
     @TableId("id")
     private Long id;
-
-    @ApiModelProperty("id")
-    @TableField("file_id")
-    private Long fileId;
-
-    @ApiModelProperty("file表类型为LD的id，值为用户上传")
-    @TableField("LD_file_id")
-    private Long ldFileId;
 
     @ApiModelProperty("工作流uuid")
     @TableField("workflow_execution_uuid")

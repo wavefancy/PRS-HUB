@@ -8,6 +8,7 @@ import com.prs.hub.algorithms.dto.AlgorithmReqDTO;
 import com.prs.hub.algorithms.dto.AlgorithmsReqDTO;
 import com.prs.hub.algorithms.dto.ParameterEnterReqDTO;
 import com.prs.hub.algorithms.service.ParameterEnterService;
+import com.prs.hub.file.service.FileService;
 import com.prs.hub.practice.bo.AlgorithmsBo;
 import com.prs.hub.practice.bo.ParameterEnterBo;
 import com.prs.hub.practice.bo.RunnerDetailBo;
@@ -50,6 +51,8 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
     private AlgorithmsBo algorithmsBo;
     @Autowired
     private RunnerDetailBo runnerDetailBo;
+    @Autowired
+    private FileService fileService;
     /**
      * Cromwell服务访问地址
      */
@@ -62,7 +65,7 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
      * @return
      */
     @Override
-    public Boolean setParametersInfo(AlgorithmsReqDTO algorithmsReqDTO,PrsFile prsFile) throws Exception {
+    public Boolean setParametersInfo(AlgorithmsReqDTO algorithmsReqDTO) throws Exception {
         log.info("保存用户设置参数开始palgorithmsReqDTOList="+ JSON.toJSONString(algorithmsReqDTO));
         List<ParameterEnter> parameterEnters = new ArrayList<>();
         List<AlgorithmReqDTO> algorithmReqDTOList = algorithmsReqDTO.getAlgorithmList();
@@ -74,6 +77,10 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
 
         //当前系统时间
         LocalDateTime now = LocalDateTime.now();
+
+        Long fileGWASId = algorithmsReqDTO.getFileGWASId();
+        //根据fileGWASId获取file信息
+        PrsFile prsFile = fileService.getFileById(fileGWASId.toString());
 
         // 1组装上传参数文件 2调用工作流接口
         for (AlgorithmReqDTO algorithmReqDTO : algorithmReqDTOList) {
@@ -125,7 +132,6 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
 
         HashMap<String,Object> resMap = new HashMap<>();
 
-        Long fileId = prsFile.getId();
         String filePath = prsFile.getFilePath();
         //页面上传GWAS文件完整地址
         String uploadGWASFilePath =filePath+prsFile.getFileName()+prsFile.getFileSuffix();
@@ -157,9 +163,6 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
             ParameterEnter parameterEnter = new ParameterEnter();
             parameterEnter.setAlgorithmsId(algorithmsId);
             parameterEnter.setParameterName(parameterEnterReqDTO.getName());
-            if(fileId != null){
-                parameterEnter.setFileId(fileId);
-            }
             parameterEnter.setParameterValue(parameterEnterReqDTO.getValue());
             parameterEnter.setCreatedUser("system");
             parameterEnter.setCreatedDate(now);
@@ -234,7 +237,6 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
             JSONObject  cromwellResult = JSON.parseObject(resultmsg);
             cromwellId = cromwellResult.get("id").toString();
             RunnerDetail runnerDetail = new RunnerDetail();
-            runnerDetail.setFileId(prsFile.getId());
             runnerDetail.setJobName(jobName);
             runnerDetail.setWorkflowExecutionUuid(cromwellId);//工作流uuid
             runnerDetail.setUserId(prsFile.getUserId());

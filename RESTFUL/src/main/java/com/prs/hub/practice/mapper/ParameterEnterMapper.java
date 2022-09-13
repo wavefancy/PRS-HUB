@@ -10,7 +10,7 @@ import org.apache.ibatis.annotations.Mapper;
  * </p>
  *
  * @author fansp
- * @since 2022-08-02
+ * @since 2022-09-13
  */
 @Mapper
 public interface ParameterEnterMapper extends BaseMapper<ParameterEnter> {

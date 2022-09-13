@@ -12,7 +12,7 @@ import lombok.Setter;
 
 /**
  * <p>
- * 跑数据详情表
+ * 运行job与选择file的关联表
  * </p>
  *
  * @author fansp
@@ -20,9 +20,9 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-@TableName("runner_detail")
-@ApiModel(value = "RunnerDetail对象", description = "跑数据详情表")
-public class RunnerDetail implements Serializable {
+@TableName("runner_detail_to_fle")
+@ApiModel(value = "RunnerDetailToFle对象", description = "运行job与选择file的关联表")
+public class RunnerDetailToFle implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -31,32 +31,16 @@ public class RunnerDetail implements Serializable {
     private Long id;
 
     @ApiModelProperty("用户id")
-    @TableField("user_id")
-    private Long userId;
+    @TableField("runner_id")
+    private Long runnerId;
 
-    @ApiModelProperty("工作名称")
-    @TableField("job_name")
-    private String jobName;
+    @ApiModelProperty("file表类型为GWAS的id，值为用户上传")
+    @TableField("GWAS_file_id")
+    private Long gwasFileId;
 
-    @ApiModelProperty("工作流uuid")
-    @TableField("workflow_execution_uuid")
-    private String workflowExecutionUuid;
-
-    @ApiModelProperty("运行结果文件地址")
-    @TableField("result_path")
-    private String resultPath;
-
-    @ApiModelProperty("运行进度  100:完成")
-    @TableField("progress")
-    private Integer progress;
-
-    @ApiModelProperty("排队位置")
-    @TableField("queue")
-    private Integer queue;
-
-    @ApiModelProperty("运行状态 3:Finish, 2:Project at risk ,1:In progress,0:Not started")
-    @TableField("status")
-    private Integer status;
+    @ApiModelProperty("file表类型为LD的id，值为用户上传")
+    @TableField("LD_file_id")
+    private Long ldFileId;
 
     @TableField("created_user")
     private String createdUser;
