@@ -310,8 +310,8 @@ export default {
         }
         let subData = {
           algorithmList:this.algorithmsData,
-          fileId:this.gwasFileId,
-          referencePanel:this.referencePanel,
+          fileGWASId:this.gwasFileId,
+          multipleFileIds:this.planVals,
           headers: {'accessToken':  localStorage.getItem("accessToken")}
         }
         //加载中

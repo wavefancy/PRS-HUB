@@ -4,7 +4,7 @@
         <div class="col-xl-3 col-sm-4">
             <select class="form-select" v-model="referencePanel" @change="referenceSelect">
                 <option value="">please select</option>
-                <option v-for="reference in referenceList" :key="reference.id" :value="reference.name">{{reference.name}}</option>
+                <option v-for="reference in referenceList" :key="reference.id" :value="reference.id">{{reference.name}}</option>
             </select>
         </div>
     </div>
@@ -50,7 +50,8 @@ export default {
               const fileList =resData.resDTOList
               fileList.forEach(file => {
                   let nameData = {
-                      name:file.fileName
+                      name:file.fileName,
+                      id:file.id
                   }
                   this.referenceList.push(nameData)
               });

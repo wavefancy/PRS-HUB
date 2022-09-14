@@ -16,13 +16,13 @@ import lombok.Setter;
  * </p>
  *
  * @author fansp
- * @since 2022-09-13
+ * @since 2022-09-14
  */
 @Getter
 @Setter
-@TableName("runner_detail_to_fle")
-@ApiModel(value = "RunnerDetailToFle对象", description = "运行job与选择file的关联表")
-public class RunnerDetailToFle implements Serializable {
+@TableName("runner_detail_to_file")
+@ApiModel(value = "RunnerDetailToFile对象", description = "运行job与选择file的关联表")
+public class RunnerDetailToFile implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

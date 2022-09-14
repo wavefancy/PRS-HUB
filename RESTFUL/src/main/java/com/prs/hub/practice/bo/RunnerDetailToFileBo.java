@@ -1,6 +1,6 @@
 package com.prs.hub.practice.bo;
 
-import com.prs.hub.practice.entity.RunnerDetailToFle;
+import com.prs.hub.practice.entity.RunnerDetailToFile;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
@@ -9,8 +9,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * </p>
  *
  * @author fansp
- * @since 2022-09-13
+ * @since 2022-09-14
  */
-public interface RunnerDetailToFleBo extends IService<RunnerDetailToFle> {
+public interface RunnerDetailToFileBo extends IService<RunnerDetailToFile> {
 
 }

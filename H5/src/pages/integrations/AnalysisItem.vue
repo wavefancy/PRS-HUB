@@ -277,8 +277,8 @@ export default {
         let subData = {
           algorithmList:this.algorithmsData,
           jobName:this.jobName,
-          fileId:this.gwasFileId,
-          referencePanel:this.referencePanel,
+          fileGWASId:this.gwasFileId,
+          fileLDId:this.referencePanel,
           headers: {'accessToken':  localStorage.getItem("accessToken")}
         }
         //加载中

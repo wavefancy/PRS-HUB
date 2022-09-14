@@ -41,7 +41,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="file in files.fileList" :key="file.id"   
+                  <tr v-for="file in files.fileList" :key="file.uuid"   
                       @click="setEnterDetail(file)" >  
                     <td>
                       <div class="d-flex align-items-center">
@@ -83,15 +83,15 @@
                     <td class="text-end" >
                       <a v-if="file.status==='Finished'" href="#" class="btn btn-sm btn-neutral operate bg-yellow-500 text-white" 
                         
-                        @click.stop="downloadResult(file.id,file.name,file.algorithmsName)">
+                        @click.stop="downloadResult(file.uuid,file.name,file.algorithmsName)">
                         download
                       </a>
-                      <a v-if="file.status==='Not started' || file.status=== 'Running'" href="#" class="btn btn-sm btn-neutral operate" @click.stop="abortRunner(file.id)">stop</a>
+                      <a v-if="file.status==='Not started' || file.status=== 'Running'" href="#" class="btn btn-sm btn-neutral operate" @click.stop="abortRunner(file.uuid)">stop</a>
                       <button
                         v-if="file.status==='Finished' || file.status=== 'Project at risk' || file.status=== 'Stopped'"
                         type="button"
                         class=" operate btn btn-sm btn-square btn-neutral text-danger-hover "
-                        @click.stop="deleteRunner(file.id,file.status)"
+                        @click.stop="deleteRunner(file.uuid,file.runnerId,file.status)"
                       >
                         <i class="bi bi-trash"></i>
                       </button>
@@ -116,15 +116,12 @@
                 <i class="bi mybi bi-x-lg off-x" @click="hideModal"  ></i>
                 <div class="px-12" style="padding-top: 1rem;" >
                   <h6>Selected:</h6>
-                  <div class="list-unstyled mt-2 mb-2 mle"  >
-                    <p class="py-1 d-flex align-items-center">
-                      <b class="mre" >GWAS:</b>{{ showDetail.fileNameGWAS }}
-                    </p>
-                  </div>
-                  <div class="list-unstyled mt-2 mb-2 mle"  >
-                    <p class="py-1 d-flex align-items-center">
-                    <b class="mre"> LD:</b>{{ showDetail.fileNameLD }}
-                    </p>
+                  <div v-for="(gwasAndLDFilename,i) in showDetail.gwasAndLDFilenames" :key="100+i">
+                    <div class="list-unstyled mt-2 mb-2 mle"  >
+                      <p class="py-1 d-flex align-items-center">
+                        <b class="mre" >GWAS:</b>{{ gwasAndLDFilename.gwasFileName }} <b class="mre" v-if="gwasAndLDFilename.ldFileName">,LD:</b>{{ gwasAndLDFilename.ldFileName }}
+                      </p>
+                    </div>
                   </div>
                   <h6>Parameters:</h6>
                   <div class="list-unstyled mt-2 mb-2 mle" v-for="(parameter,index) in showDetail.parameterEnterDTOS" :key="index">
@@ -167,7 +164,7 @@ export default {
       }
   },
   methods: {
-    downloadResult(id,name,algorithmsName){
+    downloadResult(uuid,name,algorithmsName){
       //使用原生的axios请求文件为二进制流 
       axios({
           method: "get",
@@ -178,7 +175,7 @@ export default {
           },
           responseType: "blob",       //设置响应类型为blob，否则二进制流直接转换会出错
           params: { // 其他参数
-              uuid:id
+              uuid:uuid
           },
 
       }
@@ -227,7 +224,8 @@ export default {
 
             runnerList.forEach(runnerDTO => {
               let file ={}
-              file.id=runnerDTO.uuid
+              file.uuid=runnerDTO.uuid
+              file.runnerId=runnerDTO.runnerId
               //文件名
               file.name=runnerDTO.jobName
               file.algorithmsName=runnerDTO.algorithmsName
@@ -268,8 +266,7 @@ export default {
               
               file.ranking= isEmpty(runnerDTO.runnerQueue)||runnerDTO.runnerQueue===0 || runnerDTO.runnerQueue === "0"? "--" : runnerDTO.runnerQueue
               file.parameterEnterDTOS = runnerDTO.parameterEnterDTOS
-              file.fileNameGWAS = runnerDTO.fileNameGWAS
-              file.fileNameLD = runnerDTO.fileNameLD
+              file.gwasAndLDFilenames = runnerDTO.gwasAndLDFilenames
               fileListRes.push(file)
             });
             this.files.fileList = fileListRes
@@ -300,9 +297,10 @@ export default {
       })
     },
     //删除数据
-    deleteRunner(uuid,status){
+    deleteRunner(uuid,runnerId,status){
       let subData = {
         uuid:uuid,
+        runnerId:runnerId,
         status:status
       }
     

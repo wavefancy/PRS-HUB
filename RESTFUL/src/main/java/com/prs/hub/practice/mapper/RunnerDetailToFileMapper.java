@@ -1,6 +1,6 @@
 package com.prs.hub.practice.mapper;
 
-import com.prs.hub.practice.entity.RunnerDetailToFle;
+import com.prs.hub.practice.entity.RunnerDetailToFile;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -10,9 +10,9 @@ import org.apache.ibatis.annotations.Mapper;
  * </p>
  *
  * @author fansp
- * @since 2022-09-13
+ * @since 2022-09-14
  */
 @Mapper
-public interface RunnerDetailToFleMapper extends BaseMapper<RunnerDetailToFle> {
+public interface RunnerDetailToFileMapper extends BaseMapper<RunnerDetailToFile> {
 
 }

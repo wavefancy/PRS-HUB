@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.prs.hub.practice.mapper.RunnerDetailToFleMapper">
+<mapper namespace="com.prs.hub.practice.mapper.RunnerDetailToFileMapper">
 
     <!-- 通用查询映射结果 -->
-    <resultMap id="BaseResultMap" type="com.prs.hub.practice.entity.RunnerDetailToFle">
+    <resultMap id="BaseResultMap" type="com.prs.hub.practice.entity.RunnerDetailToFile">
         <id column="id" property="id" />
         <result column="runner_id" property="runnerId" />
         <result column="GWAS_file_id" property="gwasFileId" />

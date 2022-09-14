@@ -17,6 +17,8 @@ import com.prs.hub.runnerdetail.dto.RunnerStatisDTO;
 import com.prs.hub.runnerdetail.dto.RunnerStatisReqDTO;
 import com.prs.hub.runnerdetail.dto.RunnerStatisResDTO;
 import com.prs.hub.runnerdetail.service.RunnerDetailService;
+import com.prs.hub.runnerdetailtofile.dto.RunnerDetailToFileReqDTO;
+import com.prs.hub.runnerdetailtofile.service.RunnerDetailToFileService;
 import com.prs.hub.statistics.service.StatisticsService;
 import com.prs.hub.utils.CromwellUtil;
 import com.prs.hub.utils.FileUtil;
@@ -54,6 +56,9 @@ public class StatisticsController {
 
     @Autowired
     private ParameterEnterService parameterEnterService;
+
+    @Autowired
+    private RunnerDetailToFileService runnerDetailToFileService;
 
     @Value("${cromwell.workflows.query.url}")
     private String workflowsQueryUrl;
@@ -122,9 +127,8 @@ public class StatisticsController {
      */
     @Authorization
     @RequestMapping(value = "/deleteRunner",method = RequestMethod.GET)
-    public BaseResult deleteRunner(@RequestParam("uuid") String uuid, @RequestParam("status") String status,HttpServletRequest request, HttpServletResponse response){
-        log.info("删除运行记录及其存储结果文件controller开始,uuid=" +uuid);
-        log.info("删除运行记录及其存储结果文件controller开始,status=" +status);
+    public BaseResult deleteRunner(@RequestParam("uuid") String uuid, @RequestParam("status") String status, @RequestParam("runnerId") Long  runnerId ,HttpServletRequest request, HttpServletResponse response){
+        log.info("删除运行记录及其存储结果文件controller开始,uuid=" +uuid+"\nstatus=" +status +"\nrunnerId=" +runnerId);
         Map<String, Object> resultMap = new HashMap<>();
 
         if(StringUtils.isEmpty(uuid)||StringUtils.isEmpty(status)){
@@ -169,6 +173,11 @@ public class StatisticsController {
             //删除runner数据
             Boolean delRunnerFlag = runnerDetailService.deleteRunnerDetail(runnerStatisReqDTO);
             log.info("删除runner数据delRunnerFlag="+delRunnerFlag);
+
+            //删除关联表数据
+            RunnerDetailToFileReqDTO runnerDetailToFileReqDTO = new RunnerDetailToFileReqDTO();
+            runnerDetailToFileReqDTO.setRunnerId(runnerId);
+            Boolean delRdtf = runnerDetailToFileService.delete(runnerDetailToFileReqDTO);
 
             //根据uuid 删除 parameterEnterDeatil
             ParameterEnterReqDTO parameterEnterReqDTO = new ParameterEnterReqDTO();

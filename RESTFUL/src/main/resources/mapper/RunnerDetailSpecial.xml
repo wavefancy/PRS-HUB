@@ -6,8 +6,6 @@
     <resultMap id="BaseResultMap" type="com.prs.hub.runnerdetail.dto.RunnerStatisDTO">
         <result column="uuid" property="uuid" />
         <result column="email" property="email" />
-        <result column="fileNameGWAS" property="fileNameGWAS" />
-        <result column="fileNameLD" property="fileNameLD" />
         <result column="algorithmsName" property="algorithmsName" />
         <result column="algorithmsId" property="algorithmsId" />
         <result column="runnerStatus" property="runnerStatus" />
@@ -23,10 +21,9 @@
     </resultMap>
     <!--分页查询resultMap-->
     <resultMap id="BasePageResultMap" type="com.prs.hub.runnerdetail.dto.RunnerStatisDTO">
+        <result column="runnerId" property="runnerId" />
         <result column="uuid" property="uuid" />
         <result column="email" property="email" />
-        <result column="fileNameGWAS" property="fileNameGWAS" />
-        <result column="fileNameLD" property="fileNameLD" />
         <result column="algorithmsName" property="algorithmsName" />
         <result column="algorithmsId" property="algorithmsId" />
         <result column="runnerStatus" property="runnerStatus" />
@@ -37,18 +34,23 @@
         <result column="createdDate" property="createdDate" />
         <collection ofType="com.prs.hub.practice.dto.ParameterEnterDTO" property="parameterEnterDTOS" column="{uuid=uuid,algorithmsId=algorithmsId}" select="queryChildrenParameter" javaType="ArrayList">
         </collection>
+        <collection ofType="com.prs.hub.statistics.dto.GWASAndLDFilenameDTO" property="gwasAndLDFilenames" column="{runnerId=runnerId}" select="queryGWASAndLDFilenames" javaType="ArrayList">
+        </collection>
     </resultMap>
     <resultMap id="parameterEnterMap" type="com.prs.hub.practice.dto.ParameterEnterDTO">
         <result column="parameterName" property="parameterName" />
         <result column="parameterValue" property="parameterValue" />
     </resultMap>
+    <resultMap id="gwasAndLDFilenamesMap" type="com.prs.hub.statistics.dto.GWASAndLDFilenameDTO">
+        <result column="gwasFileName" property="gwasFileName" />
+        <result column="ldFileName" property="ldFileName" />
+    </resultMap>
 
     <select id="queryRunnerDetails" parameterType="com.prs.hub.practice.entity.RunnerDetail" resultMap="BaseResultMap">
         SELECT
+        rd.id runnerId,
         rd.`workflow_execution_uuid` uuid,
         pu.`email` email ,
-        (SELECT pf.`file_name`FROM prs_file pf WHERE rd.`file_id`=pf.`id`) fileNameGWAS,
-        (SELECT pf.`file_name`FROM prs_file pf WHERE rd.`LD_file_id`=pf.`id`) fileNameLD,
         al.`NAME` algorithmsName ,
         rd.`status` runnerStatus ,
         rd.`job_name` jobName ,
@@ -74,10 +76,9 @@
     <!--分页查询-->
     <select id="jobsPage"   resultMap="BasePageResultMap">
         SELECT
+             rd.id runnerId,
              rd.`workflow_execution_uuid` UUID,
              pu.`email` email ,
-             (SELECT pf.`file_name`FROM prs_file pf WHERE rd.`file_id`=pf.`id`) fileNameGWAS,
-             (SELECT pf.`file_name`FROM prs_file pf WHERE rd.`LD_file_id`=pf.`id`) fileNameLD,
              al.`NAME` algorithmsName ,
              al.`id` algorithmsId,
              rd.`status` runnerStatus ,
@@ -106,5 +107,14 @@
         where pe.`is_delete`=0
             AND pe.`workflow_execution_uuid`=#{uuid}
             AND pe.`algorithms_id`=#{algorithmsId}
+    </select>
+    <select id="queryGWASAndLDFilenames" parameterType="java.util.Map" resultMap="gwasAndLDFilenamesMap">
+        SELECT
+            (SELECT pf.`file_name`FROM prs_file pf WHERE rdtf.`GWAS_file_id`=pf.`id`) gwasFileName ,
+            (SELECT pf.`file_name`FROM prs_file pf WHERE rdtf.`LD_file_id`=pf.`id`) ldFileName
+        FROM runner_detail_to_file rdtf
+                LEFT JOIN runner_detail  rd ON rd.id = rdtf.`runner_id`
+        WHERE rd.`is_delete`=0
+          AND rd.`id`=#{runnerId}
     </select>
 </mapper>

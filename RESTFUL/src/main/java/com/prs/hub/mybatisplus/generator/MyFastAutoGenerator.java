@@ -24,7 +24,7 @@ public class MyFastAutoGenerator {
 //        tables.add("prs_file");
 //        tables.add("runner_detail");
 //        tables.add("file_chunk");
-//        tables.add("runner_detail_to_fle");
+//        tables.add("runner_detail_to_file");
 
 
         /**

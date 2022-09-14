@@ -1,6 +1,7 @@
 package com.prs.hub.runnerdetail.dto;
 
 import com.prs.hub.practice.dto.ParameterEnterDTO;
+import com.prs.hub.statistics.dto.GWASAndLDFilenameDTO;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,10 +17,9 @@ import java.util.List;
 public class RunnerStatisDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    private Long  runnerId ;
     private String  uuid ;
     private String  email ;
-    private String  fileNameGWAS;
-    private String  fileNameLD;
     private String  jobName;
     private String   algorithmsName ;
     private Long   algorithmsId ;
@@ -29,6 +29,6 @@ public class RunnerStatisDTO implements Serializable {
     private String   runnerQueue;
     private String createdDate;
     private List<ParameterEnterDTO> parameterEnterDTOS;
-
+    private List<GWASAndLDFilenameDTO> gwasAndLDFilenames;
 
 }
