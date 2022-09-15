@@ -16,6 +16,7 @@ export default {
     name:"ReferencePanel",
     data () {
         return {
+            ldFileId:null,
             referencePanel:"",
             referenceList:[
                 {
@@ -35,7 +36,7 @@ export default {
     },
     methods: {
         referenceSelect(){
-            this.$bus.$emit("referenceSelect", this.referencePanel)
+            this.$bus.$emit("referenceSelect",this.ldFileId, this.referencePanel)
         }
     },
     mounted(){

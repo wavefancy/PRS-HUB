@@ -81,7 +81,7 @@ public class AlgorithmsServiceImpl implements AlgorithmsService {
                             if(entry.getValue()!=null){
                                 String defaulValue = entry.getValue().toString().replace("[","").replace("]","");
                                 //如果时string类型去除"引号
-                                if(StringUtils.isNotEmpty(type) && type.indexOf("string") != -1){
+                                if(StringUtils.isNotEmpty(type) && (type.indexOf("string") != -1 || type.indexOf("String") != -1)){
                                     defaulValue = defaulValue.replace("\"","");
                                 }
                                 parameterResDTO.setDefaultValue(defaulValue);

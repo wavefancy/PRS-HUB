@@ -38,7 +38,6 @@ const FILE_UPLOAD_ID_KEY = 'file_upload_id'
 // 分片大小，10MB
 const CHUNK_SIZE = 10 * 1024 * 1024
 
-
   export default {
     name:"VueSimpleUploader",
     props: ['fileName','attr','type'],

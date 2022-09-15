@@ -1,5 +1,6 @@
 package com.prs.hub.algorithms.dto;
 
+import com.prs.hub.statistics.dto.GWASAndLDFilenameDTO;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,7 +19,7 @@ public class AlgorithmsReqDTO implements Serializable {
     private Long fileGWASId;
     private List<AlgorithmReqDTO> algorithmList;
     private Long fileLDId;
-    private List<String> multipleFileIds;
+    private List<GWASAndLDFilenameDTO> gwasAndLDFilenameDTOList;
     //工作名称
     private String jobName;
 }

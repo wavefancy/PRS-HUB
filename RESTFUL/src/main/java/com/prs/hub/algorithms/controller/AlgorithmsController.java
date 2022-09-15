@@ -76,8 +76,7 @@ public class AlgorithmsController {
         log.info("用户设置参数落库controller开始,algorithmsReqDTO="+ JSON.toJSON(algorithmsReqDTO));
         Map<String,Object> resultMap = new HashMap<>();
         List<AlgorithmReqDTO> algorithmReqDTOList = algorithmsReqDTO.getAlgorithmList();
-        Long fileGWASId = algorithmsReqDTO.getFileGWASId();
-        if(CollectionUtils.isEmpty(algorithmReqDTOList)||fileGWASId==null){
+        if(CollectionUtils.isEmpty(algorithmReqDTOList)){
             log.info("用户设置参数落库controller必传参数为空");
             resultMap.put("code", ResultCodeEnum.EMPTY.getCode());
             resultMap.put("msg" ,"用户设置参数落库controller必传参数为空");

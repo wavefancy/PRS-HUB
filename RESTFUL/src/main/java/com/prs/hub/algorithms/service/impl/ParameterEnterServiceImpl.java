@@ -122,13 +122,16 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
     }
 
     /**
-     * 组装inputFile，封装parameter_enter表存储数据对象
+     * 组装inputFile，填充parameter_enter表存储数据对象
      * @param algorithmReqDTO 页面传入参数
      * @param parameterEnters parameter_enter表存储数据封装对象
      * @param prsFile 上传GWAS文件信息
      * @param now 当前系统时间
      */
     private Map<String,Object> setInputParameterFile(AlgorithmReqDTO algorithmReqDTO,List<ParameterEnter> parameterEnters,PrsFile prsFile,LocalDateTime now) {
+        log.info("组装inputFile，填充parameter_enter表存储数据对象入参：algorithmReqDTO="+JSON.toJSONString(algorithmReqDTO)
+                +"\nparameterEnters="+JSON.toJSONString(parameterEnters)
+                +"\nnow="+now.toString());
 
         HashMap<String,Object> resMap = new HashMap<>();
 
@@ -176,7 +179,7 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
             //获取参数类型
             String type = (String)jsonObject.get(name+"."+parameterEnterReqDTO.getName()+"_1_type");
             //参数类型为int float时
-            if(StringUtils.isNotEmpty(type) && type.indexOf("float") != -1){
+            if(StringUtils.isNotEmpty(type) && (type.indexOf("float") != -1 || type.indexOf("Float") != -1)){
                 float[] valFloatArr = new float[valArr.length];
                 for (int i = 0;i < valArr.length;i++){
                     if(Float.valueOf(valArr[i]) != null){
@@ -185,7 +188,7 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
                 }
                 //拼装json
                 jsonObject.put(name+"."+parameterEnterReqDTO.getName()+"_1_value",valFloatArr);
-            }else if(StringUtils.isNotEmpty(type) && type.indexOf("int") != -1){
+            }else if(StringUtils.isNotEmpty(type) && (type.indexOf("int") != -1 || type.indexOf("Int") != -1)){
                 int[] valIntArr = new int[valArr.length];
                 for (int i = 0;i < valArr.length;i++){
                     if(Integer.valueOf(valArr[i]) != null){
@@ -221,6 +224,11 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
      * @return
      */
     private String submitWorkflow(Map<String,Object> resMap,PrsFile prsFile,LocalDateTime now,String jobName) {
+
+        log.info("调用工作流接口存储runner_detail数据入参：resMap="+JSON.toJSONString(resMap)
+                +"\njobName="+jobName
+                +"\nnow="+now.toString());
+
         File inputFile = new File((String) resMap.get("inputPath"));
 //            File wdlFile = new File("E:\\temp\\files\\P+T.wdl");
         File wdlFile = new File((String) resMap.get("wdlPath"));

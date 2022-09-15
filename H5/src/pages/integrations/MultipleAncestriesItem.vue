@@ -189,7 +189,8 @@ export default {
         //选择的gwas上传文件id
         gwasFileId:null,
         gwasFileName:"",
-        //参考
+        //参考LD
+        ldFileId:null,
         referencePanel:"",
         //正在配置参数的算法id
         settingPId:null,
@@ -311,7 +312,7 @@ export default {
         let subData = {
           algorithmList:this.algorithmsData,
           fileGWASId:this.gwasFileId,
-          multipleFileIds:this.planVals,
+          gwasAndLDFilenameDTOList:this.planVals,
           headers: {'accessToken':  localStorage.getItem("accessToken")}
         }
         //加载中
@@ -356,8 +357,9 @@ export default {
 				});
       },
       //
-      referenceSelect(val){
-        this.referencePanel=val;
+      referenceSelect(id,name){
+        this.referencePanel=name;
+         this.ldFileId=id;
       },
       //选择的gwasfile的id
       gwasPanelSelect(val,nameVal){

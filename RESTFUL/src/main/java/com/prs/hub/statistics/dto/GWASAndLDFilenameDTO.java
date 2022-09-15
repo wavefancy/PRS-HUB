@@ -15,4 +15,6 @@ public class GWASAndLDFilenameDTO implements Serializable {
     private static final long serialVersionUID = 121233L;
     private String gwasFileName;
     private String ldFileName;
+    private Long gwasFileId;
+    private Long ldFileId;
 }

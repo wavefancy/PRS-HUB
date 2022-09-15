@@ -178,6 +178,7 @@ public class StatisticsController {
             RunnerDetailToFileReqDTO runnerDetailToFileReqDTO = new RunnerDetailToFileReqDTO();
             runnerDetailToFileReqDTO.setRunnerId(runnerId);
             Boolean delRdtf = runnerDetailToFileService.delete(runnerDetailToFileReqDTO);
+            log.info("删除关联表数据delRdtf="+delRdtf);
 
             //根据uuid 删除 parameterEnterDeatil
             ParameterEnterReqDTO parameterEnterReqDTO = new ParameterEnterReqDTO();
