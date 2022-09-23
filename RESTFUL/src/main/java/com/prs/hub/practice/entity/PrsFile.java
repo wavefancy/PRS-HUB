@@ -16,7 +16,7 @@ import lombok.Setter;
  * </p>
  *
  * @author fansp
- * @since 2022-08-10
+ * @since 2022-09-22
  */
 @Getter
 @Setter
@@ -37,6 +37,14 @@ public class PrsFile implements Serializable {
     @ApiModelProperty("文件标识")
     @TableField("identifier")
     private String identifier;
+
+    @ApiModelProperty("文件格式解析工作流id")
+    @TableField("parsing_id")
+    private String parsingId;
+
+    @ApiModelProperty("文件格式解析工作流状态：Y、N")
+    @TableField("parsing_status")
+    private String parsingStatus;
 
     @ApiModelProperty("路径")
     @TableField("file_path")

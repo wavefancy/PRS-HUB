@@ -9,6 +9,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public interface FileService {
     /**
@@ -31,7 +33,12 @@ public interface FileService {
      * @return
      */
     List<PrsFile> getFileList(PrsFile prsFile) throws Exception;
-
+    /**
+     * 根据columnMap获取文件
+     * @param columnMap
+     * @return
+     */
+    List<PrsFile> getFileListByColumnMap(Map<String, Set<Object>> columnMap) throws Exception;
     /**
      * 分页查询文件信息
      * @param prsFileReqDTO

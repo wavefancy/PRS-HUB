@@ -82,9 +82,12 @@ public class AlgorithmsController {
             resultMap.put("msg" ,"用户设置参数落库controller必传参数为空");
             return BaseResult.ok("接口调用成功",resultMap);
         }
+
+        String userId = userReqDTO.getId();
+
         try {
 
-            Boolean flag = parameterEnterService.setParametersInfo(algorithmsReqDTO);
+            Boolean flag = parameterEnterService.setParametersInfo(algorithmsReqDTO,userId);
             resultMap.put("code", ResultCodeEnum.SUCCESS.getCode());
             resultMap.put("data" ,flag);
         }catch (Exception e){

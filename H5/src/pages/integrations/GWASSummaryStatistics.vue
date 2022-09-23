@@ -27,7 +27,7 @@
               </div>
             </div>
             <div class="row" style="margin:  0.5rem  0rem;">
-              <div class="des"><b>Descrition:</b></div>
+              <div class="des"><b>Description:</b></div>
               <div class="col-xl-3 col-sm-6 input-group-sm input-group-inline">
                 <input type="text" class="form-control" v-model.trim="descrition" ref="descrition"/>
               </div>

@@ -178,7 +178,7 @@ export default {
               uuid:uuid
           },
 
-      }
+      } 
       ).then((response) => {
         const content = response 
         const blob = new Blob([content])//构造一个blob对象来处理数据
@@ -264,7 +264,7 @@ export default {
                 file.progress = "20"
               }
               
-              file.ranking= isEmpty(runnerDTO.runnerQueue)||runnerDTO.runnerQueue===0 || runnerDTO.runnerQueue === "0"? "--" : runnerDTO.runnerQueue
+              file.ranking=( isEmpty(runnerDTO.runnerQueue)||runnerDTO.runnerQueue===0 || runnerDTO.runnerQueue === "0") ? "--" : runnerDTO.runnerQueue
               file.parameterEnterDTOS = runnerDTO.parameterEnterDTOS
               file.gwasAndLDFilenames = runnerDTO.gwasAndLDFilenames
               fileListRes.push(file)

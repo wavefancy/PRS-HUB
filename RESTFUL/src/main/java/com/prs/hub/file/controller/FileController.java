@@ -1,6 +1,7 @@
 package com.prs.hub.file.controller;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.prs.hub.authentication.dto.UserReqDTO;
@@ -19,6 +20,7 @@ import com.prs.hub.sftpsystem.service.SFTPSystemService;
 import com.prs.hub.runnerdetail.dto.RunnerStatisDTO;
 import com.prs.hub.runnerdetail.dto.RunnerStatisReqDTO;
 import com.prs.hub.statistics.service.StatisticsService;
+import com.prs.hub.utils.HttpClientUtil;
 import com.prs.hub.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -53,6 +55,11 @@ public class FileController {
 
     @Autowired
     private FileChunkService fileChunkService;
+    /**
+     * Cromwell服务访问地址
+     */
+    @Value("${cromwell.workflows.url}")
+    private String cromwellUrl;
 
     /**
      * 获取文件信息
@@ -239,6 +246,28 @@ public class FileController {
         try {
             //将上传文件信息存储到数据库
             PrsFile prsFile = new PrsFile();
+//            if("LD".equals(fileType)){
+//                //调用文件解析工作流对上传的LD文件进行解析
+//                File inputFile = new File("inputPath");
+//                File wdlFile = new File("wdlPath");
+//
+//                Map<String,File> fileMap = new HashMap<>();
+//                fileMap.put("workflowInputs",inputFile);
+//                fileMap.put("workflowSource",wdlFile);
+//
+//                log.info("访问cromwell提交工作流");
+//                String resultmsg = HttpClientUtil.httpClientUploadFileByfile(fileMap,cromwellUrl);
+//                log.info("访问cromwell提交工作流返回结果"+JSON.toJSONString(resultmsg));
+//                String cromwellId = null;
+//                if(StringUtils.isNotEmpty(resultmsg)){
+//                    JSONObject cromwellResult = JSON.parseObject(resultmsg);
+//                    cromwellId = cromwellResult.get("id").toString();
+//                    prsFile.setParsingId(cromwellId);
+//                    prsFile.setParsingStatus("N");//N代表未解析完成
+//                }
+//
+//            }
+
 
             prsFile.setDescrition(descrition);
             prsFile.setFileType(fileType);

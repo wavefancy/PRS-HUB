@@ -119,8 +119,14 @@ public class Test {
 //            lines.add(sc.nextLine());
 //        }
 //        Long y = System.currentTimeMillis();
-        String path = "E:\\test\\P+T\\Height.QC.gz";
-        FileUtil.getGZIPDataHeaderByFileName(path);
+//        String path = "E:\\test\\P+T\\Height.QC.gz";
+//        FileUtil.getGZIPDataHeaderByFileName(path);
+
+        Set<Object> stringSet = new HashSet<>();
+        stringSet.add(2L);
+        stringSet.add(3L);
+        stringSet.add(2L);
+        System.out.println(stringSet.toString());
 
     }
 

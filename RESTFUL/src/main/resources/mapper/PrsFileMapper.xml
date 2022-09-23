@@ -7,6 +7,8 @@
         <id column="id" property="id" />
         <result column="user_id" property="userId" />
         <result column="identifier" property="identifier" />
+        <result column="parsing_id" property="parsingId" />
+        <result column="parsing_status" property="parsingStatus" />
         <result column="file_path" property="filePath" />
         <result column="file_name" property="fileName" />
         <result column="file_suffix" property="fileSuffix" />

@@ -36,6 +36,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -111,6 +112,23 @@ public class FileServiceImpl implements FileService {
 
         return prsFileList;
     }
+
+    @Override
+    public List<PrsFile> getFileListByColumnMap(Map<String, Set<Object>> columnMap) throws Exception {
+        log.info("根据columnMap获取文件获取文件信息,prsFile="+JSON.toJSONString(columnMap));
+        QueryWrapper<PrsFile> queryWrapper = new QueryWrapper<>();
+
+        for (String key :columnMap.keySet()) {
+            queryWrapper.in(key,columnMap.get(key));
+        }
+        queryWrapper.eq("is_delete",0);
+        log.info("根据columnMap调用bo查询文件的信息开始queryWrapper="+JSON.toJSON(queryWrapper));
+        List<PrsFile> prsFileList = fileBo.list(queryWrapper);
+        log.info("根据columnMap调用bo查询文件的信息结束prsFileList="+JSON.toJSON(prsFileList));
+
+        return prsFileList;
+    }
+
     @Override
     public IPage<PrsFile> getFileList(PrsFileReqDTO prsFileReqDTO) throws Exception {
         log.info("文件service根据prsFileReqDTO分页查询文件信息,prsFileReqDTO="+JSON.toJSONString(prsFileReqDTO));

@@ -9,7 +9,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * </p>
  *
  * @author fansp
- * @since 2022-08-10
+ * @since 2022-09-22
  */
 public interface PrsFileBo extends IService<PrsFile> {
 

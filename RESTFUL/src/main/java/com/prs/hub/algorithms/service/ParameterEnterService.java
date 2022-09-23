@@ -16,7 +16,7 @@ public interface ParameterEnterService {
      * 查询算法详细信息
      * @return
      */
-    Boolean setParametersInfo(AlgorithmsReqDTO algorithmsReqDTO) throws Exception;
+    Boolean setParametersInfo(AlgorithmsReqDTO algorithmsReqDTO,String userId) throws Exception;
     /**
      * 删除录入参数记录
      * @param parameterEnterReqDTO
