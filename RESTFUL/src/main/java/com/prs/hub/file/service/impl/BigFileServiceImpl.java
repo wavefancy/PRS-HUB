@@ -117,8 +117,13 @@ public class BigFileServiceImpl implements BigFileService {
             resMap.put("flag",resFlag);
             return resMap;
         }
+
+        String fileNameInput = param.getFileNameInput();
+        String fileName = param.getFilename();
+
+        String onlyName = StringUtils.isNotEmpty(fileNameInput) ? fileNameInput : fileName.substring(0 ,fileName.indexOf("."));
         // 判断目录是否存在，不存在则创建目录
-        File savePath = new File(uploadFilePath+ File.separator + email + File.separator + param.getIdentifier() );
+        File savePath = new File(uploadFilePath+ File.separator + email + File.separator + param.getIdentifier()+ File.separator+onlyName );
         if (!savePath.exists()) {
             boolean flag = savePath.mkdirs();
             if (!flag) {
@@ -127,17 +132,16 @@ public class BigFileServiceImpl implements BigFileService {
                 return resMap;
             }
         }
-        String fileNameInput = param.getFileNameInput();
-        String fileName = param.getFilename();
+
         //获取到后缀名
-        String suffixName = fileName.contains(".") ? fileName.substring(fileName.lastIndexOf(".")) : null;
+        String suffixName = fileName.contains(".") ? fileName.substring(fileName.indexOf(".")) : null;
         log.info("后缀名suffixName="+suffixName);
 
         // 这里可以使用 uuid 来指定文件名，上传完成后再重命名
         String fullFileName = savePath + File.separator + (StringUtils.isNotEmpty(fileNameInput) ? fileNameInput+suffixName : fileName);
         log.info("文件完整路径fullFileName="+fullFileName);
 
-        resMap.put("fileName",StringUtils.isNotEmpty(fileNameInput) ? fileNameInput : fileName.substring(0 ,fileName.lastIndexOf(".")));
+        resMap.put("fileName",onlyName);
         resMap.put("suffixName",suffixName);
         resMap.put("filePath",savePath + File.separator );
 

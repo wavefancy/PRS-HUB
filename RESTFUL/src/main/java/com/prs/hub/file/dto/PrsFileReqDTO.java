@@ -2,6 +2,7 @@ package com.prs.hub.file.dto;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.prs.hub.commons.BasePage;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,6 +25,11 @@ public class PrsFileReqDTO extends BasePage implements Serializable {
     /**用户id**/
     private Long userId;
 
+    /**文件格式解析工作流id**/
+    private String parsingId;
+
+    /**文件格式解析工作流状态：Y:完成、N:未完成**/
+    private String parsingStatus;
     /**路径**/
     private String filePath;
 

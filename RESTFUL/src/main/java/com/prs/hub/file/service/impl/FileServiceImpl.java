@@ -17,6 +17,7 @@ import com.prs.hub.file.service.FileService;
 import com.prs.hub.practice.bo.PrsFileBo;
 import com.prs.hub.practice.entity.ParameterEnter;
 import com.prs.hub.practice.entity.PrsFile;
+import com.prs.hub.utils.CromwellUtil;
 import com.prs.hub.utils.MultipartFileToFileUtil;
 import com.prs.hub.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -48,6 +49,8 @@ public class FileServiceImpl implements FileService {
     @Autowired
     private FileChunkService fileChunkService;
 
+    @Value("${cromwell.workflows.status.url}")
+    private  String workflowsStatusUrl;
     @Override
     public BaseResult upLoadFiles(String filePath,String fileName, MultipartFile file) {
         log.info("文件上传service开始filePath="+ filePath);
@@ -141,6 +144,9 @@ public class FileServiceImpl implements FileService {
         }
         if(StringUtils.isNotEmpty(prsFileReqDTO.getFileType())){
             queryWrapper.eq("file_type",prsFileReqDTO.getFileType());
+        }
+        if(StringUtils.isNotEmpty(prsFileReqDTO.getParsingStatus())){
+            queryWrapper.eq("parsing_status",prsFileReqDTO.getParsingStatus());
         }
         queryWrapper.orderByDesc("created_date");
         IPage<PrsFile> iPage = new Page<>();
@@ -343,7 +349,42 @@ public class FileServiceImpl implements FileService {
             }
         }
     }
+    /**
+     * 定时任务：每30分钟检查file表ParsingStatus数据，纯在‘N’类型的结果则查询工作流状态若成功则变更为'Y'
+     */
+    @Scheduled(cron = "0 30 * * * ?")
+    private void  updateParsingStatus(){
+        log.info("定时任务：每30分钟检查file表ParsingStatus数据，纯在‘N’类型的结果则查询工作流状态若成功则变更为'Y'");
+        QueryWrapper<PrsFile> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("parsing_status","N");
+        queryWrapper.eq("file_type","LD");
+        IPage<PrsFile> iPage = new Page<>();
+        log.info("调用bo查询ParsingStatus数据，纯在‘N’类型的结果开始queryWrapper="+JSON.toJSON(queryWrapper));
+        List<PrsFile> prsFileList = fileBo.list(queryWrapper);
+        log.info("调用bo查询ParsingStatus数据，纯在‘N’类型的结果结束prsFileList="+JSON.toJSON(prsFileList));
 
+        if(CollectionUtils.isNotEmpty(prsFileList)){
+            for (PrsFile prsFile:prsFileList) {
+
+                String weUuid = prsFile.getParsingId();
+                String statusStr = CromwellUtil.workflowsStatus(workflowsStatusUrl,weUuid);
+                if("Succeeded".equals(statusStr)){
+                    PrsFile updatePrsFile = new PrsFile();
+                    updatePrsFile.setId(prsFile.getId());
+                    updatePrsFile.setParsingStatus("Y");
+
+                    UpdateWrapper<PrsFile> updateWrapper = new UpdateWrapper<>();
+                    updateWrapper.eq("id",prsFile.getId());
+
+                    log.info("工作流状态若成功则ParsingStatus变更为'Y' updatePrsFile="+JSON.toJSONString(updatePrsFile));
+                    boolean flag = fileBo.update(updatePrsFile,updateWrapper);
+                    log.info("工作流状态若成功则ParsingStatus变更为'Y'结束 flag="+flag);
+                    
+                }
+            }
+        }
+
+    }
     /**
      * 物理删除文件
      * @param prsFile
@@ -351,14 +392,13 @@ public class FileServiceImpl implements FileService {
      */
     @Override
     public  Boolean deletePrsFile(PrsFile prsFile){
-        //文件全路径
-        String fileFullPath = prsFile.getFilePath()+prsFile.getFileName()+prsFile.getFileSuffix();
+        //文件路径
+        String fileFullPath = prsFile.getFilePath();
         log.info("要删除的文件全路径fileFullPath="+fileFullPath);
 
         //删除文件
         File delteFile = new File(fileFullPath);
-        Boolean delteFlag = MultipartFileToFileUtil.delteTempFile(delteFile);
-        log.info("删除文件delteFlag="+delteFlag);
+        MultipartFileToFileUtil.delteTempFile(delteFile);
 
         log.info("物理删除文件记录开始prsFile="+JSON.toJSONString(prsFile));
         Boolean removeRes =  fileBo.removeById(prsFile);

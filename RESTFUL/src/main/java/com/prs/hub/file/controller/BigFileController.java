@@ -178,8 +178,7 @@ public class BigFileController {
             log.info("删除文件分片信息deleteFileChunk="+JSON.toJSONString(deleteFileChunk));
             //删除存储的文件
             File delteFile = new File(fullFileName);
-            Boolean delteFlag = MultipartFileToFileUtil.delteTempFile(delteFile);
-            log.info("删除文件delteFlag="+delteFlag);
+            MultipartFileToFileUtil.delteTempFile(delteFile);
         }
         resMap.put("flag",flag);
         log.info("校验结束resMap="+JSON.toJSONString(resMap));

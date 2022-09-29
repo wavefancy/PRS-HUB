@@ -19,18 +19,18 @@ export default {
             ldFileId:null,
             referencePanel:"",
             referenceList:[
-                {
-                    name:'1000G EUR'
-                },
-                {
-                    name:'1000G AFR'
-                },
-                {
-                    name:'1000G SAS'
-                },
-                {
-                    name:'1000G EAS'
-                }
+                // {
+                //     name:'1000G EUR'
+                // },
+                // {
+                //     name:'1000G AFR'
+                // },
+                // {
+                //     name:'1000G SAS'
+                // },
+                // {
+                //     name:'1000G EAS'
+                // }
             ]
         }
     },
@@ -42,6 +42,7 @@ export default {
     mounted(){
         let subData = {
           fileType:'LD',
+          parsingStatus:'Y'
         }
         //提交参数
         Prs.getFileList(subData).then(response => {

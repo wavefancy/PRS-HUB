@@ -138,6 +138,15 @@ export default {
           }
         })
       },
+    },
+    mounted () {
+      //如果已经登录过了直接跳转
+       if (localStorage.getItem("accessToken")) {
+        //跳转home页
+        this.$router.push({
+          name:'functionItem'
+        });
+       }
     }
 }
 </script>

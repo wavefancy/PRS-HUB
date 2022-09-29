@@ -2,6 +2,7 @@ package com.prs.hub;
 
 import com.alibaba.fastjson.JSON;
 import com.prs.hub.utils.FileUtil;
+import com.prs.hub.utils.MultipartFileToFileUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -121,12 +122,8 @@ public class Test {
 //        Long y = System.currentTimeMillis();
 //        String path = "E:\\test\\P+T\\Height.QC.gz";
 //        FileUtil.getGZIPDataHeaderByFileName(path);
-
-        Set<Object> stringSet = new HashSet<>();
-        stringSet.add(2L);
-        stringSet.add(3L);
-        stringSet.add(2L);
-        System.out.println(stringSet.toString());
+        File delteFile = new File("E:\\UploadFile\\15110151301@163.com");
+        MultipartFileToFileUtil.delteTempFile(delteFile);
 
     }
 

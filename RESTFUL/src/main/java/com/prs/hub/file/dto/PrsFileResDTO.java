@@ -23,6 +23,11 @@ public class PrsFileResDTO implements Serializable {
 
     /**用户id**/
     private Long userId;
+    /**文件格式解析工作流id**/
+    private String parsingId;
+
+    /**文件格式解析工作流状态：Y:完成、N:未完成**/
+    private String parsingStatus;
     /**
      * 文件标识
      */

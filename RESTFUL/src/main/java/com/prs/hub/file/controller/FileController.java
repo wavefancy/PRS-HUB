@@ -20,7 +20,9 @@ import com.prs.hub.sftpsystem.service.SFTPSystemService;
 import com.prs.hub.runnerdetail.dto.RunnerStatisDTO;
 import com.prs.hub.runnerdetail.dto.RunnerStatisReqDTO;
 import com.prs.hub.statistics.service.StatisticsService;
+import com.prs.hub.utils.FileUtil;
 import com.prs.hub.utils.HttpClientUtil;
+import com.prs.hub.utils.MultipartFileToFileUtil;
 import com.prs.hub.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -60,6 +62,17 @@ public class FileController {
      */
     @Value("${cromwell.workflows.url}")
     private String cromwellUrl;
+    /**
+     * ld文件解析wdl脚本地址地址
+     */
+    @Value("${ldref.generator.wdl.path}")
+    private String ldGenerator;
+    /**
+     * ld解析的sh文件脚本地址
+     *
+     */
+    @Value("${ldref.generator.algorithm.path}")
+    private String ldGeneratorAlgorithm;
 
     /**
      * 获取文件信息
@@ -85,6 +98,8 @@ public class FileController {
                 for (PrsFile prsFileRes:prsFileIPage.getRecords()) {
                     PrsFileResDTO prsFileResDTO = new PrsFileResDTO();
                     BeanUtils.copyProperties(prsFileRes,prsFileResDTO);
+                    String fileType = prsFileResDTO.getFileType();
+                    String parsingStatus = prsFileResDTO.getParsingStatus();//ld文件解析状态
 
                     LocalDateTime modifiedDate = prsFileRes.getModifiedDate();
                     LocalDateTime createdDate = prsFileRes.getCreatedDate();
@@ -96,7 +111,9 @@ public class FileController {
                         LocalDateTime now = LocalDateTime.now();
                         LocalDateTime checkDate = now.plusDays(30);
                         prsFileResDTO.setDeleteDate(deleteDate.format(df));
-                        if(now.isAfter(deleteDate)&&!(now.format(df).equals(deleteDate.format(df)))){
+                        if("LD".equals(fileType) && "N".equals(parsingStatus)){
+                            prsFileResDTO.setStatus("unconverted ");//未转换
+                        }else if(now.isAfter(deleteDate)&&!(now.format(df).equals(deleteDate.format(df)))){
                             prsFileResDTO.setStatus("expired");//失效
                         }else if(checkDate.format(df).equals(deleteDate.format(df))){
                             prsFileResDTO.setStatus("refreshed");//已延期
@@ -246,27 +263,41 @@ public class FileController {
         try {
             //将上传文件信息存储到数据库
             PrsFile prsFile = new PrsFile();
-//            if("LD".equals(fileType)){
-//                //调用文件解析工作流对上传的LD文件进行解析
-//                File inputFile = new File("inputPath");
-//                File wdlFile = new File("wdlPath");
-//
-//                Map<String,File> fileMap = new HashMap<>();
-//                fileMap.put("workflowInputs",inputFile);
-//                fileMap.put("workflowSource",wdlFile);
-//
-//                log.info("访问cromwell提交工作流");
-//                String resultmsg = HttpClientUtil.httpClientUploadFileByfile(fileMap,cromwellUrl);
-//                log.info("访问cromwell提交工作流返回结果"+JSON.toJSONString(resultmsg));
-//                String cromwellId = null;
-//                if(StringUtils.isNotEmpty(resultmsg)){
-//                    JSONObject cromwellResult = JSON.parseObject(resultmsg);
-//                    cromwellId = cromwellResult.get("id").toString();
-//                    prsFile.setParsingId(cromwellId);
-//                    prsFile.setParsingStatus("N");//N代表未解析完成
-//                }
-//
-//            }
+            if("LD".equals(fileType)){
+                //调用文件解析工作流,对上传的LD文件进行解析
+
+                //组装input文件
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("ldref_generator.script_0",ldGeneratorAlgorithm);
+                jsonObject.put("ldref_generator.pgenfile_1_value",filePath+fileName);
+                log.info("进行LD文件解析,组装input文件"+jsonObject.toJSONString());
+
+                //参数文件地址
+                String inputFilePath = uploadFilePath+fileName+System.currentTimeMillis()+"_inputFile.json";
+                log.info("将参数写入文件中inputFilePath="+inputFilePath);
+                FileUtil.writerJsonFile(inputFilePath,jsonObject);
+
+                File inputFile = new File(inputFilePath);
+                File wdlFile = new File(ldGenerator);
+
+                Map<String,File> fileMap = new HashMap<>();
+                fileMap.put("workflowInputs",inputFile);
+                fileMap.put("workflowSource",wdlFile);
+
+                log.info("进行LD文件解析访问cromwell提交工作流");
+                String resultmsg = HttpClientUtil.httpClientUploadFileByfile(fileMap,cromwellUrl);
+                log.info("进行LD文件解析访问cromwell提交工作流返回结果"+JSON.toJSONString(resultmsg));
+                String cromwellId = null;
+                if(StringUtils.isNotEmpty(resultmsg)){
+                    JSONObject cromwellResult = JSON.parseObject(resultmsg);
+                    cromwellId = cromwellResult.get("id").toString();
+                    prsFile.setParsingId(cromwellId);
+                    prsFile.setParsingStatus("N");//N代表未解析完成
+                }
+
+                //删除本地临时文件
+                MultipartFileToFileUtil.delteTempFile(inputFile);
+            }
 
 
             prsFile.setDescrition(descrition);

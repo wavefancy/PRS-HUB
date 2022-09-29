@@ -32,7 +32,7 @@
                 <input type="text" class="form-control" v-model.trim="descrition" ref="descrition"/>
               </div>
             </div>
-            <VueSimpleUploader :fileName="fileName"  attr=".pgen,.pgi"></VueSimpleUploader>
+            <VueSimpleUploader :fileName="fileName"  attr=".gz"></VueSimpleUploader>
             <!-- <div class=" rounded
                 border-2 border-dashed border-primary-hover
                 position-relative " >
@@ -399,7 +399,7 @@
       },
       //延长文件有效时间
       extensionFileValidTime(id,status){
-        if(status==="refreshed"){
+        if(status==="refreshed" || status === 'unconverted'){
           return false;
         }
         let subData = {
