@@ -165,7 +165,8 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
                 if(gwasFileId.equals(file.getId())){
                     gwasFilePathList.add(file.getFilePath()+file.getFileName()+file.getFileSuffix());
                 }else if(ldFileId.equals(file.getId())){
-                    ldFilePathList.add(file.getFilePath());
+                    String ldFilePath = file.getFilePath();
+                    ldFilePathList.add(((ldFilePath.length()-1 ==ldFilePath.lastIndexOf( File.separator)) ? ldFilePath.substring(0,ldFilePath.lastIndexOf( File.separator)) : ldFilePath) );
                 }
             }
 
@@ -205,7 +206,9 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
                 //页面上传GWAS文件完整地址
                 resMap.put(fileType,file.getFilePath()+file.getFileName()+file.getFileSuffix());
             }else{
-                resMap.put(fileType,file.getFilePath());
+                String ldFilePath = file.getFilePath();
+                //去掉最后一个目录分隔符
+                resMap.put(fileType,((ldFilePath.length()-1 ==ldFilePath.lastIndexOf( File.separator)) ? ldFilePath.substring(0,ldFilePath.lastIndexOf( File.separator)) : ldFilePath) );
             }
         }
 
@@ -287,6 +290,9 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
                 }
                 //拼装json
                 jsonObject.put(name+"."+parameterEnterReqDTO.getName()+"_1_value",valIntArr);
+            }else if(StringUtils.isNotEmpty(type) && type.indexOf("String(not an array)") != -1){
+                //拼装json
+                jsonObject.put(name+"."+parameterEnterReqDTO.getName()+"_1_value",parameterEnterReqDTO.getValue());
             }else{
                 //拼装json
                 jsonObject.put(name+"."+parameterEnterReqDTO.getName()+"_1_value",valArr);
@@ -305,6 +311,7 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
         //参数文件地址
         String inputPath = uploadFilePath+System.currentTimeMillis()+fileName;
         log.info("将参数写入文件中inputPath="+inputPath);
+        log.info("参数jsonObject="+jsonObject.toJSONString());
         FileUtil.writerJsonFile(inputPath,jsonObject);
         resMap.put("inputPath",inputPath);
 

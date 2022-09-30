@@ -82,13 +82,16 @@
                     </td>
                     <td class="text-end" >
                       <a v-if="file.status==='Finished'" href="#" class="btn btn-sm btn-neutral operate bg-yellow-500 text-white" 
-                        
                         @click.stop="downloadResult(file.uuid,file.name,file.algorithmsName)">
                         download
                       </a>
-                      <a v-if="file.status==='Not started' || file.status=== 'Running'" href="#" class="btn btn-sm btn-neutral operate" @click.stop="abortRunner(file.uuid)">stop</a>
+                      <a v-if="file.status==='Failed'" href="#" class="btn btn-sm btn-neutral operate bg-red-500 text-white" 
+                        @click.stop="downloadFailedResult(file.uuid,file.name,file.algorithmsName)">
+                        error_log
+                      </a>
+                      <a v-if="file.status==='Submitted' || file.status=== 'Started'" href="#" class="btn btn-sm btn-neutral operate" @click.stop="abortRunner(file.uuid)">stop</a>
                       <button
-                        v-if="file.status==='Finished' || file.status=== 'Project at risk' || file.status=== 'Stopped'"
+                        v-if="file.status==='Finished' || file.status=== 'Failed' || file.status=== 'Stopped'"
                         type="button"
                         class=" operate btn btn-sm btn-square btn-neutral text-danger-hover "
                         @click.stop="deleteRunner(file.uuid,file.runnerId,file.status)"
@@ -102,10 +105,12 @@
               <div class="pagination">
                 <el-pagination
                   @current-change="changePage"
+                  @size-change="handleSizeChange"
                   :current-page="currentPage"
                   :background="true"
-                  layout="prev, pager, next"
+                  layout="sizes, prev, pager, next"
                   :total="total"
+                  :page-sizes="[5, 10, 15, 20]"
                   :page-size="pageSize">
                 </el-pagination>
               </div>
@@ -159,7 +164,7 @@ export default {
         loading:false,
         showDetail:{},
         total:0,
-        pageSize:3,
+        pageSize:5,
         currentPage:1
       }
   },
@@ -203,10 +208,13 @@ export default {
           console.log(err);
       })
     },
-    init(val){
+    downloadFailedResult(){
+      
+    },
+    init(currentPage,pageSize){
       let subData = {
-          size:this.pageSize,
-          current:val
+          size:pageSize,
+          current:currentPage
         }
        Prs.getRunnerStatis(subData).then((response) => {
         if(response.code === 0){
@@ -237,19 +245,19 @@ export default {
               const runnerStatus = runnerDTO.runnerStatus
               if(runnerStatus === "0"){
                 //状态
-                file.status = "Not started"
+                file.status = "Submitted"
                 //不同状态对应的样式
                 file.colorClass = "bg-secondary"
                 //进度 整数:100~0
                 file.progress = "0"
                 stopedTimerFlag = false
               }else if(runnerStatus === "1"){
-                file.status = "Running"
+                file.status = "Started"
                 file.colorClass = "bg-warning"
                 file.progress = "10"
                 stopedTimerFlag = false
               }else if(runnerStatus === "2"){
-                file.status = "Project at risk"
+                file.status = "Failed"
                 file.colorClass = "bg-danger"
                 file.progress = "50"
               }else if(runnerStatus === "3"){
@@ -273,7 +281,6 @@ export default {
             
             if(stopedTimerFlag){
               //如果没有在进行中的数据则清除定时器
-              console.log("如果没有在进行中的数据则清除定时器")
               clearInterval(this.timer);
             }
           }else{
@@ -303,28 +310,32 @@ export default {
         runnerId:runnerId,
         status:status
       }
-    
-      //加载中
-      this.loading=true
-      Prs.deleteRunner(subData).then((response) => {
-        //加载中
-        this.loading=false
-        if(response.code === 0){
-          const data = response.data
-          if(data.code === 0){
-            //提示框
-              this.$MessageBox.alert("Deleting data Succeeded !", 'Message', {
-                confirmButtonText: 'OK',
-                callback: () => {
-                              
+      this.$MessageBox.alert("Are you sure you want to delete it !", 'Message', {
+        confirmButtonText: 'OK',
+        callback: (callVal) => {
+          if("confirm" === callVal){
+            //加载中
+            this.loading=true
+            Prs.deleteRunner(subData).then((response) => {
+              //加载中
+              this.loading=false
+              if(response.code === 0){
+                const data = response.data
+                if(data.code === 0){
+                  //提示框
+                  this.$message.success("Deleting data Succeeded !")
                   //刷新页面数据
-                  this.init();
+                  this.init(this.currentPage,this.pageSize);
+                  this.loading=false
                 }
-
-              })
+              }
+            })
           }
+          
         }
+
       })
+      
     },
     //中止
     abortRunner(uuid){
@@ -345,7 +356,7 @@ export default {
                 confirmButtonText: 'OK',
                 callback: () => {
                   //刷新页面数据
-                  this.init();
+                  this.init(this.currentPage,this.pageSize);
                 }
 
               })
@@ -362,11 +373,16 @@ export default {
     },
     //翻页
     changePage(val){
-      this.init(val)
+      this.currentPage = val
+      this.init(this.currentPage,this.pageSize)
+    },
+    handleSizeChange(val){
+      this.pageSize = val
+      this.init(this.currentPage,this.pageSize)
     }
   },
   mounted () {
-    this.init()
+    this.init(this.currentPage,this.pageSize)
 
  /*
        最初始情况，项目刚打开的时候，这个时候页面是必定没有定时器的，那么逻辑就会走else，这个时候就会注册一个定时器去循环调用相应逻辑代码
@@ -380,15 +396,13 @@ export default {
       //清除定时器
       clearInterval(this.timer);
     } else {
-      console.log("开启定时器")
-      this.timer = setInterval(this.init, 10000);//10秒定时刷新数据
+      this.timer = setInterval(this.init(this.currentPage,this.pageSize), 10000);//10秒定时刷新数据
     }
 
   },
   
   beforeDestroy() {
     //清除定时器
-    console.log("清除定时器")
     clearInterval(this.timer);
   },
 };

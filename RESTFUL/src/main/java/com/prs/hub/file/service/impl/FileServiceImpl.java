@@ -379,7 +379,7 @@ public class FileServiceImpl implements FileService {
                     log.info("工作流状态若成功则ParsingStatus变更为'Y' updatePrsFile="+JSON.toJSONString(updatePrsFile));
                     boolean flag = fileBo.update(updatePrsFile,updateWrapper);
                     log.info("工作流状态若成功则ParsingStatus变更为'Y'结束 flag="+flag);
-                    
+
                 }
             }
         }

@@ -143,7 +143,7 @@
                       </div>
                     </td>
                     <td>
-                      <a href="#"   class="btn btn-sm btn-neutral operate" :class=" file.status==='refreshed'? 'refreshed':'' " @click.prevent="extensionFileValidTime(file.id,file.status)">Refresh</a>
+                      <a href="#"   class="btn btn-sm btn-neutral operate" :class=" (file.status==='refreshed' || file.status==='unconverted')? 'refreshed':'' " @click.prevent="extensionFileValidTime(file.id,file.status)">Refresh</a>
                       <button
                         type="button"
                         class="
@@ -162,10 +162,12 @@
               <div class="pagination">
                 <el-pagination
                   @current-change="changePage"
+                  @size-change="handleSizeChange"
                   :current-page="currentPage"
                   :background="true"
-                  layout="prev, pager, next"
+                  layout="sizes, prev, pager, next"
                   :total="total"
+                  :page-sizes="[5, 10, 15, 20]"
                   :page-size="pageSize">
                 </el-pagination>
               </div>
@@ -212,7 +214,7 @@
             uplodMsg:"",
             hintUrl:"./img/hint.png",
             total:0,
-            pageSize:3,
+            pageSize:5,
             currentPage:1
         }
     },
@@ -251,7 +253,7 @@
               this.fileName=""
               this.descrition=""
               //刷新table
-              this.getFileList()
+              this.getFileList(this.currentPage,this.pageSize)
             }else{
               //提示框
               this.$MessageBox.alert(msg, 'Message', {
@@ -315,7 +317,7 @@
         //         this.uplodMsg = "successful"
         //         this.fileSize = fileSize<1024? fileSize+"b" : (Decimal.div(fileSize,1024)<1024 ? Decimal.div(fileSize,1024).toFixed(2, Decimal.ROUND_HALF_UP)+"kb" : Decimal.div(Decimal.div(fileSize,1024),1024).toFixed(2, Decimal.ROUND_HALF_UP)+"mb"  )
         //         //刷新table
-        //         this.getFileList()
+        //         this.getFileList(this.currentPage,this.pageSize)
         //       }else{
         //         //提示框
         //         this.$MessageBox.alert(msg, 'Message', {
@@ -338,12 +340,12 @@
         //   })
         // }
       },
-      getFileList(val){
+      getFileList(currentPage,pageSize){
         let subData = {
           // fileType:'GWAS',
           fileType:this.type,
-          size:this.pageSize,
-          current:val
+          size:pageSize,
+          current:currentPage
         }
         //提交参数
         Prs.getFileList(subData).then(response => {
@@ -392,7 +394,7 @@
                 type: 'success',
                 duration: 2 * 1000
               })
-              this.getFileList();
+              this.getFileList(this.currentPage,this.pageSize);
             }
           }
         })
@@ -414,27 +416,33 @@
                 type: 'success',
                 duration: 2 * 1000
               })
-              this.getFileList();
+              this.getFileList(this.currentPage,this.pageSize);
             }
           }
         })
       },
       //翻页
       changePage(val){
-        this.getFileList(val)
+        this.currentPage = val
+        this.getFileList(this.currentPage,this.pageSize)
+      },
+      handleSizeChange(val){
+        this.pageSize = val
+        this.getFileList(this.currentPage,this.pageSize)
       }
+      
     },
     //数据初始化
     mounted(){
       //为总线绑定函数
       this.$bus.$on('fileChange',this.fileChange)
-      this.getFileList();
+      this.getFileList(this.currentPage,this.pageSize);
     },
     watch: {
       type:{
          // 数据发生变化就会调用这个函数  
           handler() {
-            this.getFileList();
+            this.getFileList(this.currentPage,this.pageSize);
             this.fileSize=''
             this.descrition=''
             this.fileName=''

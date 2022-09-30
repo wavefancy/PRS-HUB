@@ -104,10 +104,12 @@
               <div class="pagination">
                 <el-pagination
                   @current-change="changePage"
+                  @size-change="handleSizeChange"
                   :current-page="currentPage"
                   :background="true"
-                  layout="prev, pager, next"
+                  layout="sizes, prev, pager, next"
                   :total="total"
+                  :page-sizes="[5, 10, 15, 20]"
                   :page-size="pageSize">
                 </el-pagination>
               </div>
@@ -174,7 +176,7 @@
               this.fileName=""
               this.descrition=""
               //刷新table
-              this.getFileList()
+              this.getFileList(this.currentPage,this.pageSize)
               return true;
             }else{
               //提示框
@@ -196,11 +198,11 @@
 
         })
       },
-      getFileList(val){
+      getFileList(currentPage,pageSize){
         let subData = {
           fileType:this.type,
-          size:this.pageSize,
-          current:val
+          size:pageSize,
+          current:currentPage
         }
         //提交参数
         Prs.getFileList(subData).then(response => {
@@ -265,7 +267,7 @@
                 type: 'success',
                 duration: 2 * 1000
               })
-              this.getFileList();
+              this.getFileList(this.currentPage,this.pageSize);
             }
           }
         })
@@ -287,14 +289,19 @@
                 type: 'success',
                 duration: 2 * 1000
               })
-              this.getFileList();
+              this.getFileList(this.currentPage,this.pageSize);
             }
           }
         })
       },
       //翻页
       changePage(val){
-        this.getFileList(val)
+        this.currentPage = val
+        this.getFileList(this.currentPage,this.pageSize)
+      },
+      handleSizeChange(val){
+        this.pageSize = val
+        this.getFileList(this.currentPage,this.pageSize)
       }
     },
     //数据初始化
@@ -302,13 +309,13 @@
       
       //为总线绑定函数
       this.$bus.$on('fileChange',this.fileChange)
-      this.getFileList();
+      this.getFileList(this.currentPage,this.pageSize);
     },
     watch: {
       type:{
          // 数据发生变化就会调用这个函数  
           handler() {
-            this.getFileList();
+            this.getFileList(this.currentPage,this.pageSize);
             this.fileSize=''
             this.descrition=''
             this.fileName=''

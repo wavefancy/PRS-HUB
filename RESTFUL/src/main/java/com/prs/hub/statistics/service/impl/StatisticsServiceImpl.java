@@ -170,7 +170,7 @@ public class StatisticsServiceImpl implements StatisticsService {
                         if(CollectionUtils.isNotEmpty(metadataEntryList)){
                             for (MetadataEntry metadataEntry:metadataEntryList) {
                                 String metadataKey = metadataEntry.getMetadataKey();
-                                if("outputs:out".equals(metadataKey)){
+                                if("outputs:out".equals(metadataKey) && StringUtils.isNotEmpty(metadataEntry.getMetadataValue()) && metadataEntry.getMetadataValue().endsWith(".tar.gz") ){
                                     resultPath = metadataEntry.getMetadataValue();
                                     break;
                                 }

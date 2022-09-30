@@ -6,9 +6,17 @@ import VueRouter from 'vue-router'
 import store from './store'
 //引入路由器router
 import router from './router'
+
 //引入lodaing组件
 import VueElementLoading from 'vue-element-loading'
 import {Pagination,Message , MessageBox,Tooltip  } from 'element-ui'
+
+import lang from 'element-ui/lib/locale/lang/en'
+import locale from 'element-ui/lib/locale'
+
+// 设置Element语言
+locale.use(lang)
+
 //引入element-ui全局样式
 import 'element-ui/lib/theme-chalk/index.css'
 //

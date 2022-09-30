@@ -40,7 +40,7 @@ public class RunnerDetailToFileServiceImpl implements RunnerDetailToFileService 
             queryWrapper.eq("id",runnerDetailToFileReqDTO.getId());
         }
         if(runnerDetailToFileReqDTO.getRunnerId() != null){
-            queryWrapper.eq("runnerId",runnerDetailToFileReqDTO.getRunnerId());
+            queryWrapper.eq("runner_id",runnerDetailToFileReqDTO.getRunnerId());
         }
 
         log.info("删除RunnerDetailToFile关联表数据开始");
@@ -78,6 +78,7 @@ public class RunnerDetailToFileServiceImpl implements RunnerDetailToFileService 
             runnerDetailToFile.setCreatedUser("system");
             runnerDetailToFile.setModifiedDate(localDateTime);
             runnerDetailToFile.setModifiedUser("system");
+            runnerDetailToFile.setIsDelete(0);
         }
         UpdateWrapper<RunnerDetailToFile> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("id",runnerDetailToFileReqDTO.getId());
@@ -116,6 +117,7 @@ public class RunnerDetailToFileServiceImpl implements RunnerDetailToFileService 
             runnerDetailToFile.setCreatedUser("system");
             runnerDetailToFile.setModifiedDate(localDateTime);
             runnerDetailToFile.setModifiedUser("system");
+            runnerDetailToFile.setIsDelete(0);
             runnerDetailToFiles.add(runnerDetailToFile);
         }
 

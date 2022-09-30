@@ -153,7 +153,8 @@ export default {
         //选择的gwas上传文件id
         gwasFileId:null,
         //参考
-        referencePanel:"",
+        fileLDId:null,
+        ldName:"",
         //正在配置参数的算法id
         settingPId:null,
         //参数弹窗展示的参数数据
@@ -267,7 +268,7 @@ export default {
           })
           return
         }
-        if(isEmpty(this.referencePanel)){
+        if(isEmpty(this.fileLDId)){
           //提示框
           this.$MessageBox.alert('Please Select LD reference panel !', 'Message', {
             confirmButtonText: 'OK',
@@ -278,7 +279,7 @@ export default {
           algorithmList:this.algorithmsData,
           jobName:this.jobName,
           fileGWASId:this.gwasFileId,
-          fileLDId:this.referencePanel,
+          fileLDId:this.fileLDId,
           headers: {'accessToken':  localStorage.getItem("accessToken")}
         }
         //加载中
@@ -332,9 +333,10 @@ export default {
 					name:'statistics'
 				});
       },
-      //
-      referenceSelect(val){
-        this.referencePanel=val;
+      //选择的LD的文件id
+      referenceSelect(val,ldName){
+        this.fileLDId=val;
+        this.ldName=ldName;
       },
       //选择的gwasfile的id
       gwasPanelSelect(val){
