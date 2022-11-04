@@ -16,7 +16,7 @@
               <div class="hstack gap-2 justify-content-end">
                 <a href="#!" class="text-sm text-muted text-primary-hover font-semibold me-2 d-none d-md-block">
                   <i class="bi bi-question-circle-fill"></i>
-                  <span class="d-none d-sm-inline ms-2">Need help?</span>
+                  <router-link class="d-none d-sm-inline ms-2" to="/tutorial">Need help?</router-link>
                 </a>
                 <button type="submit" class="btn btn-sm btn-primary"
                   :data-bs-toggle="subModalToggle" 

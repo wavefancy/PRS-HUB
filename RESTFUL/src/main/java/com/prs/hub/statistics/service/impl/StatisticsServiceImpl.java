@@ -108,8 +108,14 @@ public class StatisticsServiceImpl implements StatisticsService {
     @Override
     public Long count(RunnerStatisReqDTO runnerStatisReqDTO){
         log.info("统计runner数据开始runnerStatisReqDTO"+JSON.toJSONString(runnerStatisReqDTO));
+
         QueryWrapper<RunnerDetail> runnerDetailQueryWrapper = new QueryWrapper<>();
-        runnerDetailQueryWrapper.eq("status",runnerStatisReqDTO.getStatus());
+        if(runnerStatisReqDTO != null){
+            if(runnerStatisReqDTO.getStatus() != null){
+                runnerDetailQueryWrapper.eq("status",runnerStatisReqDTO.getStatus());
+            }
+        }
+        runnerDetailQueryWrapper.eq("is_delete",0);
 
         log.info("调用runnerDetailBo统计runner数据开始");
         Long countNum = runnerDetailBo.count(runnerDetailQueryWrapper);

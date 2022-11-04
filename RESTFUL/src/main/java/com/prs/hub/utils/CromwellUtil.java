@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author fanshupeng
@@ -60,6 +61,24 @@ public class CromwellUtil {
         }
         log.info("中止工作流uuid="+uuid+",\n结果flag="+flag);
         return status;
+    }
+
+    /**
+     * post查询工作流信息
+     * @param json
+     * @return
+     */
+    public static Map<String, Object> workflowsQueryPost(String workflowsQueryPostUrl, Object json){
+        log.info("post查询工作流信息");
+        HashMap<String, Object> res = null;
+        try {
+            res = HttpClientUtil.post(json,workflowsQueryPostUrl);
+        }catch (Exception e){
+            log.error("post查询工作流信息失败",e);
+            return res;
+        }
+        log.info("post查询工作流信息结果res="+res.toString());
+        return res;
     }
 
 }

@@ -34,7 +34,7 @@
                     <th scope="col">Job Name</th>
                     <th scope="col">Algorithms Name</th>
                     <th scope="col">Upload Date</th>
-                    <th scope="col">progress</th>
+                    <!-- <th scope="col">progress</th> -->
                     <th scope="col">status</th>
                     <th scope="col">Queue</th>
                     <th></th>
@@ -54,7 +54,7 @@
                       </div>
                     </td>
                     <td>{{file.uploadDate}}</td>
-                    <td>
+                    <!-- <td>
                       <div class="d-flex align-items-center">
                         <span class="me-2">{{file.progress}}%</span>
                         <div>
@@ -71,7 +71,7 @@
                           </div>
                         </div>
                       </div>
-                    </td>
+                    </td> -->
                     <td>
                       <span class="badge badge-lg badge-dot">
                         <i :class="file.colorClass"></i>{{file.status}}
@@ -396,7 +396,7 @@ export default {
       //清除定时器
       clearInterval(this.timer);
     } else {
-      this.timer = setInterval(this.init(this.currentPage,this.pageSize), 10000);//10秒定时刷新数据
+      this.timer = setInterval(this.init(this.currentPage,this.pageSize), 1800000);//30分钟定时刷新数据
     }
 
   },

@@ -1,14 +1,15 @@
 <template>
   <div class="px-5 py-5 p-lg-0 h-screen bg-surface-secondary d-flex flex-column justify-content-center">
-  <vue-element-loading :active="loading" :is-full-screen="true" spinner="ring"/>
+    <Header></Header>
+      <vue-element-loading :active="loading" :is-full-screen="true" spinner="ring"/>
       <div class="d-flex justify-content-center">
         <div class="col-12 col-md-9 col-lg-6 min-h-lg-screen d-flex flex-column justify-content-center py-lg-16 px-lg-20 position-relative">
           <div class="row">
             <div class="col-lg-10 col-md-9 col-xl-7 mx-auto">
               <div class="text-center mb-12">
-                <a class="navbar-brand py-lg-2 mb-lg-5 px-lg-6 me-0" href="#" style="color:#796CFF">
+                <!-- <a class="navbar-brand py-lg-2 mb-lg-5 px-lg-6 me-0" href="/" style="color:#796CFF">
                   <img style="height: 2.875rem;"  :src="imgUrls.primary"  alt="...">PRS-hub
-                </a>
+                </a> -->
                 <h1 class="ls-tight font-bolder mt-6">
                   Welcome back!
                 </h1>
@@ -55,11 +56,15 @@
 </template>
 
 <script>
+import Header from "@/components/commons/HeaderItem.vue"
 import {Account} from "@/api"
 import { isEmpty }  from "@/utils/validate"
 
 export default {
     name:"LoginItem",
+    components: {
+      Header
+    },
     data () {
       return {
         imgUrls:{
@@ -142,10 +147,16 @@ export default {
     mounted () {
       //如果已经登录过了直接跳转
        if (localStorage.getItem("accessToken")) {
-        //跳转home页
-        this.$router.push({
-          name:'functionItem'
-        });
+         Account.getUserInfo().then((response) => {
+          const code = response.code
+          const data = response.data 
+          if(code !="400" && !isEmpty(data)){
+            //跳转home页
+            this.$router.push({
+              name:'functionItem'
+            });
+          }        
+        })
        }
     }
 }

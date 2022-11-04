@@ -67,12 +67,6 @@ public class FileController {
      */
     @Value("${ldref.generator.wdl.path}")
     private String ldGenerator;
-    /**
-     * ld解析的sh文件脚本地址
-     *
-     */
-    @Value("${ldref.generator.algorithm.path}")
-    private String ldGeneratorAlgorithm;
 
     /**
      * 获取文件信息
@@ -268,7 +262,6 @@ public class FileController {
 
                 //组装input文件
                 JSONObject jsonObject = new JSONObject();
-                jsonObject.put("ldref_generator.script_0",ldGeneratorAlgorithm);
                 jsonObject.put("ldref_generator.pgenfile_1_value",filePath+fileName);
                 log.info("进行LD文件解析,组装input文件"+jsonObject.toJSONString());
 

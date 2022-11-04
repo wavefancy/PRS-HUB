@@ -8,6 +8,7 @@ import com.prs.hub.algorithms.dto.AlgorithmReqDTO;
 import com.prs.hub.algorithms.dto.AlgorithmsReqDTO;
 import com.prs.hub.algorithms.dto.ParameterEnterReqDTO;
 import com.prs.hub.algorithms.service.ParameterEnterService;
+import com.prs.hub.constant.LdEnum;
 import com.prs.hub.file.service.FileService;
 import com.prs.hub.practice.bo.AlgorithmsBo;
 import com.prs.hub.practice.bo.ParameterEnterBo;
@@ -96,8 +97,6 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
             List<GWASAndLDFilenameDTO> gwasAndLDFilenameDTOList =  algorithmsReqDTO.getGwasAndLDFilenameDTOList();
             multipleMap = this.getListFilePathMap(gwasAndLDFilenameDTOList );
         }
-        //根据fileGWASId获取file信息
-        PrsFile prsFile = fileService.getFileById(fileGWASId.toString());
 
 
 
@@ -145,9 +144,9 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
     private Map<String, List<String>> getListFilePathMap(List<GWASAndLDFilenameDTO> gwasAndLDFilenameDTOList) throws Exception{
         log.info("根据组合id查询file gwasAndLDFilenameDTOList="+JSON.toJSONString(gwasAndLDFilenameDTOList));
         Set<Object> idSet = new HashSet<>();
+        List<String> ldNameList = new ArrayList<>();
         for (GWASAndLDFilenameDTO gwasAndLDFilenameDTO:gwasAndLDFilenameDTOList) {
             idSet.add(gwasAndLDFilenameDTO.getGwasFileId());
-            idSet.add(gwasAndLDFilenameDTO.getLdFileId());
         }
         Map<String, Set<Object>> idMap = new HashMap<>();
         idMap.put("id",idSet);
@@ -155,7 +154,7 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
         List<PrsFile> fileList = fileService.getFileListByColumnMap(idMap);
         log.info("根据组合id查询file结束 fileList="+JSON.toJSONString(fileList));
 
-        List<String> ldFilePathList = new ArrayList<>();
+        List<String> ldList = new ArrayList<>();
         List<String> gwasFilePathList = new ArrayList<>();
         for (GWASAndLDFilenameDTO gwasAndLDFilenameDTO:gwasAndLDFilenameDTOList) {
             Long gwasFileId = gwasAndLDFilenameDTO.getGwasFileId();
@@ -164,16 +163,14 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
             for (PrsFile file : fileList) {
                 if(gwasFileId.equals(file.getId())){
                     gwasFilePathList.add(file.getFilePath()+file.getFileName()+file.getFileSuffix());
-                }else if(ldFileId.equals(file.getId())){
-                    String ldFilePath = file.getFilePath();
-                    ldFilePathList.add(((ldFilePath.length()-1 ==ldFilePath.lastIndexOf( File.separator)) ? ldFilePath.substring(0,ldFilePath.lastIndexOf( File.separator)) : ldFilePath) );
+                    ldList.add(LdEnum.valueOf(ldFileId.intValue()).getValue());
                 }
             }
 
         }
 
         Map<String, List<String>> resMap = new HashMap<>();
-        resMap.put("LD",ldFilePathList);
+        resMap.put("LD",ldList);
         resMap.put("GWAS",gwasFilePathList);
 
         log.info("根据组合id查询file结果 resMap="+JSON.toJSONString(resMap));
@@ -305,7 +302,7 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
             jsonObject.put(name+"."+"ldref_0",singleMap.get("LD"));
         }else if(multipleMap != null){
             jsonObject.put(name+"."+"summary_statistic_2",multipleMap.get("GWAS"));
-            jsonObject.put(name+"."+"ldref_0",multipleMap.get("LD"));
+            jsonObject.put(name+"."+"pop_0",multipleMap.get("LD"));
         }
 
         //参数文件地址

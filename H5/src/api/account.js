@@ -10,5 +10,7 @@ export default {
     //修改用户数据
     updatedUser(params){return requests.get(`/updatedUser`,params);},
     //删除用户数据
-    deleteUser(params){return requests.get(`/deleteUser`,params);}
+    deleteUser(params){return requests.get(`/deleteUser`,params);},
+    //home页统计数据
+    homeDatas(params){return requests.get(`/homeDatas`,params);}
 }

@@ -105,5 +105,24 @@ public class AuthServiceImpl implements AuthService {
         return BaseResult.ok("删除用户成功",flag);
     }
 
+    /**
+     * 统计用户个数
+     * @return
+     */
+    @Override
+    public BaseResult userCount() {
+        log.info("统计用户个数");
+         Long count = 0L;
+        try {
+            QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("is_delete",0);
+            count =  userBo.count(queryWrapper);
+        }catch (Exception e){
+            log.error("统计用户个数异常"+e.getMessage());
+            return BaseResult.error("统计用户个数异常");
+        }
+        log.info("统计用户个数count="+count);
+        return BaseResult.ok("统计用户个数",count);
+    }
 
 }

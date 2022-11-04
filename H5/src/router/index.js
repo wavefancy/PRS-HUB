@@ -14,6 +14,8 @@ import SettingsItem from '@/pages/authentication/SettingsItem'
 import HomeItem from '@/pages/home'
 import FunctionItem from '@/pages/function'
 import ResultItem from '@/pages/authentication/ResultItem'
+import TutorialItem from '@/components/commons/TutorialItem'
+
 export default new VueRouter({
     routes:[
         {
@@ -86,6 +88,11 @@ export default new VueRouter({
             name:"result",
             path:'/result',
             component:ResultItem
+        },
+        {
+            name:"tutorial",
+            path:'/tutorial',
+            component:TutorialItem
         }
     ]
 })

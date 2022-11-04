@@ -1,6 +1,9 @@
 package com.prs.hub;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.prs.hub.utils.CromwellUtil;
 import com.prs.hub.utils.FileUtil;
 import com.prs.hub.utils.MultipartFileToFileUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -122,8 +125,7 @@ public class Test {
 //        Long y = System.currentTimeMillis();
 //        String path = "E:\\test\\P+T\\Height.QC.gz";
 //        FileUtil.getGZIPDataHeaderByFileName(path);
-        File delteFile = new File("E:\\UploadFile\\15110151301@163.com");
-        MultipartFileToFileUtil.delteTempFile(delteFile);
+        System.out.println(JSON.toJSONString(null));
 
     }
 

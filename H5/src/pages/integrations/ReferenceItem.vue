@@ -220,13 +220,13 @@
     },
     methods: {
       fileChange(data){
-        //校验数据
-        if(isEmpty(this.fileName)){
-          alert("Please enter fileName !")
-          this.$refs.fileName.focus()
-          //清空input（file）中已上传的文件
-          return;
-        }
+        // //校验数据
+        // if(isEmpty(this.fileName)){
+        //   alert("Please enter fileName !")
+        //   this.$refs.fileName.focus()
+        //   //清空input（file）中已上传的文件
+        //   return;
+        // }
         // if(isEmpty(this.descrition)){
         //   alert("Please enter descrition !")
         //   this.$refs.descrition.focus()

@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.prs.hub.algorithms.dto.ParameterEnterReqDTO;
 import com.prs.hub.algorithms.service.ParameterEnterService;
 import com.prs.hub.authentication.dto.UserReqDTO;
+import com.prs.hub.authentication.service.AuthService;
 import com.prs.hub.commons.Authorization;
 import com.prs.hub.commons.BaseResult;
 import com.prs.hub.commons.CurrentUser;
@@ -59,6 +60,9 @@ public class StatisticsController {
 
     @Autowired
     private RunnerDetailToFileService runnerDetailToFileService;
+
+    @Autowired
+    private AuthService authService;
 
     @Value("${cromwell.workflows.query.url}")
     private String workflowsQueryUrl;
@@ -265,5 +269,38 @@ public class StatisticsController {
         return BaseResult.ok("接口调用成功",resultMap);
     }
 
+    @RequestMapping(value = "/homeDatas", method = RequestMethod.GET)
+    public BaseResult homeDatas(){
+        Map<String, Object> resultMap = new HashMap<>();
+        //1,统计runner数据
+        log.info("调用statisticsService统计runner数据");
+        Long runnerCount = statisticsService.count(null);
+        log.info("调用statisticsService统计runner数据runnerCount="+runnerCount);
+        resultMap.put("runnerCount",runnerCount);
 
+        //2,查询注册用户的个数
+        Long userCount = 0L;
+        BaseResult userCountRes = authService.userCount();
+        if(userCountRes.getCode() == 0){
+            userCount = (Long)userCountRes.getData();
+        }
+        resultMap.put("userCount",userCount);
+
+        //3,查询正在跑的任务个数
+        int runningCount = 0;
+        JSONObject jsonData = new JSONObject();
+        jsonData.put("status","Running");
+        JSONArray ja = new JSONArray();
+        ja.add(jsonData);
+
+        Map<String, Object> resMap = CromwellUtil.workflowsQueryPost(workflowsQueryUrl,ja);
+
+        if((Boolean) resMap.get("flag")){
+            JSONObject resultJson = (JSONObject) JSON.parse((String) resMap.get("result"));
+            runningCount = (int)resultJson.get("totalResultsCount");
+        }
+        resultMap.put("runningCount",runningCount);
+
+        return BaseResult.ok("接口调用成功",resultMap);
+    }
 }

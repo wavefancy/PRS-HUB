@@ -1,6 +1,7 @@
 package com.prs.hub.utils;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpEntity;
@@ -216,8 +217,14 @@ public class HttpClientUtil {
      * @param url
      * @return
      */
-    public static HashMap<String,Object>  post(JSONObject json, String url){
-        log.info("httppost请求json"+json.toJSONString());
+    public static HashMap<String,Object>  post(Object json, String url){
+        String jsonStr = null;
+        if(json != null && json instanceof JSONObject ){
+            jsonStr = ((JSONObject)json).toJSONString();
+        }else if(json != null && json instanceof JSONArray ){
+            jsonStr = ((JSONArray)json).toJSONString();
+        }
+        log.info("httppost请求json"+jsonStr);
         log.info("httppost请求url="+url);
         Boolean flag = true;
         HashMap<String,Object> resMap = new HashMap<>();
@@ -228,7 +235,7 @@ public class HttpClientUtil {
         try{
             CloseableHttpClient httpClient = HttpClients.createDefault();
 
-            StringEntity postingString = new StringEntity(json.toString(),"utf-8");
+            StringEntity postingString = new StringEntity(jsonStr,"utf-8");
             post.setEntity(postingString);
             post.setHeader("Content-Type","application/json;charset=utf-8");
 

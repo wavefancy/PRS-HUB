@@ -4,9 +4,9 @@ spring:
   datasource:
     #驱动
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://114.115.129.79:3306/prs?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&allowMultiQueries=true
-    password: root
-    username: root
+    url: jdbc:mysql://39.103.140.193:3307/prs_hub_test?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&allowMultiQueries=true
+    username: fsp
+    password: qwe@11
   servlet:
     # 本地文件上传：最大支持文件大小
     multipart:

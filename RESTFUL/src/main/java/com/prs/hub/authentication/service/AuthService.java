@@ -32,5 +32,9 @@ public interface AuthService {
      * @return
      */
     BaseResult deleteUser(User user);
-
+    /**
+     * 统计用户个数
+     * @return
+     */
+    BaseResult userCount();
 }

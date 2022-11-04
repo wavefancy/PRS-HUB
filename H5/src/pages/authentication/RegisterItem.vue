@@ -1,15 +1,16 @@
 <template>
 <div class="outer">
+  <Header></Header>
   <vue-element-loading :active="loading" :is-full-screen="true" spinner="ring"/>
-  <div class="px-5 py-5 p-lg-0  bg-surface-secondary d-flex flex-column justify-content-center">
+  <div class="px-5 py-20  bg-surface-secondary d-flex flex-column justify-content-center">
     <div class="d-flex justify-content-center">
       <div class="col-12 col-md-9 col-lg-8 min-h-lg-screen d-flex flex-column justify-content-center py-lg-16 px-lg-20 position-relative">
         <div class="row">
           <div class="col-lg-10 col-md-9 col-xl-7 mx-auto">
             <div class="text-center mb-12">
-              <a class="navbar-brand py-lg-2 mb-lg-5 px-lg-6 me-0" href="#" style="color:#796CFF">
+              <!-- <a class="navbar-brand py-lg-2 mb-lg-5 px-lg-6 me-0" href="/" style="color:#796CFF">
                 <img style="height: 2.875rem;"  :src="imgUrls.primary"  alt="...">PRS-hub
-              </a>
+              </a> -->
               <h1 class="ls-tight font-bolder mt-6">
                 Create your account
               </h1>
@@ -69,7 +70,7 @@
               <p style="font-size: xx-small;color: rgba(107,123,147);">Use 6 ~ 20 characters.</p>
             </div>
             <div class="mb-2">
-              <label class="form-label" for="password">Confirm<img class="asterisk" :src="imgUrls.asterisk" > </label>
+              <label class="form-label" for="password">Confirm Password<img class="asterisk" :src="imgUrls.asterisk" > </label>
               <div class="outer">
                 <input :type="passwordType" class="inner form-control" style="width: 90%;" ref="confirm" @blur="confirmPw" v-model.trim="confirm" placeholder="Confirm" autocomplete="current-password">
                 <img class="eyes" :src="eyesImage" @click="clickEyes"/>
@@ -102,11 +103,15 @@
 </template>
 
 <script>
+import Header from "@/components/commons/HeaderItem.vue"
 import {Account} from "@/api"
 import { checkEmail,checkPassword,isEmpty,checkName }  from "@/utils/validate"
 
 export default {
     name:"RegisterItem",
+    components: {
+      Header
+    },
     data () {
       return {
         imgUrls:{

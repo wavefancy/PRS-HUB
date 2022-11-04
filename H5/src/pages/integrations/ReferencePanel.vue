@@ -14,22 +14,27 @@
 import {Prs} from "@/api"
 export default {
     name:"ReferencePanel",
+    props: ['type'],
     data () {
         return {
             ldFileId:-1,
             referenceList:[
+                {
+                    name:'1000G EUR',
+                    id:'0'
+                },
                 // {
-                //     name:'1000G EUR'
+                //     name:'1000G AFR',
+                //     id:'1'
                 // },
                 // {
-                //     name:'1000G AFR'
+                //     name:'1000G SAS',
+                //     id:'2'
                 // },
-                // {
-                //     name:'1000G SAS'
-                // },
-                // {
-                //     name:'1000G EAS'
-                // }
+                {
+                    name:'1000G EAS',
+                    id:'3'
+                }
             ]
         }
     },
@@ -48,6 +53,9 @@ export default {
         }
     },
     mounted(){
+        if(this.type === "GWAS"){
+            return;
+        }
         let subData = {
           fileType:'LD',
           parsingStatus:'Y'

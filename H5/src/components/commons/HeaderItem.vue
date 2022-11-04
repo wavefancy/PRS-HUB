@@ -1,5 +1,5 @@
 <template>
-    <nav class="navbar navbar-expand-lg navbar-light px-0 py-3">
+    <nav class="fixed-top navbar navbar-expand-lg navbar-light px-0 py-3" >
         <div class="container-xl max-w-screen-xl">
             <!-- Logo -->
             <a class="logo navbar-brand py-lg-2 px-lg-6 me-0 row " href="/">
@@ -15,13 +15,13 @@
                 <!-- Nav -->
                 <ul class="navbar-nav mx-lg-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Home</a>
+                        <router-link class="nav-link" to="/home">Home</router-link>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#">About</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Help</a>
+                        <router-link class="nav-link"  to="/tutorial">Help</router-link>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#">Contact</a>
@@ -68,5 +68,8 @@ export default {
     line-height: 2.875rem;
     height:  2.875rem;
     width: auto;
+  }
+  .fixed-top{
+        background-color: #fff;
   }
 </style>

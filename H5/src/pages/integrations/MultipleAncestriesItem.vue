@@ -103,7 +103,7 @@
               <button type="button" class="btn btn-sm btn-neutral" data-bs-dismiss="modal" >
                 Cancel
               </button>
-              <button type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal" @click="dataSubmit">submit</button>
+              <button type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal" @click="dataSubmit" :disabled="jobNameFlag">submit</button>
             </div>
           </div>
         </PopModal>
@@ -125,7 +125,7 @@
                 <GwasPanel></GwasPanel>
               </div>
               <div class="rp">
-                <ReferencePanel></ReferencePanel>
+                <ReferencePanel type="GWAS"></ReferencePanel>
               </div>
               <div class="modal-footer" style="border-top: 0px solid #e7eaf0; align-items: center;justify-content: center;">
                 <button type="button" class="btn btn-sm btn-primary" @click="addPlan">
@@ -205,7 +205,8 @@ export default {
         loading:false,
         //工作名称
         jobName:"",
-        planVals:[]
+        planVals:[],
+        gwasAndLDFilenameDTOList:[]
       }
     },
     computed:{
@@ -216,6 +217,10 @@ export default {
       //提交按钮是否可点
       submitFlag(){
         return this.algorithmsData.length > 0 ? false:true
+      },
+      //验证是否录入job name
+      jobNameFlag(){
+        return  isEmpty(this.jobName) 
       }
     },
     methods: {
@@ -311,8 +316,8 @@ export default {
         }
         let subData = {
           algorithmList:this.algorithmsData,
-          fileGWASId:this.gwasFileId,
-          gwasAndLDFilenameDTOList:this.planVals,
+          jobName:this.jobName,
+          gwasAndLDFilenameDTOList:this.gwasAndLDFilenameDTOList,
           headers: {'accessToken':  localStorage.getItem("accessToken")}
         }
         //加载中
@@ -383,13 +388,24 @@ export default {
           return
         }
 
+        
+
         plan = this.gwasFileName+"+"+this.referencePanel
         let planArr=[];
         planArr.push(this.gwasFileName)
         planArr.push(this.referencePanel)
+        //选择的参数
+        let gwasAndLD = {
+          gwasFileName:this.gwasFileName,
+          gwasFileId:this.gwasFileId,
+          ldFileName:this.referencePanel,
+          ldFileId:this.ldFileId
+        }
+
         if(this.planVals.length===0){
           planArr.push("color:#f56c6c;")
           this.planVals.push(planArr)
+          this.gwasAndLDFilenameDTOList.push(gwasAndLD)
         }else{
           let addFlag = true
           for(let i = 0 ;i<this.planVals.length;i++){
@@ -404,11 +420,14 @@ export default {
               planArr.push("color: #67c23a;")
             }
             this.planVals.push(planArr)
+            
+            this.gwasAndLDFilenameDTOList.push(gwasAndLD)
           }
         }
       },
       rmPlan(i){
         this.planVals.splice(i,1)
+        this.gwasAndLDFilenameDTOList.splice(i,1)
       }
     },
     mounted() {
