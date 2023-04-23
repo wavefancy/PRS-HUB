@@ -19,6 +19,9 @@ public class AlgorithmsReqDTO implements Serializable {
     private Long fileGWASId;
     private List<AlgorithmReqDTO> algorithmList;
     private Long fileLDId;
+    /**
+     * mult选择的file参数
+     */
     private List<GWASAndLDFilenameDTO> gwasAndLDFilenameDTOList;
     //工作名称
     private String jobName;

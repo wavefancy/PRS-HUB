@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.prs.hub.algorithms.dto.AlgorithmsReqDTO;
 import com.prs.hub.authentication.dto.UserReqDTO;
 import com.prs.hub.commons.Authorization;
 import com.prs.hub.commons.BaseResult;
@@ -16,6 +17,8 @@ import com.prs.hub.file.service.FileChunkService;
 import com.prs.hub.file.service.FileService;
 import com.prs.hub.practice.entity.FileChunk;
 import com.prs.hub.practice.entity.PrsFile;
+import com.prs.hub.rabbitmq.dto.MQMessageDTO;
+import com.prs.hub.rabbitmq.service.ProducerService;
 import com.prs.hub.sftpsystem.service.SFTPSystemService;
 import com.prs.hub.runnerdetail.dto.RunnerStatisDTO;
 import com.prs.hub.runnerdetail.dto.RunnerStatisReqDTO;
@@ -67,6 +70,19 @@ public class FileController {
      */
     @Value("${ldref.generator.wdl.path}")
     private String ldGenerator;
+
+    /**
+     * 发送消息
+     */
+    @Autowired
+    private ProducerService producerService;
+
+    @Value("${upload.exchange}")
+    private String uploadExchange;
+
+    @Value("${upload.file.routing.key}")
+    private String uploadRoutingKey;
+
 
     /**
      * 获取文件信息
@@ -247,6 +263,9 @@ public class FileController {
         String suffixName = req.getParameter("suffixName");
         //文件分片存储标识
         String identifier = req.getParameter("identifier");
+        //人种信息
+        String pop = req.getParameter("pop");
+
         log.info("保存上传文件信息controller:\nfileName="+fileName+"\ndescrition="+descrition+"\nfileType="+fileType+"\nfilePath="+filePath+"\nsuffixName="+suffixName);
         if(StringUtils.isEmpty(fileName) || StringUtils.isEmpty(fileType) || StringUtils.isEmpty(filePath)){
             resultMap.put("code", ResultCodeEnum.FILE_NAME_EMPTY.getCode());
@@ -258,11 +277,14 @@ public class FileController {
             //将上传文件信息存储到数据库
             PrsFile prsFile = new PrsFile();
             if("LD".equals(fileType)){
+                /**
+                 *
                 //调用文件解析工作流,对上传的LD文件进行解析
 
                 //组装input文件
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("ldref_generator.pgenfile_1_value",filePath+fileName);
+                jsonObject.put("ldref_generator.pop_1_value",pop);
                 log.info("进行LD文件解析,组装input文件"+jsonObject.toJSONString());
 
                 //参数文件地址
@@ -285,11 +307,13 @@ public class FileController {
                     JSONObject cromwellResult = JSON.parseObject(resultmsg);
                     cromwellId = cromwellResult.get("id").toString();
                     prsFile.setParsingId(cromwellId);
-                    prsFile.setParsingStatus("N");//N代表未解析完成
                 }
 
+                 */
+                prsFile.setParsingStatus("N");//N代表未解析完成
+
                 //删除本地临时文件
-                MultipartFileToFileUtil.delteTempFile(inputFile);
+//                MultipartFileToFileUtil.delteTempFile(inputFile);
             }
 
 
@@ -307,10 +331,23 @@ public class FileController {
                 resultMap.put("code",ResultCodeEnum.SUCCESS.getCode());
                 resultMap.put("msg","sftp文件上传成功");
                 resultMap.put("fileId",fileId);
+                //发送消息
+                Map<String,Object> uploadMsgReq = new HashMap<>();
+                uploadMsgReq.put("fileId",fileId);
+                uploadMsgReq.put("fileType",fileType);
+                uploadMsgReq.put("filePath",filePath);
+                uploadMsgReq.put("fileName",fileName);
+                uploadMsgReq.put("suffixName",suffixName);
+                uploadMsgReq.put("userId",userReqDTO.getId());
+                uploadMsgReq.put("pop",pop);
+                this.sendUploadMessage(uploadMsgReq);
             }else {
                 resultMap.put("code",ResultCodeEnum.FAIL.getCode());
                 resultMap.put("msg","sftp文件上传失败");
             }
+
+
+
         }catch (Exception e){
             log.error("文件上传controller异常",e);
             resultMap.put("code",ResultCodeEnum.EXCEPTION.getCode());
@@ -562,5 +599,25 @@ public class FileController {
             return BaseResult.ok("接口调用成功",resultMap);
         }
         return BaseResult.ok("接口调用成功",resultMap);
+    }
+
+    /**
+     * 发送消息
+     * @param resMap
+     */
+    private Boolean sendUploadMessage(Map<String, Object> resMap) {
+        log.info("文件上传保存数据后调用发送消息入参：{}",JSONObject.toJSONString(resMap));
+
+        String messageId = UUID.randomUUID().toString();
+
+        JSONObject inputJson = new JSONObject(resMap);
+
+        MQMessageDTO messageDTO = new MQMessageDTO();
+        messageDTO.setMessage(inputJson.toJSONString());
+        messageDTO.setMsgId(messageId);
+        messageDTO.setRoutingKey(uploadRoutingKey);
+        messageDTO.setTag(uploadRoutingKey);
+
+        return producerService.sendTopicMessage(messageDTO,uploadExchange);
     }
 }

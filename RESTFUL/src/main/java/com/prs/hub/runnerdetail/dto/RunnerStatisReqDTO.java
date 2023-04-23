@@ -33,6 +33,9 @@ public class RunnerStatisReqDTO extends BasePage implements Serializable {
     /**工作流uuid*/
     private String workflowExecutionUuid;
 
+    /**消息uuid*/
+    private String messageId;
+
     /**运行结果文件地址*/
     private String resultPath;
 

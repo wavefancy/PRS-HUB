@@ -14,6 +14,8 @@ import com.prs.hub.practice.bo.AlgorithmsBo;
 import com.prs.hub.practice.bo.ParameterEnterBo;
 import com.prs.hub.practice.bo.RunnerDetailBo;
 import com.prs.hub.practice.entity.*;
+import com.prs.hub.rabbitmq.dto.MQMessageDTO;
+import com.prs.hub.rabbitmq.service.ProducerService;
 import com.prs.hub.runnerdetail.dto.RunnerStatisReqDTO;
 import com.prs.hub.runnerdetail.service.RunnerDetailService;
 import com.prs.hub.runnerdetailtofile.dto.RunnerDetailToFileReqDTO;
@@ -32,6 +34,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -69,6 +72,20 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
     private String uploadFilePath;
 
     /**
+     * 发送消息
+     */
+    @Autowired
+    private ProducerService producerService;
+
+    //交换机名称
+    @Value("${topic.exchange}")
+    private String TOPIC_EXCHANGE;
+
+    @Value("${algorithms.parameter.routing.key}")
+    private String parameterRoutingKey;
+    private String algorithmsReqDTO;
+
+    /**
      * 保存用户设置参数
      * @param algorithmsReqDTO
      * @return
@@ -104,23 +121,26 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
         for (AlgorithmReqDTO algorithmReqDTO : algorithmReqDTOList) {
             //1组装上传参数文件，
             Map<String,Object> resMap = this.setInputParameterFile(algorithmReqDTO,parameterEnters,now,singleMap,multipleMap);
+            resMap.put("userId",userId);
+            //推送消息保存数据
+            this.sendMessageAndSaveRunnerDetail(resMap,algorithmsReqDTO);
 
-            //2调用工作流接口存储runner_detail数据
-            String cromwellId = this.submitWorkflow(resMap,userId,now,jobName,fileGWASId,fileLDId,algorithmsReqDTO.getGwasAndLDFilenameDTOList());
-
-            if(StringUtils.isEmpty(cromwellId)){
-                log.info("工作流运行失败");
-                return false;
-            }
-
-            // 记录工作流id
-            for (int i = 0 ; i < parameterEnters.size() ; i++){
-                ParameterEnter parameterEnter = parameterEnters.get(i);
-                if(resMap.get("algorithmsId") == parameterEnter.getAlgorithmsId()){
-                    parameterEnter.setWorkflowExecutionUuid(cromwellId);
-                    parameterEnters.set(i,parameterEnter);
-                }
-            }
+//            //2调用工作流接口存储runner_detail数据
+//            String cromwellId = this.submitWorkflow(resMap,userId,now,jobName,fileGWASId,fileLDId,algorithmsReqDTO.getGwasAndLDFilenameDTOList());
+//
+//            if(StringUtils.isEmpty(cromwellId)){
+//                log.info("工作流运行失败");
+//                return false;
+//            }
+//
+//            // 记录工作流id
+//            for (int i = 0 ; i < parameterEnters.size() ; i++){
+//                ParameterEnter parameterEnter = parameterEnters.get(i);
+//                if(resMap.get("algorithmsId") == parameterEnter.getAlgorithmsId()){
+//                    parameterEnter.setWorkflowExecutionUuid(cromwellId);
+//                    parameterEnters.set(i,parameterEnter);
+//                }
+//            }
         }
         if(CollectionUtils.isEmpty(parameterEnters)){
             log.info("保存用户设置参数结束，传入parameterEnters数据为空");
@@ -134,6 +154,30 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
         log.info("保存用户设置参数结束flag="+flag);
 
         return flag;
+    }
+
+    /**
+     * 发送消息 保存数据
+     * @param resMap
+     */
+    private Boolean sendMessageAndSaveRunnerDetail(Map<String, Object> resMap,AlgorithmsReqDTO algorithmsReqDTO) {
+
+
+        String messageId = UUID.randomUUID().toString();
+        //当前系统时间
+        LocalDateTime now = LocalDateTime.now();
+        //保存数据
+        this.saveRunnerDetail((String) resMap.get("userId"),now,algorithmsReqDTO,messageId);
+
+        JSONObject inputJson = new JSONObject(resMap);
+
+        MQMessageDTO messageDTO = new MQMessageDTO();
+        messageDTO.setMessage(inputJson.toJSONString());
+        messageDTO.setMsgId(messageId);
+        messageDTO.setRoutingKey(parameterRoutingKey);
+        messageDTO.setTag("prs.hub");
+
+        return producerService.sendTopicMessage(messageDTO,TOPIC_EXCHANGE);
     }
 
     /**
@@ -306,18 +350,19 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
         }
 
         //参数文件地址
-        String inputPath = uploadFilePath+System.currentTimeMillis()+fileName;
-        log.info("将参数写入文件中inputPath="+inputPath);
-        log.info("参数jsonObject="+jsonObject.toJSONString());
-        FileUtil.writerJsonFile(inputPath,jsonObject);
-        resMap.put("inputPath",inputPath);
+//        String inputPath = uploadFilePath+System.currentTimeMillis()+fileName;
+//        log.info("将参数写入文件中inputPath="+inputPath);
+//        log.info("参数jsonObject="+jsonObject.toJSONString());
+//        FileUtil.writerJsonFile(inputPath,jsonObject);
+        resMap.put("inputJson",jsonObject);
+//        resMap.put("inputPath",inputPath);
 
         log.info("组装参数文件方法返回resMap="+JSON.toJSONString(resMap));
         return resMap;
     }
 
     /**
-     * 调用工作流接口存储runner_detail数据
+     * 调用工作流接口、存储runner_detail数据
      * @param resMap 组装上传参数文件返回结果
      * @param userId 用户id
      * @param now 当前系统时间
@@ -327,7 +372,7 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
     private String submitWorkflow(Map<String,Object> resMap,String userId,LocalDateTime now,String jobName,
                                   Long fileGWASId,Long fileLDId, List<GWASAndLDFilenameDTO> gwasAndLDFilenameDTOList) {
 
-        log.info("调用工作流接口存储runner_detail数据入参：resMap="+JSON.toJSONString(resMap)
+        log.info("调用工作流接口、存储runner_detail数据入参：resMap="+JSON.toJSONString(resMap)
                 +"\njobName="+jobName
                 +"\nnow="+now.toString());
 
@@ -390,6 +435,62 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
         //删除本地临时文件
         MultipartFileToFileUtil.delteTempFile(inputFile);
         return cromwellId;
+    }
+
+    /**
+     * 存储runner_detail数据
+     * @param userId
+     * @param now
+     * @param algorithmsReqDTO
+     * @param messageId
+     * @return
+     */
+    private Long saveRunnerDetail(String userId,LocalDateTime now,AlgorithmsReqDTO algorithmsReqDTO,String messageId) {
+
+        log.info("调用存储runner_detail数据入参：algorithmsReqDTO="+JSONObject.toJSONString(algorithmsReqDTO)
+                +"\nnow="+now.toString());
+            RunnerDetail runnerDetail = new RunnerDetail();
+            runnerDetail.setJobName(algorithmsReqDTO.getJobName());
+            runnerDetail.setUserId(Long.valueOf(userId));
+            runnerDetail.setMessageId(messageId);
+            runnerDetail.setStatus(0);//运行状态 4:Finish, 3:Project at risk ,1:In progress,0:Not started
+            runnerDetail.setProgress(0);//运行进度 0-100
+            runnerDetail.setCreatedUser("system");
+            runnerDetail.setCreatedDate(now);
+            runnerDetail.setModifiedUser("system");
+            runnerDetail.setModifiedDate(now);
+            runnerDetail.setIsDelete(0);
+            log.info("保存工作流运行数据开始runnerDetail="+JSON.toJSONString(runnerDetail));
+            Boolean runnerFlag = runnerDetailBo.save(runnerDetail);
+            log.info("保存工作流运行数据结束runnerFlag="+runnerFlag);
+
+            RunnerStatisReqDTO runnerStatisReqDTO = new RunnerStatisReqDTO();
+            runnerStatisReqDTO.setMessageId(messageId);
+            Long runnerId  = runnerDetailService.selectRunnerDetail(runnerStatisReqDTO).getId();
+
+            //保存file与工作流对应关系数据
+            if(CollectionUtils.isNotEmpty(algorithmsReqDTO.getGwasAndLDFilenameDTOList())){
+                List<RunnerDetailToFileReqDTO> runnerDetailToFileReqDTOList = new ArrayList<>();
+                for (GWASAndLDFilenameDTO gwasAndLDFilenameDTO:algorithmsReqDTO.getGwasAndLDFilenameDTOList()) {
+                    RunnerDetailToFileReqDTO runnerDetailToFileReqDTO = new RunnerDetailToFileReqDTO();
+                    runnerDetailToFileReqDTO.setRunnerId(runnerId);
+                    runnerDetailToFileReqDTO.setLdFileId(gwasAndLDFilenameDTO.getLdFileId());
+                    runnerDetailToFileReqDTO.setGwasFileId(gwasAndLDFilenameDTO.getGwasFileId());
+                    runnerDetailToFileReqDTOList.add(runnerDetailToFileReqDTO);
+                }
+                log.info("保存file与工作流对应关系数据runnerDetailToFileReqDTOList="+JSON.toJSONString(runnerDetailToFileReqDTOList));
+                boolean muFlag = runnerDetailToFileService.saveBatch(runnerDetailToFileReqDTOList);
+                log.info("保存file与工作流对应关系数据结束muFlag="+muFlag);
+            }else{
+                RunnerDetailToFileReqDTO runnerDetailToFileReqDTO = new RunnerDetailToFileReqDTO();
+                runnerDetailToFileReqDTO.setLdFileId(algorithmsReqDTO.getFileLDId());
+                runnerDetailToFileReqDTO.setRunnerId(runnerId);
+                runnerDetailToFileReqDTO.setGwasFileId(algorithmsReqDTO.getFileGWASId());
+                log.info("保存file与工作流对应关系数据runnerDetailToFileReqDTO="+JSON.toJSONString(runnerDetailToFileReqDTO));
+                boolean singleFlag = runnerDetailToFileService.saveOrUpdate(runnerDetailToFileReqDTO);
+                log.info("保存file与工作流对应关系数据结束singleFlag="+singleFlag);
+            }
+        return runnerId;
     }
 
     /**

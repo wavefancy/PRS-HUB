@@ -1,5 +1,5 @@
 server:
-  port: 9091
+  port: 9090
 spring:
   datasource:
     #驱动
@@ -29,9 +29,22 @@ spring:
     cache: false  #cache: 是否缓存，开发模式下设置为false，避免改了模板还要重启服务器，线上设置为true，可以提高性能。
     suffix: .html
     mode: HTML5
+  #配置rabbitmq
+  rabbitmq:
+    host: 39.103.140.193
+    port: 5672
+    username: admin
+    password: 123
+    virtual-host: /
+    #发布消息成功到交换器后会触发回调方法
+    publisher-confirm-type: correlated
+    #消息无法路由时，开启消息回退
+    publisher-returns: true
 
 #控制台打印sql
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 #debug: true
+
+

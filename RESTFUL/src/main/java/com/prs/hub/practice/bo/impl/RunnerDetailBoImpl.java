@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
  * </p>
  *
  * @author fansp
- * @since 2022-09-13
+ * @since 2023-04-11
  */
 @Service
 public class RunnerDetailBoImpl extends ServiceImpl<RunnerDetailMapper, RunnerDetail> implements RunnerDetailBo {

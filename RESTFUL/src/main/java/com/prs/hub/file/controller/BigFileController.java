@@ -64,6 +64,7 @@ public class BigFileController {
             data.put("uploaded", false);
             return JsonResult.ok(data);
         }
+
         // 处理单文件
         if (list.get(0).getTotalChunks() == 1) {
             data.put("uploaded", true);

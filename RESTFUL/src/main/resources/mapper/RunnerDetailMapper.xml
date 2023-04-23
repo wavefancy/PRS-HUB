@@ -8,6 +8,7 @@
         <result column="user_id" property="userId" />
         <result column="job_name" property="jobName" />
         <result column="workflow_execution_uuid" property="workflowExecutionUuid" />
+        <result column="message_id" property="messageId" />
         <result column="result_path" property="resultPath" />
         <result column="progress" property="progress" />
         <result column="queue" property="queue" />

@@ -40,7 +40,7 @@ const CHUNK_SIZE = 10 * 1024 * 1024
 
   export default {
     name:"VueSimpleUploader",
-    props: ['fileName','attr','type'],
+    props: ['fileName','attr','type','pop'],
     data () {
       return {
         options: {
@@ -114,6 +114,16 @@ const CHUNK_SIZE = 10 * 1024 * 1024
           file.pause()
           this.$message({
             message: "Please enter fileName !",
+            type: 'error',
+            duration: 3 * 1000,
+          })
+          return false;
+        }
+        if(this.pop === -1){
+          //暂停上传
+          file.pause()
+          this.$message({
+            message: "Please select pop !",
             type: 'error',
             duration: 3 * 1000,
           })

@@ -436,6 +436,7 @@ export default {
 }
 .pagination{
   margin-top: 1rem;
+  margin-bottom: 1rem;
 }
 .el-pagination.is-background .el-pager li:not(.disabled).active {
     background-color: #796CFF !important;

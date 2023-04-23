@@ -64,7 +64,7 @@
                   <ul class="nav nav-sm flex-column">
                     <li class="nav-item" v-for="(navigation,index) in navigations" :key="index">
                       <router-link :to="navigation.path" class="nav-link" active-class="font-bold">
-                       <i class="bi" :class="navigation.sign"></i>  {{navigation.name}}
+                       <i class="bi mbi" :class="navigation.sign" style="margin-right: 1rem;"></i>  {{navigation.name}}
                       </router-link>
                     </li>
                   </ul>
@@ -280,5 +280,11 @@ export default {
   .login{
     background-color: #796CFF;
     color: #ffffff;
+  }
+  .nav-link {
+    padding: 1.25rem 1rem;
+  }
+  .mbi{
+    font-size: 1.1rem !important;
   }
 </style>

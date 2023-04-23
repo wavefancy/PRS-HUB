@@ -15,12 +15,12 @@
                 </div> -->
                 <div class="row order-md-0" style="    text-align: center!important;">
                     <!-- Surtitle -->
-                    <h2 class="mb-5 mb-5" style="font-size: 3rem;">
+                    <h2 class="mb-5 mb-5" style="font-size: 2rem;">
                         Polygenic Risk Score Computing Platform
                     </h2>
                     
                     <!-- Text -->
-                    <p class="mb-10" style="font-size: 1.5rem;">
+                    <p class="mb-10" style="font-size: 1rem;">
                         <b>SNPs Weights Estimates from Multiple PRS Models at One Time</b>
                     </p>
                     <!-- Buttons -->
@@ -37,19 +37,19 @@
             </div>
         </div>
         <div style="background-color: #9da0f9;">
-            <div class="container py-md-5 " style="    padding-left: 15rem; padding-right: 15rem;">
+            <div class="container py-md-5 "  >
                 <div class="row text-center ">
-                    <div class=" col-md-4 text-center">
+                    <div class=" col-md-4 text-center mb-5">
                         <p class="font-D">
                             <span class="lead" style="font-size: 200%;">{{homeDatas.runnerCount}}</span><br>Completed Jobs
                         </p>
                     </div>
-                    <div class=" col-md-4 text-center">
+                    <div class=" col-md-4 text-center mb-5">
                         <p class="font-D">
                             <span class="lead" style="font-size: 200%;">{{homeDatas.userCount}}</span><br>Registered Users
                         </p>
                     </div>
-                    <div class=" col-md-4 text-center">
+                    <div class=" col-md-4 text-center mb-5">
                         <p class="font-D">
                             <span class="lead" style="font-size: 200%;">{{homeDatas.runningCount}}</span><br>Running Jobs
                         </p>
@@ -61,23 +61,29 @@
             <div class="container-lg   ">
                 <h2 class="h2 mb-5 ">The easiest way to compute multiple PRS models at one time</h2>
                 <!-- Workflow Description -->
-                <div class="card-deck row text-center py-10">
-                    <div class="card col-lg-4 box-shadow">
-                        <div class="card-body">
-                            <p><img src="@/assets/up-cloud.png" width="105px"></p>
-                            <b>Upload your  GWAS summary statistics</b> to our platform.<br>All interactions with the platform are <b>secured</b>.
+                <div class=" row row-cols text-center py-10">
+                    <div class="col-xl-4 col-sm-6  mb-5">
+                        <div class="card mycard box-shadow">
+                            <div class="card-body">
+                                <p @click="toFunctional('GWAS')"><img src="@/assets/up-cloud.png" width="105px"></p>
+                                <b>Upload your  GWAS summary statistics</b> to our platform.<br>All interactions with the platform are <b>secured</b>.
+                            </div>
                         </div>
                     </div>
-                    <div class="card col-lg-4 box-shadow">
-                        <div class="card-body">
-                            <p><img src="@/assets/impute.png" width="105px"></p>
-                            <b>Choose PRS methods</b>. We will take care of complex pipelines for PRS computation.
+                    <div class="col-xl-4 col-sm-6  mb-5">
+                        <div class="card mycard  box-shadow">
+                            <div class="card-body">
+                                <p @click="toFunctional('PRS')"><img src="@/assets/impute.png" width="105px"></p>
+                                <b>Choose PRS methods</b>. We will take care of complex pipelines for PRS computation.
+                            </div>
                         </div>
                     </div>
-                    <div class="card col-lg-4 box-shadow">
-                        <div class="card-body">
-                            <p><img src="@/assets/down-cloud.png" width="105px"></p>
-                            <b>Download the results</b>.<br>We will keep the results for 30 days. After 30 days, all results are deleted from our platform.
+                    <div class="col-xl-4 col-sm-6  mb-5">
+                        <div class="card mycard  box-shadow">
+                            <div class="card-body">
+                                <p @click="toFunctional('jobs')"><img src="@/assets/down-cloud.png" width="105px"></p>
+                                <b>Download the results</b>.<br>We will keep the results for 30 days. After 30 days, all results are deleted from our platform.
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -88,6 +94,7 @@
 </template>
 
 <script>
+import { isEmpty }  from "@/utils/validate"
 import Header from "@/components/commons/HeaderItem.vue"
 import {Account} from "@/api"
 export default {
@@ -111,6 +118,39 @@ export default {
                     this.homeDatas = res.data;
                 }
             })
+        },
+        toFunctional(val){
+            //如果已经登录过了直接跳转
+            if (localStorage.getItem("accessToken")) {
+                Account.getUserInfo().then((response) => {
+                    const code = response.code
+                    const data = response.data 
+                    if(code !="400" && !isEmpty(data)){
+                        if(val == "GWAS"){
+                            this.$router.push({
+                            name:'gwasreference'
+                            });
+                        }else if(val == "PRS"){
+                            this.$router.push({
+                            name:'functionItem'
+                            });
+                        }else if(val == "jobs"){
+                            this.$router.push({
+                            name:'statistics'
+                            });
+                        }
+                    }else{
+                        this.$router.push({
+                            name:'login'
+                        });
+                    }        
+                })
+            }else{
+                this.$router.push({
+                    name:'login'
+                });
+            }
+            
         }
     },
     mounted() {
@@ -119,7 +159,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
  .logo{
     color:#796CFF;
     flex-wrap: nowrap;
@@ -133,22 +173,15 @@ export default {
     height:  2.875rem;
     width: auto;
   }
-  .card-deck .card {
-    display: -ms-flexbox;
-    display: flex;
-    -ms-flex: 1 0 0%;
-    flex: 1 0 0%;
-    -ms-flex-direction: column;
-    flex-direction: column;
-    margin-right: 15px;
-    margin-bottom: 0;
-    margin-left: 15px;
-}
+ 
 .font-D{
-    font-size: 200%;
+    font-size: 150%;
     color: #fff;
 }
 .my-md {
     padding-top: 10rem;
+}
+.mycard{
+    height: 15rem;
 }
 </style>

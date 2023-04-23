@@ -13,6 +13,8 @@ import com.prs.hub.practice.bo.RunnerDetailBo;
 import com.prs.hub.practice.bo.RunnerDetailSpecialBo;
 import com.prs.hub.practice.entity.MetadataEntry;
 import com.prs.hub.practice.entity.RunnerDetail;
+import com.prs.hub.rabbitmq.dto.MQMessageDTO;
+import com.prs.hub.rabbitmq.service.ProducerService;
 import com.prs.hub.runnerdetail.dto.RunnerStatisDTO;
 import com.prs.hub.runnerdetail.dto.RunnerStatisReqDTO;
 import com.prs.hub.statistics.service.StatisticsService;
@@ -26,10 +28,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author fanshupeng
@@ -59,6 +58,18 @@ public class StatisticsServiceImpl implements StatisticsService {
     private  String workflowsStatusUrl;
     @Value("${cromwell.workflows.query.url}")
     private String workflowsQueryUrl;
+
+    /**
+     * 发送消息
+     */
+    @Autowired
+    private ProducerService producerService;
+    //cromwell交换机名称
+    private static final String CROMWELL_EXCHANGE_NAME = "prs.hub.cromwell.topic.exchange";
+
+    @Value("${query.runner.detail.status.routing.key}")
+    private String queryRunnerDetailStatusRoutingKey;
+
     /**
      * 查询runner数据
      * @return
@@ -126,7 +137,7 @@ public class StatisticsServiceImpl implements StatisticsService {
     /**
      * 定时任务：实时更新runner数据定
      */
-    @Scheduled(cron = "10 * * * * ?")
+//    @Scheduled(cron = "10 * * * * ?")
     private void realTimeUpdateRunnerDetail(){
         log.info("实时更新runner数据定时任务开始每10秒执行一次");
 
@@ -140,102 +151,135 @@ public class StatisticsServiceImpl implements StatisticsService {
         log.info("查询Runner表未结束的工作流出参runnerDetailList="+ JSON.toJSONString(runnerDetailList));
 
         if(CollectionUtils.isNotEmpty(runnerDetailList)){
+            StringBuffer weUuidStrBuffer = new StringBuffer();
             for (RunnerDetail runnerDetail:runnerDetailList) {
-
                 String weUuid = runnerDetail.getWorkflowExecutionUuid();
-                String statusStr = CromwellUtil.workflowsStatus(workflowsStatusUrl,weUuid);
-                //运行状态 4:中止 3:完成，2:项目处于风险中，1:在进行中，0:未启动
-                Integer status = 0;
-                if("Succeeded".equals(statusStr)){
-                    status = 3;
-                }else if("Failed".equals(statusStr)){
-                    status = 2;
-                }else if("Running".equals(statusStr)){
-                    status = 1;
-                }else if("Aborted".equals(statusStr)){
-                    status = 4;
+                if(weUuidStrBuffer.length() == 0){
+                    weUuidStrBuffer.append(weUuid);
+                }else{
+                    weUuidStrBuffer.append(","+weUuid);
                 }
-                if(status.intValue() != 0){
-                    //更新条件
-                    UpdateWrapper<RunnerDetail> updateWrapper = new UpdateWrapper();
-                    updateWrapper.eq("workflow_execution_uuid",weUuid);
-
-                    //更新数据
-                    RunnerDetail runnerDetailReq = new RunnerDetail();
-
-                    //当结果为成功时获取结果地址
-                    if(status == 3){
-                        QueryWrapper<MetadataEntry> metadataEntryWrapper = new QueryWrapper<>();
-                        metadataEntryWrapper.eq("WORKFLOW_EXECUTION_UUID",weUuid);
-                        metadataEntryWrapper.eq("METADATA_KEY","outputs:out");
-                        log.info("查询工作流详情入参metadataEntryWrapper="+ JSON.toJSONString(metadataEntryWrapper));
-                        List<MetadataEntry> metadataEntryList = metadataEntryBo.selectList(metadataEntryWrapper);
-                        log.info("查询工作流详情出参metadataEntryList="+ JSON.toJSONString(metadataEntryList));
-                        //结果地址
-                        String resultPath = "";
-                        if(CollectionUtils.isNotEmpty(metadataEntryList)){
-                            for (MetadataEntry metadataEntry:metadataEntryList) {
-                                String metadataKey = metadataEntry.getMetadataKey();
-                                if("outputs:out".equals(metadataKey) && StringUtils.isNotEmpty(metadataEntry.getMetadataValue()) && metadataEntry.getMetadataValue().endsWith(".tar.gz") ){
-                                    resultPath = metadataEntry.getMetadataValue();
-                                    break;
-                                }
-                            }
-
-                        }
-                        runnerDetailReq.setResultPath(resultPath);
-                    }
-
-                    if(status == 1){
-                        //查询工作流中正在执行的流程信息
-                        //设置Running状态的排序
-                        Map<String,String> map = new HashMap<String,String>();
-                        map.put("status","Running");
-
-                        log.info("调用workflowsQuery接口查询工作流中正在Running的流程信息");
-                        HashMap<String, Object> resMap = HttpClientUtil.get(map,workflowsQueryUrl);
-                        log.info("调用workflowsQuery接口查询工作流中正在Running的流程信息结束resMap="+JSON.toJSONString(resMap));
-
-                        if((Boolean) resMap.get("flag")){
-                            JSONObject resultJson = (JSONObject) JSON.parse((String) resMap.get("result"));
-                            JSONArray jsonArray = (JSONArray)resultJson.get("results");
-                            //总running的条数
-                            Integer totalResultsCount = (Integer) resultJson.get("totalResultsCount");
-                            if(totalResultsCount > 0){
-                                for(int i = 0 ; i < jsonArray.size() ; i++){
-                                    JSONObject runJB = (JSONObject)jsonArray.get(i);
-                                    String id = (String) runJB.get("id");
-                                    if(weUuid.equals(id)){
-                                        //设置Running状态的排序
-                                        runnerDetailReq.setQueue(totalResultsCount-i);
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }else{
-                        runnerDetailReq.setQueue(0);
-                    }
-
-                    runnerDetailReq.setStatus(status);
-                    log.info("更新runner数据入参runnerDetailReq="+JSON.toJSONString(runnerDetailReq));
-                    Boolean flag = runnerDetailBo.update(runnerDetailReq,updateWrapper);
-                    log.info("更新runner数据出参flag="+flag);
-                    if(status == 3){
-                        //发送验证邮件
-                        RunnerStatisReqDTO runnerStatisReqDTO = new RunnerStatisReqDTO();
-                        runnerStatisReqDTO.setWorkflowExecutionUuid(weUuid);
-                        RunnerStatisDTO runnerStatisDTO = this.getRunnerDetail(runnerStatisReqDTO).get(0);
-                        String content ="尊敬的用户,您好:<br>"
-                                + runnerStatisDTO.getJobName()+"的"+runnerStatisDTO.getAlgorithmsName()
-                                +"算法已经运行结束，,请点击下方的“登录”链接，跳转到PRS官网下载结果。<br><a href=\'"+systemPath+"\'>登录</a>"
-                                + "<br>如非本人操作，请忽略该邮件。<br>(这是一封自动发送的邮件，请不要直接回复）";
-                        iMailService.sendResultMail(runnerStatisDTO.getEmail(),"运行结果下载提醒",content);
-                    }
-                }
-
+                //处理工作流的状态
+//                changeRunnerDetailStatus(runnerDetail);
             }
+            //发送消息查询工作流状态
+            Map<String, Object> reqMap = new HashMap<>();
+            reqMap.put("uuidArr",weUuidStrBuffer.toString());
+            this.sendQueryRunnerDetailStatusMessage(reqMap);
         }
 
+    }
+
+    private void changeRunnerDetailStatus(RunnerDetail runnerDetail) {
+        String weUuid = runnerDetail.getWorkflowExecutionUuid();
+        String statusStr = CromwellUtil.workflowsStatus(workflowsStatusUrl,weUuid);
+        //运行状态 4:中止 3:完成，2:项目处于风险中，1:在进行中，0:未启动
+        Integer status = 0;
+        if("Succeeded".equals(statusStr)){
+            status = 3;
+        }else if("Failed".equals(statusStr)){
+            status = 2;
+        }else if("Running".equals(statusStr)){
+            status = 1;
+        }else if("Aborted".equals(statusStr)){
+            status = 4;
+        }
+        if(status.intValue() != 0){
+            //更新条件
+            UpdateWrapper<RunnerDetail> updateWrapper = new UpdateWrapper();
+            updateWrapper.eq("workflow_execution_uuid",weUuid);
+
+            //更新数据
+            RunnerDetail runnerDetailReq = new RunnerDetail();
+
+            //当结果为成功时获取结果地址
+            if(status == 3){
+                QueryWrapper<MetadataEntry> metadataEntryWrapper = new QueryWrapper<>();
+                metadataEntryWrapper.eq("WORKFLOW_EXECUTION_UUID",weUuid);
+                metadataEntryWrapper.eq("METADATA_KEY","outputs:out");
+                log.info("查询工作流详情入参metadataEntryWrapper="+ JSON.toJSONString(metadataEntryWrapper));
+                List<MetadataEntry> metadataEntryList = metadataEntryBo.selectList(metadataEntryWrapper);
+                log.info("查询工作流详情出参metadataEntryList="+ JSON.toJSONString(metadataEntryList));
+                //结果地址
+                String resultPath = "";
+                if(CollectionUtils.isNotEmpty(metadataEntryList)){
+                    for (MetadataEntry metadataEntry:metadataEntryList) {
+                        String metadataKey = metadataEntry.getMetadataKey();
+                        if("outputs:out".equals(metadataKey) && StringUtils.isNotEmpty(metadataEntry.getMetadataValue()) && metadataEntry.getMetadataValue().endsWith(".tar.gz") ){
+                            resultPath = metadataEntry.getMetadataValue();
+                            break;
+                        }
+                    }
+
+                }
+                runnerDetailReq.setResultPath(resultPath);
+            }
+
+            if(status == 1){
+                //查询工作流中正在执行的流程信息
+                //设置Running状态的排序
+                Map<String,String> map = new HashMap<String,String>();
+                map.put("status","Running");
+
+                log.info("调用workflowsQuery接口查询工作流中正在Running的流程信息");
+                HashMap<String, Object> resMap = HttpClientUtil.get(map,workflowsQueryUrl);
+                log.info("调用workflowsQuery接口查询工作流中正在Running的流程信息结束resMap="+JSON.toJSONString(resMap));
+
+                if((Boolean) resMap.get("flag")){
+                    JSONObject resultJson = (JSONObject) JSON.parse((String) resMap.get("result"));
+                    JSONArray jsonArray = (JSONArray)resultJson.get("results");
+                    //总running的条数
+                    Integer totalResultsCount = (Integer) resultJson.get("totalResultsCount");
+                    if(totalResultsCount > 0){
+                        for(int i = 0 ; i < jsonArray.size() ; i++){
+                            JSONObject runJB = (JSONObject)jsonArray.get(i);
+                            String id = (String) runJB.get("id");
+                            if(weUuid.equals(id)){
+                                //设置Running状态的排序
+                                runnerDetailReq.setQueue(totalResultsCount-i);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }else{
+                runnerDetailReq.setQueue(0);
+            }
+
+            runnerDetailReq.setStatus(status);
+            log.info("更新runner数据入参runnerDetailReq="+JSON.toJSONString(runnerDetailReq));
+            Boolean flag = runnerDetailBo.update(runnerDetailReq,updateWrapper);
+            log.info("更新runner数据出参flag="+flag);
+            if(status == 3){
+                //发送验证邮件
+                RunnerStatisReqDTO runnerStatisReqDTO = new RunnerStatisReqDTO();
+                runnerStatisReqDTO.setWorkflowExecutionUuid(weUuid);
+                RunnerStatisDTO runnerStatisDTO = this.getRunnerDetail(runnerStatisReqDTO).get(0);
+                String content ="尊敬的用户,您好:<br>"
+                        + runnerStatisDTO.getJobName()+"的"+runnerStatisDTO.getAlgorithmsName()
+                        +"算法已经运行结束，,请点击下方的“登录”链接，跳转到PRS官网下载结果。<br><a href=\'"+systemPath+"\'>登录</a>"
+                        + "<br>如非本人操作，请忽略该邮件。<br>(这是一封自动发送的邮件，请不要直接回复）";
+                iMailService.sendResultMail(runnerStatisDTO.getEmail(),"运行结果下载提醒",content);
+            }
+        }
+    }
+    /**
+     * 发送消息
+     * @param reqMap
+     */
+    private Boolean sendQueryRunnerDetailStatusMessage(Map<String, Object> reqMap) {
+        log.info("查询工作流状态变更 调用发送消息入参：{}", JSONObject.toJSONString(reqMap));
+
+        String messageId = UUID.randomUUID().toString();
+
+        JSONObject inputJson = new JSONObject(reqMap);
+
+        MQMessageDTO messageDTO = new MQMessageDTO();
+        messageDTO.setMessage(inputJson.toJSONString());
+        messageDTO.setMsgId(messageId);
+        messageDTO.setRoutingKey(queryRunnerDetailStatusRoutingKey);
+        messageDTO.setTag(queryRunnerDetailStatusRoutingKey);
+
+        return producerService.sendTopicMessage(messageDTO,CROMWELL_EXCHANGE_NAME);
     }
 }

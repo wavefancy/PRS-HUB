@@ -22,7 +22,7 @@ public class MyFastAutoGenerator {
 //        tables.add("runner_detail");
 //        tables.add("parameter_enter");
 //        tables.add("prs_file");
-//        tables.add("runner_detail");
+        tables.add("runner_detail");
 //        tables.add("file_chunk");
 //        tables.add("runner_detail_to_file");
 
@@ -32,7 +32,7 @@ public class MyFastAutoGenerator {
          * username:数据库账号
          * password：数据库密码
          */
-        FastAutoGenerator.create("jdbc:mysql://114.115.129.79:3306/prs?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&allowMultiQueries=true","root","root")
+        FastAutoGenerator.create("jdbc:mysql://39.103.140.193:3307/prs_hub_test?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&allowMultiQueries=true","fsp","qwe@11")
                 .globalConfig(builder -> {
                     builder.author("fansp")//作者
                             .outputDir(System.getProperty("user.dir")+"\\src\\main\\java")    //输出路径(写到java目录)

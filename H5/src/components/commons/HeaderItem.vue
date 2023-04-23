@@ -28,11 +28,11 @@
                     </li>
                 </ul>
                 <!-- Right navigation -->
-                <div class="navbar-nav ms-lg-4">
-                    <router-link class="nav-item nav-link" to="/login">Sign in</router-link>
+                <div class="d-flex align-items-lg-center  mm">
+                    <router-link class="btn btn-sm btn-neutral w-full w-lg-auto" to="/login">Sign in</router-link>
                 </div>
                 <!-- Action -->
-                <div class="d-flex align-items-lg-center mt-3 mt-lg-0">
+                <div class="d-flex align-items-lg-center  mm">
                     <router-link  to="/register" class="btn btn-sm btn-neutral w-full w-lg-auto">
                         Register
                     </router-link>
@@ -71,5 +71,8 @@ export default {
   }
   .fixed-top{
         background-color: #fff;
+  }
+  .mm{
+    margin: 0.5rem;
   }
 </style>

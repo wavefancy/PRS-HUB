@@ -32,7 +32,16 @@
                 <input type="text" class="form-control" v-model.trim="descrition" ref="descrition"/>
               </div>
             </div>
-            <VueSimpleUploader :fileName="fileName"  attr=".gz"></VueSimpleUploader>
+            <div class="row" style="margin:  0.5rem  0rem;">
+              <div class="des"><b>pop:</b></div>
+              <div class="col-xl-3 col-sm-6 input-group-sm input-group-inline">
+                <select class="form-select " v-model="pop">
+                  <option :value="-1">please select</option>
+                  <option v-for="(pop,index) in popList" :key="index"   :value="pop">{{pop}}</option>
+              </select>
+              </div>
+            </div>
+            <VueSimpleUploader :fileName="fileName" :pop="pop"  attr=".gz"></VueSimpleUploader>
             <!-- <div class=" rounded
                 border-2 border-dashed border-primary-hover
                 position-relative " >
@@ -215,7 +224,9 @@
             hintUrl:"./img/hint.png",
             total:0,
             pageSize:5,
-            currentPage:1
+            currentPage:1,
+            popList:["eur","afr","sas","eas"],
+            pop:-1
         }
     },
     methods: {
@@ -243,6 +254,7 @@
         formData.append('filePath',data.filePath)
         formData.append('suffixName',data.suffixName)
         formData.append('identifier',data.identifier)
+        formData.append('pop',this.pop)
         Prs.savePrsFileInfo(formData).then(response => {
           const resData = response
           const code = resData.code;
@@ -482,5 +494,9 @@
     border-radius: 0.375rem;
     font-size: .875rem;
     padding: 0.5rem 0rem;
+}
+.pagination{
+  margin-top: 1rem;
+  margin-bottom: 1rem;
 }
 </style>

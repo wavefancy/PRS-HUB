@@ -16,14 +16,14 @@
               </h1>
               <p class="mt-2">It's free and easy</p>
             </div>
-            <div class="mb-2">
-              <div class="inlinediv col-md-6">
+            <div class="mb-2 row">
+              <div class="inlinediv col-lg-6 col-md-12">
                 <div class="mr">
                   <label class="form-label">First name<img class="asterisk" :src="imgUrls.asterisk" > </label>
                   <input type="text" class="form-control" ref="firstName" @blur='checkName'  v-model.trim="firstName" placeholder="Your First name">
                 </div>
               </div>
-              <div class="inlinediv col-md-6">
+              <div class="inlinediv col-lg-6 col-md-12">
                 <div class="ml">
                   <label class="form-label">Last name<img class="asterisk" :src="imgUrls.asterisk" > </label>
                   <input type="text" class="form-control" ref="lastName" @blur='checkName'  v-model.trim="lastName" placeholder="Your Last name">
@@ -46,14 +46,14 @@
               <label class="form-label" >Organisation <img class="asterisk" :src="imgUrls.asterisk" > </label>
               <input type="text" class="form-control" ref="organisation" v-model.trim="organisation"  placeholder="Your Organisation address">
             </div>
-            <div  class="mb-2">
-              <div class="inlinediv col-md-6">
+            <div  class="mb-2 row">
+              <div class="inlinediv  col-lg-6 col-md-12">
                 <div class="mr">
                   <label class="form-label">City<img class="asterisk" :src="imgUrls.asterisk" > </label>
                   <input type="text" class="form-control"  v-model.trim="city" placeholder="Your City">
                 </div>
               </div>
-              <div class="inlinediv col-md-6">
+              <div class="inlinediv  col-lg-6 col-md-12">
                 <div class="ml">
                   <label class="form-label">Country<img class="asterisk" :src="imgUrls.asterisk" > </label>
                   <input type="text" class="form-control"  v-model.trim="country" placeholder="Your Country">
@@ -80,8 +80,10 @@
             <div class="mb-2">
               <div class="form-check">
                 <input class="form-check-input" type="checkbox" v-model="agree" name="check_example" id="check-remind-me">
-                <label class="form-check-label font-semibold text-muted" for="check-remind-me">
-                  By creating an account means you agree to the Terms and Conditions, and our Privacy Policy
+                <label class="form-check-label font-semibold text-muted" >
+                  By creating an account means you agree to the <u class="my-a"  data-bs-toggle="modal" 
+                    data-bs-target="#terms" >Terms and Conditions</u>, and our <u class="my-a" data-bs-toggle="modal" 
+                    data-bs-target="#privacy">Privacy Policy</u>
                 </label>
               </div>
             </div>
@@ -95,6 +97,34 @@
               <button  @click="signIn" class="text-warning text-sm font-semibold">Sign in</button>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal fade" id="terms"  ref="terms"
+    tabindex="-1" aria-labelledby="terms" aria-hidden="true"   >
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <i class="bi bi-x-lg off-x modal-off-x " data-bs-dismiss="modal" ></i>
+        <div class="modal-body px-12" style="padding-top: 0.5rem;" >
+            <h2 style="text-align: center; margin-bottom: 2rem;">{{terms.title}}</h2>
+            <ol>
+              <li class="navbar-text" v-for="(content,index) in terms.contents" :key="index" >{{content}}</li>
+            </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal fade" id="privacy"  ref="privacy"
+    tabindex="-1" aria-labelledby="privacy" aria-hidden="true"   >
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <i class="bi bi-x-lg off-x modal-off-x" data-bs-dismiss="modal" ></i>
+        <div class="modal-body px-12" style="padding-top: 0.5rem;" >
+            <h2 style="text-align: center; margin-bottom: 2rem;">{{privacy.title}}</h2>
+            <ol>
+              <li class="navbar-text" v-for="(content,index) in privacy.contents" :key="index" >{{content}}</li>
+            </ol>
         </div>
       </div>
     </div>
@@ -136,8 +166,32 @@ export default {
         errorPw:false,
         errorCon:false,
         loading:false,
-        eyesType:false
-
+        eyesType:false,
+        //条款
+        terms:{
+          title:"Terms and conditions",
+          contents:[
+            "The materials and results contained in the PRS-hub website is provided for scientific research purposes only and, as such, should not be considered as a substitute for advice covering any specific situation.",
+            "Although we make best efforts to ensure that the results are accurately computated by PRS methods of inclusion, the PRS-hub website accepts no responsibility for loss arising from reliance on  misinformed data (e.g. GWAS summary statistics, LD references, etc) uploaded from users. ",
+            "The views and opinions of people who are not at the PRS-hub website and that appear on the website do not necessarily reflect the views of the PRS-hub website.",
+            "The PRS-hub website does not endorse or recommend commercial products, processes or services and no such conclusion should be drawn from content provided in or linked from this website. ",
+            "Links to other internet sites are provided only for the convenience of users of the PRS-hub website. The PRS-hub website is not responsible for the content of external internet sites.",
+            "The PRS-hub website endeavours to maintain this site but does not warrant that the site will be continuously available or error-free, nor does the PRS-hub website warrant that this service will be free of defects or bugs or malicious software or code.",
+            "Neither the PRS-hub website nor those contributing to the site shall be liable for any losses or damage that may result from use of the website as a consequence of any inaccuracies in, or any omissions from, the information, data, or results, which it may contain.",
+            "We reserve the right to make changes to this website at any time without notice.",
+            "You agree to use this site only for lawful purposes.",
+            "If you do not accept these Terms and Conditions in full, you will cease using this site immediately."
+            ]
+        },
+        //
+        privacy:{
+          title:"Privacy Policy",
+          contents:[
+            "Thank you for visiting the PRS-hub website and reviewing our privacy policy. The China National Genomics Data Center, of which PRS-hub website is a part, does not disclose, give, sell, or transfer any personal information about visitors to its websites, unless required by law or court order.",
+            "The PRS-hub website is committed to protecting your privacy. We will not collect any personal information about you when you visit our website (other than the standard information automatically collected and stored in the Web server's logs) unless you choose to provide it to us.",
+            'Detailed information regarding server logs, and voluntary submission of personal information, "cookies", security, and intrusion detection systems is provided below.'
+          ]
+        }
       }
     },
     computed: {
@@ -306,6 +360,9 @@ export default {
           this.eyesImage = "./img/logos/close.png"
           this.passwordType = "password"
         }
+      },
+      showTC(){
+        this.showDiscription=true
       }
     },
     mounted () {
@@ -347,5 +404,16 @@ export default {
 }
 .asterisk{
   width: 0.5rem;
+}
+.my-a{
+  color: blue;
+}
+.modal-off-x{
+  text-align: right;
+  margin-right: 0.5rem;
+  margin-top: 0.5rem;
+}
+.modal-dialog {
+    max-width: 40rem !important;
 }
 </style>

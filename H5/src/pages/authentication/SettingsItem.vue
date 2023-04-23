@@ -1,8 +1,11 @@
 <template>
-<div class="container-fluid max-w-screen-md vstack gap-6" style="margin-top: 4rem;">
-   <vue-element-loading :active="loading" :is-full-screen="true" spinner="ring"/>
-          <!-- Profile picture -->
-          <div class="card">
+<div class="flex-lg-1 h-screen  container-fluid   vstack "  style="padding-top: 3rem; overflow: auto;">
+      <vue-element-loading :active="loading" :is-full-screen="true" spinner="ring"/>
+      <!-- Profile picture -->
+      <div class="row">
+        <div class="col-lg-3"></div>
+        <div class="col-lg-6" style="margin-bottom: 5rem;">
+          <div class="card mb-6">
             <div class="card-body">
               <div class="d-flex align-items-center">
                 <div>
@@ -18,7 +21,7 @@
               </div>
             </div>
           </div>
-          <div>
+          <div class="mb-12">
             <div class="mb-5">
               <h4>Contact Information</h4>
             </div>
@@ -73,10 +76,13 @@
                   </div>
                 </div>
                 <div class="col-md-12">
-                  <div class="form-check form-switch me-n2 col-md-3">
-                    <input class="form-check-input" type="checkbox" role="switch"    v-model="checkVal">
+                  <div class="row"  style="padding-left: 0.625rem;">
+                    <div class="form-check form-switch me-n2 col-md-1">
+                      <input class="form-check-input" type="checkbox" role="switch"    v-model="checkVal">
+                    </div>
+                    <h6 class="text-danger col-md-8" style="line-height: 1.5rem;">Whether to change the email address and password .</h6>
                   </div>
-                  <h6 class="text-danger col-md-8">Whether to change the email address and password .</h6>
+                  
                 </div>
                 <div v-if="checkVal">
                   <div class="mb-2">
@@ -108,9 +114,9 @@
               </div>
             </form>
           </div>
-          <hr class="my-6">
+          <hr class="mb-12">
           <!-- Individual switch cards -->
-          <div class="row g-6">
+          <div class="row mb-6 g-6">
             <div class="col-md-12">
               <div class="card">
                 <div class="card-body">
@@ -124,6 +130,9 @@
             </div>
           </div>
         </div>
+        <div class="col-lg-3"></div>
+      </div>
+  </div>
 </template>
 
 <script>

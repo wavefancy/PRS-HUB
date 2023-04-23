@@ -1,6 +1,7 @@
 package com.prs.hub.file.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
@@ -17,6 +18,8 @@ import com.prs.hub.file.service.FileService;
 import com.prs.hub.practice.bo.PrsFileBo;
 import com.prs.hub.practice.entity.ParameterEnter;
 import com.prs.hub.practice.entity.PrsFile;
+import com.prs.hub.rabbitmq.dto.MQMessageDTO;
+import com.prs.hub.rabbitmq.service.ProducerService;
 import com.prs.hub.utils.CromwellUtil;
 import com.prs.hub.utils.MultipartFileToFileUtil;
 import com.prs.hub.utils.StringUtils;
@@ -34,10 +37,7 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -51,6 +51,19 @@ public class FileServiceImpl implements FileService {
 
     @Value("${cromwell.workflows.status.url}")
     private  String workflowsStatusUrl;
+
+    /**
+     * 发送消息
+     */
+    @Autowired
+    private ProducerService producerService;
+
+    @Value("${upload.exchange}")
+    private String uploadExchange;
+
+    @Value("${query.file.status.routing.key}")
+    private String queryFileStatusRoutingKey;
+
     @Override
     public BaseResult upLoadFiles(String filePath,String fileName, MultipartFile file) {
         log.info("文件上传service开始filePath="+ filePath);
@@ -350,7 +363,7 @@ public class FileServiceImpl implements FileService {
         }
     }
     /**
-     * 定时任务：每30分钟检查file表ParsingStatus数据，纯在‘N’类型的结果则查询工作流状态若成功则变更为'Y'
+     * 定时任务：每30分钟检查file表ParsingStatus数据，纯在‘N’类型的结果则发送消息查询工作流状态若成功则变更为'Y'
      */
     @Scheduled(cron = "0 30 * * * ?")
     private void  updateParsingStatus(){
@@ -358,30 +371,41 @@ public class FileServiceImpl implements FileService {
         QueryWrapper<PrsFile> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("parsing_status","N");
         queryWrapper.eq("file_type","LD");
+        queryWrapper.isNotNull("parsing_id");//解析工作流id
         IPage<PrsFile> iPage = new Page<>();
         log.info("调用bo查询ParsingStatus数据，纯在‘N’类型的结果开始queryWrapper="+JSON.toJSON(queryWrapper));
         List<PrsFile> prsFileList = fileBo.list(queryWrapper);
         log.info("调用bo查询ParsingStatus数据，纯在‘N’类型的结果结束prsFileList="+JSON.toJSON(prsFileList));
 
         if(CollectionUtils.isNotEmpty(prsFileList)){
+            StringBuffer strB = new StringBuffer();
             for (PrsFile prsFile:prsFileList) {
-
-                String weUuid = prsFile.getParsingId();
-                String statusStr = CromwellUtil.workflowsStatus(workflowsStatusUrl,weUuid);
-                if("Succeeded".equals(statusStr)){
-                    PrsFile updatePrsFile = new PrsFile();
-                    updatePrsFile.setId(prsFile.getId());
-                    updatePrsFile.setParsingStatus("Y");
-
-                    UpdateWrapper<PrsFile> updateWrapper = new UpdateWrapper<>();
-                    updateWrapper.eq("id",prsFile.getId());
-
-                    log.info("工作流状态若成功则ParsingStatus变更为'Y' updatePrsFile="+JSON.toJSONString(updatePrsFile));
-                    boolean flag = fileBo.update(updatePrsFile,updateWrapper);
-                    log.info("工作流状态若成功则ParsingStatus变更为'Y'结束 flag="+flag);
-
+                if(strB.length() == 0){
+                    strB.append(prsFile.getParsingId());
+                }else{
+                    strB.append(","+prsFile.getParsingId());
                 }
+//                String weUuid = prsFile.getParsingId();
+//                String statusStr = CromwellUtil.workflowsStatus(workflowsStatusUrl,weUuid);
+//                if("Succeeded".equals(statusStr)){
+//                    PrsFile updatePrsFile = new PrsFile();
+//                    updatePrsFile.setId(prsFile.getId());
+//                    updatePrsFile.setParsingStatus("Y");
+//
+//                    UpdateWrapper<PrsFile> updateWrapper = new UpdateWrapper<>();
+//                    updateWrapper.eq("id",prsFile.getId());
+//
+//                    log.info("工作流状态若成功则ParsingStatus变更为'Y' updatePrsFile="+JSON.toJSONString(updatePrsFile));
+//                    boolean flag = fileBo.update(updatePrsFile,updateWrapper);
+//                    log.info("工作流状态若成功则ParsingStatus变更为'Y'结束 flag="+flag);
+//
+//                }
             }
+
+            //发送查询状态消息
+            Map<String, Object> reqMap = new HashMap<>();
+            reqMap.put("uuidArr",strB.toString());
+            this.sendQueryFileStatusMessage(reqMap);
         }
 
     }
@@ -405,5 +429,25 @@ public class FileServiceImpl implements FileService {
         log.info("物理删除文件记录结束removeRes="+removeRes);
 
         return removeRes;
+    }
+
+    /**
+     * 发送消息
+     * @param reqMap
+     */
+    private Boolean sendQueryFileStatusMessage(Map<String, Object> reqMap) {
+        log.info("文件上传保存数据后调用发送消息入参：{}", JSONObject.toJSONString(reqMap));
+
+        String messageId = UUID.randomUUID().toString();
+
+        JSONObject inputJson = new JSONObject(reqMap);
+
+        MQMessageDTO messageDTO = new MQMessageDTO();
+        messageDTO.setMessage(inputJson.toJSONString());
+        messageDTO.setMsgId(messageId);
+        messageDTO.setRoutingKey(queryFileStatusRoutingKey);
+        messageDTO.setTag(queryFileStatusRoutingKey);
+
+        return producerService.sendTopicMessage(messageDTO,uploadExchange);
     }
 }

@@ -49,6 +49,9 @@ public class RunnerDetailServiceImpl implements RunnerDetailService {
         if(StringUtils.isNotEmpty(runnerStatisReqDTO.getWorkflowExecutionUuid() )){
             queryWrapper.eq("workflow_execution_uuid",runnerStatisReqDTO.getWorkflowExecutionUuid());
         }
+        if(StringUtils.isNotEmpty(runnerStatisReqDTO.getMessageId() )){
+            queryWrapper.eq("message_id",runnerStatisReqDTO.getMessageId());
+        }
         try {
             runnerDetail = runnerDetailBo.getOne(queryWrapper);
         }catch (Exception e){
