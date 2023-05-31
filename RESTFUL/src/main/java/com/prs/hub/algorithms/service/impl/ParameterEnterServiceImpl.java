@@ -63,13 +63,7 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
     private RunnerDetailService runnerDetailService;
     @Autowired
     private RunnerDetailToFileService runnerDetailToFileService;
-    /**
-     * Cromwell服务访问地址
-     */
-    @Value("${cromwell.workflows.url}")
-    private String cromwellUrl;
-    @Value("${upload.file.path}")
-    private String uploadFilePath;
+
 
     /**
      * 发送消息
@@ -124,23 +118,6 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
             resMap.put("userId",userId);
             //推送消息保存数据
             this.sendMessageAndSaveRunnerDetail(resMap,algorithmsReqDTO);
-
-//            //2调用工作流接口存储runner_detail数据
-//            String cromwellId = this.submitWorkflow(resMap,userId,now,jobName,fileGWASId,fileLDId,algorithmsReqDTO.getGwasAndLDFilenameDTOList());
-//
-//            if(StringUtils.isEmpty(cromwellId)){
-//                log.info("工作流运行失败");
-//                return false;
-//            }
-//
-//            // 记录工作流id
-//            for (int i = 0 ; i < parameterEnters.size() ; i++){
-//                ParameterEnter parameterEnter = parameterEnters.get(i);
-//                if(resMap.get("algorithmsId") == parameterEnter.getAlgorithmsId()){
-//                    parameterEnter.setWorkflowExecutionUuid(cromwellId);
-//                    parameterEnters.set(i,parameterEnter);
-//                }
-//            }
         }
         if(CollectionUtils.isEmpty(parameterEnters)){
             log.info("保存用户设置参数结束，传入parameterEnters数据为空");
@@ -167,7 +144,8 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
         //当前系统时间
         LocalDateTime now = LocalDateTime.now();
         //保存数据
-        this.saveRunnerDetail((String) resMap.get("userId"),now,algorithmsReqDTO,messageId);
+        Long runnerId = this.saveRunnerDetail((String) resMap.get("userId"),now,algorithmsReqDTO,messageId);
+        resMap.put("runnerId",runnerId.toString());
 
         JSONObject inputJson = new JSONObject(resMap);
 
@@ -349,13 +327,7 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
             jsonObject.put(name+"."+"pop_0",multipleMap.get("LD"));
         }
 
-        //参数文件地址
-//        String inputPath = uploadFilePath+System.currentTimeMillis()+fileName;
-//        log.info("将参数写入文件中inputPath="+inputPath);
-//        log.info("参数jsonObject="+jsonObject.toJSONString());
-//        FileUtil.writerJsonFile(inputPath,jsonObject);
         resMap.put("inputJson",jsonObject);
-//        resMap.put("inputPath",inputPath);
 
         log.info("组装参数文件方法返回resMap="+JSON.toJSONString(resMap));
         return resMap;
@@ -371,70 +343,71 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
      */
     private String submitWorkflow(Map<String,Object> resMap,String userId,LocalDateTime now,String jobName,
                                   Long fileGWASId,Long fileLDId, List<GWASAndLDFilenameDTO> gwasAndLDFilenameDTOList) {
-
-        log.info("调用工作流接口、存储runner_detail数据入参：resMap="+JSON.toJSONString(resMap)
-                +"\njobName="+jobName
-                +"\nnow="+now.toString());
-
-        File inputFile = new File((String) resMap.get("inputPath"));
-        File wdlFile = new File((String) resMap.get("wdlPath"));
-
-        Map<String,File> fileMap = new HashMap<>();
-        fileMap.put("workflowInputs",inputFile);
-        fileMap.put("workflowSource",wdlFile);
-
-        log.info("访问cromwell提交工作流");
-        String resultmsg = HttpClientUtil.httpClientUploadFileByfile(fileMap,cromwellUrl);
-        log.info("访问cromwell提交工作流返回结果"+JSON.toJSONString(resultmsg));
-        String cromwellId = null;
-        if(StringUtils.isNotEmpty(resultmsg)){
-            JSONObject  cromwellResult = JSON.parseObject(resultmsg);
-            cromwellId = cromwellResult.get("id").toString();
-            RunnerDetail runnerDetail = new RunnerDetail();
-            runnerDetail.setJobName(jobName);
-            runnerDetail.setWorkflowExecutionUuid(cromwellId);//工作流uuid
-            runnerDetail.setUserId(Long.valueOf(userId));
-            runnerDetail.setStatus(0);//运行状态 4:Finish, 3:Project at risk ,1:In progress,0:Not started
-            runnerDetail.setProgress(0);//运行进度 0-100
-            runnerDetail.setCreatedUser("system");
-            runnerDetail.setCreatedDate(now);
-            runnerDetail.setModifiedUser("system");
-            runnerDetail.setModifiedDate(now);
-            runnerDetail.setIsDelete(0);
-            log.info("保存工作流运行数据开始runnerDetail="+JSON.toJSONString(runnerDetail));
-            Boolean runnerFlag = runnerDetailBo.save(runnerDetail);
-            log.info("保存工作流运行数据结束runnerFlag="+runnerFlag);
-
-            RunnerStatisReqDTO runnerStatisReqDTO = new RunnerStatisReqDTO();
-            runnerStatisReqDTO.setWorkflowExecutionUuid(cromwellId);
-            Long runnerId  = runnerDetailService.selectRunnerDetail(runnerStatisReqDTO).getId();
-
-            //保存file与工作流对应关系数据
-            if(CollectionUtils.isNotEmpty(gwasAndLDFilenameDTOList)){
-                List<RunnerDetailToFileReqDTO> runnerDetailToFileReqDTOList = new ArrayList<>();
-                for (GWASAndLDFilenameDTO gwasAndLDFilenameDTO:gwasAndLDFilenameDTOList) {
-                    RunnerDetailToFileReqDTO runnerDetailToFileReqDTO = new RunnerDetailToFileReqDTO();
-                    runnerDetailToFileReqDTO.setRunnerId(runnerId);
-                    runnerDetailToFileReqDTO.setLdFileId(gwasAndLDFilenameDTO.getLdFileId());
-                    runnerDetailToFileReqDTO.setGwasFileId(gwasAndLDFilenameDTO.getGwasFileId());
-                    runnerDetailToFileReqDTOList.add(runnerDetailToFileReqDTO);
-                }
-                log.info("保存file与工作流对应关系数据runnerDetailToFileReqDTOList="+JSON.toJSONString(runnerDetailToFileReqDTOList));
-                boolean muFlag = runnerDetailToFileService.saveBatch(runnerDetailToFileReqDTOList);
-                log.info("保存file与工作流对应关系数据结束muFlag="+muFlag);
-            }else{
-                RunnerDetailToFileReqDTO runnerDetailToFileReqDTO = new RunnerDetailToFileReqDTO();
-                runnerDetailToFileReqDTO.setLdFileId(fileLDId);
-                runnerDetailToFileReqDTO.setRunnerId(runnerId);
-                runnerDetailToFileReqDTO.setGwasFileId(fileGWASId);
-                log.info("保存file与工作流对应关系数据runnerDetailToFileReqDTO="+JSON.toJSONString(runnerDetailToFileReqDTO));
-                boolean singleFlag = runnerDetailToFileService.saveOrUpdate(runnerDetailToFileReqDTO);
-                log.info("保存file与工作流对应关系数据结束singleFlag="+singleFlag);
-            }
-        }
-        //删除本地临时文件
-        MultipartFileToFileUtil.delteTempFile(inputFile);
-        return cromwellId;
+//
+//        log.info("调用工作流接口、存储runner_detail数据入参：resMap="+JSON.toJSONString(resMap)
+//                +"\njobName="+jobName
+//                +"\nnow="+now.toString());
+//
+//        File inputFile = new File((String) resMap.get("inputPath"));
+//        File wdlFile = new File((String) resMap.get("wdlPath"));
+//
+//        Map<String,File> fileMap = new HashMap<>();
+//        fileMap.put("workflowInputs",inputFile);
+//        fileMap.put("workflowSource",wdlFile);
+//
+//        log.info("访问cromwell提交工作流");
+//        String resultmsg = HttpClientUtil.httpClientUploadFileByfile(fileMap,cromwellUrl);
+//        log.info("访问cromwell提交工作流返回结果"+JSON.toJSONString(resultmsg));
+//        String cromwellId = null;
+//        if(StringUtils.isNotEmpty(resultmsg)){
+//            JSONObject  cromwellResult = JSON.parseObject(resultmsg);
+//            cromwellId = cromwellResult.get("id").toString();
+//            RunnerDetail runnerDetail = new RunnerDetail();
+//            runnerDetail.setJobName(jobName);
+//            runnerDetail.setWorkflowExecutionUuid(cromwellId);//工作流uuid
+//            runnerDetail.setUserId(Long.valueOf(userId));
+//            runnerDetail.setStatus(0);//运行状态 4:Finish, 3:Project at risk ,1:In progress,0:Not started
+//            runnerDetail.setProgress(0);//运行进度 0-100
+//            runnerDetail.setCreatedUser("system");
+//            runnerDetail.setCreatedDate(now);
+//            runnerDetail.setModifiedUser("system");
+//            runnerDetail.setModifiedDate(now);
+//            runnerDetail.setIsDelete(0);
+//            log.info("保存工作流运行数据开始runnerDetail="+JSON.toJSONString(runnerDetail));
+//            Boolean runnerFlag = runnerDetailBo.save(runnerDetail);
+//            log.info("保存工作流运行数据结束runnerFlag="+runnerFlag);
+//
+//            RunnerStatisReqDTO runnerStatisReqDTO = new RunnerStatisReqDTO();
+//            runnerStatisReqDTO.setWorkflowExecutionUuid(cromwellId);
+//            Long runnerId  = runnerDetailService.selectRunnerDetail(runnerStatisReqDTO).getId();
+//
+//            //保存file与工作流对应关系数据
+//            if(CollectionUtils.isNotEmpty(gwasAndLDFilenameDTOList)){
+//                List<RunnerDetailToFileReqDTO> runnerDetailToFileReqDTOList = new ArrayList<>();
+//                for (GWASAndLDFilenameDTO gwasAndLDFilenameDTO:gwasAndLDFilenameDTOList) {
+//                    RunnerDetailToFileReqDTO runnerDetailToFileReqDTO = new RunnerDetailToFileReqDTO();
+//                    runnerDetailToFileReqDTO.setRunnerId(runnerId);
+//                    runnerDetailToFileReqDTO.setLdFileId(gwasAndLDFilenameDTO.getLdFileId());
+//                    runnerDetailToFileReqDTO.setGwasFileId(gwasAndLDFilenameDTO.getGwasFileId());
+//                    runnerDetailToFileReqDTOList.add(runnerDetailToFileReqDTO);
+//                }
+//                log.info("保存file与工作流对应关系数据runnerDetailToFileReqDTOList="+JSON.toJSONString(runnerDetailToFileReqDTOList));
+//                boolean muFlag = runnerDetailToFileService.saveBatch(runnerDetailToFileReqDTOList);
+//                log.info("保存file与工作流对应关系数据结束muFlag="+muFlag);
+//            }else{
+//                RunnerDetailToFileReqDTO runnerDetailToFileReqDTO = new RunnerDetailToFileReqDTO();
+//                runnerDetailToFileReqDTO.setLdFileId(fileLDId);
+//                runnerDetailToFileReqDTO.setRunnerId(runnerId);
+//                runnerDetailToFileReqDTO.setGwasFileId(fileGWASId);
+//                log.info("保存file与工作流对应关系数据runnerDetailToFileReqDTO="+JSON.toJSONString(runnerDetailToFileReqDTO));
+//                boolean singleFlag = runnerDetailToFileService.saveOrUpdate(runnerDetailToFileReqDTO);
+//                log.info("保存file与工作流对应关系数据结束singleFlag="+singleFlag);
+//            }
+//        }
+//        //删除本地临时文件
+//        MultipartFileToFileUtil.delteTempFile(inputFile);
+//        return cromwellId;
+        return null;
     }
 
     /**

@@ -15,14 +15,14 @@ public class MyFastAutoGenerator {
     public static void main(String[] args) {
         List<String> tables = new ArrayList<>();
 //        tables.add("prs_user");
-//        tables.add("algorithms");
+        tables.add("algorithms");
 //        tables.add("METADATA_ENTRY");
 //        tables.add("parameter");
 //        tables.add("menu");
 //        tables.add("runner_detail");
 //        tables.add("parameter_enter");
 //        tables.add("prs_file");
-        tables.add("runner_detail");
+//        tables.add("runner_detail");
 //        tables.add("file_chunk");
 //        tables.add("runner_detail_to_file");
 
@@ -32,10 +32,10 @@ public class MyFastAutoGenerator {
          * username:数据库账号
          * password：数据库密码
          */
-        FastAutoGenerator.create("jdbc:mysql://39.103.140.193:3307/prs_hub_test?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&allowMultiQueries=true","fsp","qwe@11")
+        FastAutoGenerator.create("jdbc:mysql://192.168.129.138:3306/prs_hub?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&allowMultiQueries=true","root","e8c87vb2")
                 .globalConfig(builder -> {
                     builder.author("fansp")//作者
-                            .outputDir(System.getProperty("user.dir")+"\\src\\main\\java")    //输出路径(写到java目录)
+                            .outputDir("E:\\PRS-HUB\\RESTFUL\\src\\main\\java")    //输出路径(写到java目录)
                             .enableSwagger()//开启swagger
                             .commentDate("yyyy-MM-dd")
                             .fileOverride();//开启覆盖之前生成的文件
@@ -50,7 +50,7 @@ public class MyFastAutoGenerator {
 //                            .controller("controller")
                             .mapper("mapper")
                             .xml("mapper")
-                            .pathInfo(Collections.singletonMap(OutputFile.mapperXml,System.getProperty("user.dir")+"\\src\\main\\resources\\mapper"));
+                            .pathInfo(Collections.singletonMap(OutputFile.mapperXml,"E:\\PRS-HUB\\RESTFUL\\src\\main\\resources\\mapper"));
                 })
                 .strategyConfig(builder -> {//策略配置
                     builder.addInclude(tables)//要生成代码的表名

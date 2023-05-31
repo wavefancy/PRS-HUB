@@ -54,19 +54,16 @@ public class StatisticsServiceImpl implements StatisticsService {
     @Value("${system.path}")
     private String systemPath;
 
-    @Value("${cromwell.workflows.status.url}")
-    private  String workflowsStatusUrl;
-    @Value("${cromwell.workflows.query.url}")
-    private String workflowsQueryUrl;
+    private  String workflowsStatusUrl = "";
+    private String workflowsQueryUrl = "";
 
     /**
      * 发送消息
      */
     @Autowired
     private ProducerService producerService;
-    //cromwell交换机名称
-    private static final String CROMWELL_EXCHANGE_NAME = "prs.hub.cromwell.topic.exchange";
-
+    //PRS_HUB交换机名称
+    private static final String PRS_HUB_TOPIC_EXCHANGE_NAME = "prs.hub.topic.exchange";
     @Value("${query.runner.detail.status.routing.key}")
     private String queryRunnerDetailStatusRoutingKey;
 
@@ -111,6 +108,7 @@ public class StatisticsServiceImpl implements StatisticsService {
         log.info("分页查询Runner表未结束的工作流出参jobsPage="+ JSON.toJSONString(jobsPage));
         return jobsPage;
     }
+
     /**
      * 统计runner数据
      * @param runnerStatisReqDTO
@@ -137,7 +135,7 @@ public class StatisticsServiceImpl implements StatisticsService {
     /**
      * 定时任务：实时更新runner数据定
      */
-//    @Scheduled(cron = "10 * * * * ?")
+    @Scheduled(cron = "0/10 * * * * *")
     private void realTimeUpdateRunnerDetail(){
         log.info("实时更新runner数据定时任务开始每10秒执行一次");
 
@@ -280,6 +278,6 @@ public class StatisticsServiceImpl implements StatisticsService {
         messageDTO.setRoutingKey(queryRunnerDetailStatusRoutingKey);
         messageDTO.setTag(queryRunnerDetailStatusRoutingKey);
 
-        return producerService.sendTopicMessage(messageDTO,CROMWELL_EXCHANGE_NAME);
+        return producerService.sendTopicMessage(messageDTO,PRS_HUB_TOPIC_EXCHANGE_NAME);
     }
 }

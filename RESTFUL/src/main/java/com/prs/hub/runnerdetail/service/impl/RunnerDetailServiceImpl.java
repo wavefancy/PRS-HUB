@@ -113,7 +113,18 @@ public class RunnerDetailServiceImpl implements RunnerDetailService {
         try {
             //更新条件
             UpdateWrapper<RunnerDetail> updateWrapper = new UpdateWrapper();
-            updateWrapper.eq("workflow_execution_uuid",runnerStatisReqDTO.getWorkflowExecutionUuid());
+
+            if(runnerStatisReqDTO.getUserId() != null){
+                updateWrapper.eq("user_id",runnerStatisReqDTO.getUserId());
+
+            }
+            if(StringUtils.isNotEmpty(runnerStatisReqDTO.getMessageId())){
+                updateWrapper.eq("message_id",runnerStatisReqDTO.getMessageId());
+            }else {
+                if(StringUtils.isNotEmpty(runnerStatisReqDTO.getWorkflowExecutionUuid())){
+                    updateWrapper.eq("workflow_execution_uuid",runnerStatisReqDTO.getWorkflowExecutionUuid());
+                }
+            }
 
             //更新数据
             RunnerDetail runnerDetailReq = new RunnerDetail();
@@ -122,6 +133,9 @@ public class RunnerDetailServiceImpl implements RunnerDetailService {
             }
             if(StringUtils.isNotEmpty(runnerStatisReqDTO.getResultPath())){
                 runnerDetailReq.setResultPath(runnerStatisReqDTO.getResultPath());
+            }
+            if(StringUtils.isNotEmpty(runnerStatisReqDTO.getWorkflowExecutionUuid())){
+                runnerDetailReq.setWorkflowExecutionUuid(runnerStatisReqDTO.getWorkflowExecutionUuid());
             }
             log.info("更新runner数据入参runnerDetailReq="+JSON.toJSONString(runnerDetailReq));
             flag = runnerDetailBo.update(runnerDetailReq,updateWrapper);

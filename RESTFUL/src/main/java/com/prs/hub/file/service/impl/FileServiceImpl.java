@@ -48,10 +48,6 @@ public class FileServiceImpl implements FileService {
     private PrsFileBo fileBo;
     @Autowired
     private FileChunkService fileChunkService;
-
-    @Value("${cromwell.workflows.status.url}")
-    private  String workflowsStatusUrl;
-
     /**
      * 发送消息
      */
@@ -385,21 +381,6 @@ public class FileServiceImpl implements FileService {
                 }else{
                     strB.append(","+prsFile.getParsingId());
                 }
-//                String weUuid = prsFile.getParsingId();
-//                String statusStr = CromwellUtil.workflowsStatus(workflowsStatusUrl,weUuid);
-//                if("Succeeded".equals(statusStr)){
-//                    PrsFile updatePrsFile = new PrsFile();
-//                    updatePrsFile.setId(prsFile.getId());
-//                    updatePrsFile.setParsingStatus("Y");
-//
-//                    UpdateWrapper<PrsFile> updateWrapper = new UpdateWrapper<>();
-//                    updateWrapper.eq("id",prsFile.getId());
-//
-//                    log.info("工作流状态若成功则ParsingStatus变更为'Y' updatePrsFile="+JSON.toJSONString(updatePrsFile));
-//                    boolean flag = fileBo.update(updatePrsFile,updateWrapper);
-//                    log.info("工作流状态若成功则ParsingStatus变更为'Y'结束 flag="+flag);
-//
-//                }
             }
 
             //发送查询状态消息
