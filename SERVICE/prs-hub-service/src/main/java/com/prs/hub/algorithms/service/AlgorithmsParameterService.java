@@ -1,6 +1,7 @@
 package com.prs.hub.algorithms.service;
 
 import com.prs.hub.algorithms.dto.AlgorithmsParameterDTO;
+import com.prs.hub.algorithms.dto.SubmitWorkflowResDTO;
 
 /**
  * @author fanshupeng
@@ -13,6 +14,6 @@ public interface AlgorithmsParameterService {
      * @param algorithmsParameterDTO
      * @return
      */
-    String submitWorkflow(AlgorithmsParameterDTO algorithmsParameterDTO) throws Exception;
+    SubmitWorkflowResDTO submitWorkflow(AlgorithmsParameterDTO algorithmsParameterDTO) throws Exception;
 
 }

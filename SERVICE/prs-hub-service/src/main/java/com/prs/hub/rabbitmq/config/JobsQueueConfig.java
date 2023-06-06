@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
 
 
 @Configuration
-public class AlgorithmsQueueConfig {
+public class JobsQueueConfig {
     //PRS_HUB交换机名称
     private static final String PRS_HUB_TOPIC_EXCHANGE_NAME = "prs.hub.topic.exchange";
     //PRS_HUB死信交换机名称
@@ -21,6 +21,8 @@ public class AlgorithmsQueueConfig {
 
     //PRS_HUB队列名称
     public static final String ALGORITHMS_PARAMETER_QUEUE_NAME = "prs.hub.algorithms.parameter.queue";
+    //PRS_HUB队列名称
+    public static final String QUERY_RUNNER_DETAIL_STATUS_QUEUE_NAME = "prs.hub.query.runner.detail.status.queue";
     //PRS_HUB死信队列名称
     public static final String DEAD_LETTER_QUEUE_QUEUE_NAME = "prs.hub.dead_letter_queue";
 
@@ -41,5 +43,16 @@ public class AlgorithmsQueueConfig {
     public Binding queueBinding(@Qualifier("algorithmsParameterQueue") Queue queue,
                                 @Qualifier("prsHubTopicExchange") TopicExchange exchange){
         return BindingBuilder.bind(queue).to(exchange).with("prs.hub.algorithms.#");
+    }
+    // 声明queryRunnerDetailStatus队列
+    @Bean("queryRunnerDetailStatusQueue")
+    public Queue queryRunnerDetailStatusQueue(){
+        return QueueBuilder.durable(QUERY_RUNNER_DETAIL_STATUS_QUEUE_NAME).build();
+    }
+    // 声明queryRunnerDetailStatus topic队列绑定关系
+    @Bean("queryRunnerDetailStatusQueueBinding")
+    public Binding queryRunnerDetailStatusQueueBinding(@Qualifier("queryRunnerDetailStatusQueue") Queue queue,
+                                @Qualifier("prsHubTopicExchange") TopicExchange exchange){
+        return BindingBuilder.bind(queue).to(exchange).with("prs.hub.query.runner.detail.status");
     }
 }

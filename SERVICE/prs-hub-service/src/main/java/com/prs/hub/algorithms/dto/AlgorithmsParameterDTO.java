@@ -16,9 +16,17 @@ public class AlgorithmsParameterDTO {
      */
     private String userId;
     /**
-     * 执行wdl脚本的地址
+     * job的id
+     */
+    private String runnerId;
+    /**
+     * 执行wdl脚本文件的地址
      */
     private String wdlPath;
+    /**
+     * option数据文件的地址
+     */
+    private String optionsPath;
     /**
      * 算法id
      */

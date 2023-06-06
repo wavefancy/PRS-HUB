@@ -270,7 +270,6 @@ public class FileController {
                 prsFile.setParsingStatus("N");//N代表未解析完成
             }
 
-
             prsFile.setDescrition(descrition);
             prsFile.setFileType(fileType);
             prsFile.setFilePath(filePath);
@@ -281,11 +280,12 @@ public class FileController {
             log.info("调用fileService将上传文件信息存储到数据库开始");
             Long fileId = fileService.saveFileDetail(prsFile);
             log.info("调用fileService将上传文件信息存储到数据库结束fileId="+fileId);
-            if(fileId !=null){
-                resultMap.put("code",ResultCodeEnum.SUCCESS.getCode());
-                resultMap.put("msg","sftp文件上传成功");
-                resultMap.put("fileId",fileId);
-                //发送消息
+            resultMap.put("code",ResultCodeEnum.SUCCESS.getCode());
+            resultMap.put("msg","sftp文件上传成功");
+            resultMap.put("fileId",fileId);
+
+            if(fileId !=null && "LD".equals(fileType)){
+                //发送消息对LD文件进行解析
                 Map<String,Object> uploadMsgReq = new HashMap<>();
                 uploadMsgReq.put("fileId",fileId);
                 uploadMsgReq.put("fileType",fileType);
@@ -295,12 +295,7 @@ public class FileController {
                 uploadMsgReq.put("userId",userReqDTO.getId());
                 uploadMsgReq.put("pop",pop);
                 this.sendUploadMessage(uploadMsgReq);
-            }else {
-                resultMap.put("code",ResultCodeEnum.FAIL.getCode());
-                resultMap.put("msg","sftp文件上传失败");
             }
-
-
 
         }catch (Exception e){
             log.error("文件上传controller异常",e);

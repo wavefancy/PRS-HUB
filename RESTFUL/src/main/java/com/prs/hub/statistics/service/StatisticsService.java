@@ -24,4 +24,12 @@ public interface StatisticsService {
      * @return
      */
     IPage<RunnerStatisDTO> queryJobsPage(RunnerStatisReqDTO runnerStatisReqDTO);
+
+    /**
+     * 根据工作流id修改工作流状态
+     * @param uuid
+     * @param status
+     * @return
+     */
+    boolean changeRunnerDetailStatusByUuid(String uuid,String status);
 }

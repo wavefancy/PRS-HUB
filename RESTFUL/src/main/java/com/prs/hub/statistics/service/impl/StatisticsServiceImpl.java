@@ -109,6 +109,54 @@ public class StatisticsServiceImpl implements StatisticsService {
         return jobsPage;
     }
 
+    @Override
+    public boolean changeRunnerDetailStatusByUuid(String weUuid, String statusStr) {
+        //运行状态 4:中止 3:完成，2:项目处于风险中，1:在进行中，0:未启动
+        Integer status = 0;
+        if("Succeeded".equals(statusStr)){
+            status = 3;
+        }else if("Failed".equals(statusStr)){
+            status = 2;
+        }else if("Running".equals(statusStr)){
+            status = 1;
+        }else if("Aborted".equals(statusStr)){
+            status = 4;
+        }
+        Boolean flag = false;
+
+        QueryWrapper<RunnerDetail> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("workflow_execution_uuid",weUuid);
+        RunnerDetail runnerDetailRes = runnerDetailBo.getOne(queryWrapper);
+
+        if(status.intValue() != runnerDetailRes.getStatus()){
+            //更新条件
+            UpdateWrapper<RunnerDetail> updateWrapper = new UpdateWrapper();
+            updateWrapper.eq("workflow_execution_uuid",weUuid);
+
+            //更新数据
+            RunnerDetail runnerDetail = new RunnerDetail();
+
+            runnerDetail.setStatus(status);
+            log.info("更新runner数据入参runnerDetailReq="+JSON.toJSONString(runnerDetail));
+            flag = runnerDetailBo.update(runnerDetail,updateWrapper);
+            log.info("更新runner数据出参flag="+flag);
+            if(status == 3){
+                //发送验证邮件
+                RunnerStatisReqDTO runnerStatisReqDTO = new RunnerStatisReqDTO();
+                runnerStatisReqDTO.setWorkflowExecutionUuid(weUuid);
+                RunnerStatisDTO runnerStatisDTO = this.getRunnerDetail(runnerStatisReqDTO).get(0);
+                String content ="尊敬的用户,您好:<br>"
+                        + runnerStatisDTO.getJobName()+"的"+runnerStatisDTO.getAlgorithmsName()
+                        +"算法已经运行结束，,请点击下方的“登录”链接，跳转到PRS官网下载结果。<br><a href=\'"+systemPath+"\'>登录</a>"
+                        + "<br>如非本人操作，请忽略该邮件。<br>(这是一封自动发送的邮件，请不要直接回复）";
+                iMailService.sendResultMail(runnerStatisDTO.getEmail(),"运行结果下载提醒",content);
+            }
+        }else{
+            log.info("状态未改变不修改status:{}",status);
+        }
+        return flag;
+    }
+
     /**
      * 统计runner数据
      * @param runnerStatisReqDTO
@@ -135,9 +183,9 @@ public class StatisticsServiceImpl implements StatisticsService {
     /**
      * 定时任务：实时更新runner数据定
      */
-    @Scheduled(cron = "0/10 * * * * *")
+    @Scheduled(cron = "0 0/10 * * * *")
     private void realTimeUpdateRunnerDetail(){
-        log.info("实时更新runner数据定时任务开始每10秒执行一次");
+        log.info("实时更新runner数据定时任务开始每10分钟执行一次");
 
         QueryWrapper<RunnerDetail> RunnerDetailQueryWrapper = new QueryWrapper<>();
         List<Integer> statusList = new ArrayList<>();
@@ -157,8 +205,6 @@ public class StatisticsServiceImpl implements StatisticsService {
                 }else{
                     weUuidStrBuffer.append(","+weUuid);
                 }
-                //处理工作流的状态
-//                changeRunnerDetailStatus(runnerDetail);
             }
             //发送消息查询工作流状态
             Map<String, Object> reqMap = new HashMap<>();
@@ -167,6 +213,8 @@ public class StatisticsServiceImpl implements StatisticsService {
         }
 
     }
+
+
 
     private void changeRunnerDetailStatus(RunnerDetail runnerDetail) {
         String weUuid = runnerDetail.getWorkflowExecutionUuid();

@@ -42,12 +42,13 @@ public class UploadQueueConfig {
     @Bean("uploadQueueBinding")
     public Binding uploadQueueBinding(@Qualifier("uploadQueue") Queue queue,
                                 @Qualifier("uploadExchange") TopicExchange exchange){
-        return BindingBuilder.bind(queue).to(exchange).with("prs.hub.upload.#");
+        return BindingBuilder.bind(queue).to(exchange).with("prs.hub.upload.file");
     }
     // 声明Upload队列绑定关系
     @Bean("queryFileStatusQueueBinding")
     public Binding queryFileStatusQueueBinding(@Qualifier("queryFileStatusQueue") Queue queue,
                                 @Qualifier("uploadExchange") TopicExchange exchange){
+
         return BindingBuilder.bind(queue).to(exchange).with("prs.hub.query.file.status.#");
     }
 }

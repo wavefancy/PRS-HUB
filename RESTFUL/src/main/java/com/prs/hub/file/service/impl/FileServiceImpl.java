@@ -304,6 +304,12 @@ public class FileServiceImpl implements FileService {
         if(StringUtils.isNotEmpty(prsFileReqDTO.getFileSuffix())){
             prsFile.setFileSuffix(prsFileReqDTO.getFileSuffix());
         }
+        if(StringUtils.isNotEmpty(prsFileReqDTO.getParsingId())){
+            prsFile.setParsingId(prsFileReqDTO.getParsingId());
+        }
+        if(StringUtils.isNotEmpty(prsFileReqDTO.getParsingStatus())){
+            prsFile.setParsingStatus(prsFileReqDTO.getParsingStatus());
+        }
         if(prsFileReqDTO.getUserId()!=null){
             prsFile.setUserId(prsFileReqDTO.getUserId());
         }
@@ -361,7 +367,7 @@ public class FileServiceImpl implements FileService {
     /**
      * 定时任务：每30分钟检查file表ParsingStatus数据，纯在‘N’类型的结果则发送消息查询工作流状态若成功则变更为'Y'
      */
-    @Scheduled(cron = "0 30 * * * ?")
+    @Scheduled(cron = "0 0/30 * * * *")
     private void  updateParsingStatus(){
         log.info("定时任务：每30分钟检查file表ParsingStatus数据，纯在‘N’类型的结果则查询工作流状态若成功则变更为'Y'");
         QueryWrapper<PrsFile> queryWrapper = new QueryWrapper<>();

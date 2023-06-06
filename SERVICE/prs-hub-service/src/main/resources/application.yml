@@ -4,9 +4,9 @@ spring:
   datasource:
     #驱动
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://39.103.140.193:3307/prs_hub_test?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&allowMultiQueries=true
-    username: fsp
-    password: qwe@11
+    url: jdbc:mysql://192.168.129.138:3306/prs_hub?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&allowMultiQueries=true
+    username: root
+    password: e8c87vb2
   servlet:
     # 本地文件上传：最大支持文件大小
     multipart:
@@ -16,10 +16,10 @@ spring:
       resolve-lazily: false
   #配置rabbitmq
   rabbitmq:
-    host: 39.103.140.193
+    host: 192.168.129.138
     port: 5672
-    username: admin
-    password: 123
+    username: prs_hub
+    password: zcygkc36
     virtual-host: /
     #发布消息成功到交换器后会触发回调方法
     publisher-confirm-type: correlated

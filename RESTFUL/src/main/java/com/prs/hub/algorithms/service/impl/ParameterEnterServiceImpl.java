@@ -263,6 +263,9 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
         String wdlPath = algorithms.getWdlPath();
         resMap.put("wdlPath",wdlPath);
 
+        //options模板地址
+        resMap.put("optionsPath",algorithms.getOptionsPath());
+
         Long algorithmsId =  algorithms.getId();
         //算法id
         resMap.put("algorithmsId",algorithmsId);
