@@ -1,5 +1,6 @@
 package com.prs.hub.file.service.impl;
 
+import com.prs.hub.authentication.dto.UserReqDTO;
 import com.prs.hub.file.dto.ChunkDTO;
 import com.prs.hub.file.dto.FileChunkReqDTO;
 import com.prs.hub.file.service.BigFileService;
@@ -108,7 +109,7 @@ public class BigFileServiceImpl implements BigFileService {
     }
 
     @Override
-    public Map<String,Object> uploadFile(String email, FileChunkReqDTO param) {
+    public Map<String,Object> uploadFile(UserReqDTO userReqDTO, FileChunkReqDTO param) {
         HashMap<String,Object> resMap = new HashMap<>();
         MultipartFile paramFile = param.getFile();
         Boolean resFlag = false;
@@ -123,7 +124,7 @@ public class BigFileServiceImpl implements BigFileService {
 
         String onlyName = StringUtils.isNotEmpty(fileNameInput) ? fileNameInput : fileName.substring(0 ,fileName.indexOf("."));
         // 判断目录是否存在，不存在则创建目录
-        File savePath = new File(uploadFilePath+ File.separator + email + File.separator + param.getIdentifier()+ File.separator+onlyName );
+        File savePath = new File(uploadFilePath+ File.separator + userReqDTO.getId() + File.separator + param.getIdentifier()+ File.separator+onlyName );
         if (!savePath.exists()) {
             boolean flag = savePath.mkdirs();
             if (!flag) {
@@ -141,7 +142,7 @@ public class BigFileServiceImpl implements BigFileService {
         String fullFileName = savePath + File.separator + (StringUtils.isNotEmpty(fileNameInput) ? fileNameInput+suffixName : fileName);
         log.info("文件完整路径fullFileName="+fullFileName);
 
-        resMap.put("fileName",onlyName);
+        resMap.put(fileName,onlyName);
         resMap.put("suffixName",suffixName);
         resMap.put("filePath",savePath + File.separator );
 

@@ -1,5 +1,6 @@
 package com.prs.hub.file.service;
 
+import com.prs.hub.authentication.dto.UserReqDTO;
 import com.prs.hub.file.dto.ChunkDTO;
 import com.prs.hub.file.dto.FileChunkReqDTO;
 
@@ -23,5 +24,5 @@ public interface BigFileService {
      * @param param 参数
      * @return
      */
-    Map<String,Object> uploadFile(String email, FileChunkReqDTO param);
+    Map<String,Object> uploadFile(UserReqDTO userReqDTO, FileChunkReqDTO param);
 }

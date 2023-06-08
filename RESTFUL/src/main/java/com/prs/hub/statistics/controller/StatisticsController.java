@@ -287,18 +287,11 @@ public class StatisticsController {
         resultMap.put("userCount",userCount);
 
         //3,查询正在跑的任务个数
-        int runningCount = 0;
-        JSONObject jsonData = new JSONObject();
-        jsonData.put("status","Running");
-        JSONArray ja = new JSONArray();
-        ja.add(jsonData);
+        Long runningCount  ;
+        RunnerStatisReqDTO runnerStatisReqDTO = new RunnerStatisReqDTO();
+        runnerStatisReqDTO.setStatus(1);
+        runningCount = statisticsService.count(runnerStatisReqDTO);
 
-        Map<String, Object> resMap = CromwellUtil.workflowsQueryPost(workflowsQueryUrl,ja);
-
-        if((Boolean) resMap.get("flag")){
-            JSONObject resultJson = (JSONObject) JSON.parse((String) resMap.get("result"));
-            runningCount = (int)resultJson.get("totalResultsCount");
-        }
         resultMap.put("runningCount",runningCount);
 
         return BaseResult.ok("接口调用成功",resultMap);

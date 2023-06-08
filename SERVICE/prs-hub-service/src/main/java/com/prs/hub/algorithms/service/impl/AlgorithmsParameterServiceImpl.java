@@ -74,6 +74,7 @@ public class AlgorithmsParameterServiceImpl implements AlgorithmsParameterServic
         fileMap.put("workflowInputs",inputFile);
         fileMap.put("workflowSource",wdlFile);
         fileMap.put("workflowOptions",optionsFile);
+//        fileMap.put("workflowDependencies",zipFile);
 
         log.info("访问cromwell提交工作流");
         String resultmsg = HttpClientUtil.httpClientUploadFileByfile(fileMap,cromwellUrl);

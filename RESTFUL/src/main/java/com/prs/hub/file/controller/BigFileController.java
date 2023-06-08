@@ -1,6 +1,7 @@
 package com.prs.hub.file.controller;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.prs.hub.authentication.dto.UserReqDTO;
 import com.prs.hub.commons.Authorization;
@@ -92,8 +93,7 @@ public class BigFileController {
     @PostMapping("/upload")
     public JsonResult<Map<String, Object>> chunkUpload(@CurrentUser UserReqDTO userReqDTO,  @Valid FileChunkReqDTO param, HttpServletRequest req) {
 
-        String email = userReqDTO.getEmail();
-        log.info("上传文件email="+email);
+        log.info("上传文件userReqDTO="+ JSONObject.toJSONString(userReqDTO));
         log.info("上传文件fileNameInput="+param.getFileNameInput());
         log.info("上传文件identifier="+param.getIdentifier());
         log.info("上传文件ChunkNumber="+param.getChunkNumber());
@@ -102,7 +102,7 @@ public class BigFileController {
             log.info("未录入文件名");
             return JsonResult.error(MessageEnum.FAIL);
         }
-        Map<String,Object> resMap = bigFileService.uploadFile(email,param);
+        Map<String,Object> resMap = bigFileService.uploadFile(userReqDTO,param);
         Boolean flag = (Boolean)resMap.get("flag");
         if (!flag) {
             return JsonResult.error(MessageEnum.FAIL);
