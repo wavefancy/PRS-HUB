@@ -89,6 +89,12 @@ public class MessageConsumer {
     @Value("${upload.files.prefix.path}")
     private String uploadFilesPrefixPath;
 
+    /**
+     * 监听用户提交工作流
+     * @param message
+     * @param channel
+     * @throws IOException
+     */
     @RabbitListener(queues =ALGORITHMS_PARAMETER_QUEUE_NAME)
     public void algorithmsParameterMsg(Message message, Channel channel) throws IOException {
         log.info("接受到队列 confirm.queue 消息:{}", JSONObject.toJSONString(message));
@@ -107,7 +113,7 @@ public class MessageConsumer {
             jsonObject.put("cromwellId",submitWorkflowResDTO.getCromwellId());
             jsonObject.put("userId",algorithmsParameterDTO.getUserId());
             jsonObject.put("messageIdOld",messageProperties.getMessageId());
-            jsonObject.put("resultPath ",submitWorkflowResDTO.getOutputsPath());
+            jsonObject.put("resultPath ",submitWorkflowResDTO.getOutputsPath().replace("/srv",""));
             String messageId = UUID.randomUUID().toString();
             //当前系统时间
             LocalDateTime now = LocalDateTime.now();

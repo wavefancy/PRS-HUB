@@ -8,11 +8,11 @@ import org.springframework.stereotype.Service;
 
 /**
  * <p>
- *  服务实现类
+ * 文件分片记录表 服务实现类
  * </p>
  *
  * @author fansp
- * @since 2022-08-09
+ * @since 2023-06-09
  */
 @Service
 public class FileChunkBoImpl extends ServiceImpl<FileChunkMapper, FileChunk> implements FileChunkBo {

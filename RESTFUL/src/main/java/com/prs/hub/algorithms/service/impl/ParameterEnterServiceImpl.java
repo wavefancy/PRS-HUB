@@ -207,23 +207,29 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
      */
     private Map<String, String> getFilePathMap(Long fileGWASId, Long fileLDId) throws Exception{
         log.info("根据多个id查询file fileGWASId="+fileGWASId+"\nfileLDId="+fileLDId);
+        Map<String, String> resMap = new HashMap<>();
 
         Map<String, Set<Object>> idMap = new HashMap<>();
         Set<Object> idSet = new HashSet<>();
         idSet.add(fileGWASId);
-        idSet.add(fileLDId);
+
+        if(LdEnum.valueOf(fileLDId.intValue()) != null){
+            //判断是否为固定值LD
+            resMap.put("LD",LdEnum.valueOf(fileLDId.intValue()).getPath());
+        }else{
+            idSet.add(fileLDId);
+        }
         idMap.put("id",idSet);
 
         log.info("根据多个id查询file idMap="+JSON.toJSONString(idMap));
         List<PrsFile> fileList = fileService.getFileListByColumnMap(idMap);
         log.info("根据多个id查询file结束 fileList="+JSON.toJSONString(fileList));
 
-        Map<String, String> resMap = new HashMap<>();
         for (PrsFile file:fileList) {
             String fileType = file.getFileType();
             if("GWAS".equals(fileType)){
                 //页面上传GWAS文件完整地址
-                resMap.put(fileType,file.getFilePath()+file.getFileName()+file.getFileSuffix());
+                resMap.put(fileType,"/srv"+file.getFilePath()+file.getFileName()+file.getFileSuffix());
             }else{
                 String ldFilePath = file.getFilePath();
                 //去掉最后一个目录分隔符

@@ -8,16 +8,17 @@ import lombok.Getter;
  */
 public enum LdEnum {
 
-    EUR(0,"eur", "欧洲"),
-    AFR(1,"afr", "非洲"),
-    SAS(2,"sas", "南亚"),
-    EAS(3,"eas", "东亚"),
+    EUR(0,"eur", "欧洲","/pmaster/zhaohq/tmp/PTWDL/P_T.tar"),
+    AFR(1,"afr", "非洲","/pmaster/zhaohq/tmp/PTWDL/P_T.tar"),
+    SAS(2,"sas", "南亚","/pmaster/zhaohq/tmp/PTWDL/P_T.tar"),
+    EAS(3,"eas", "东亚","/pmaster/zhaohq/tmp/PTWDL/P_T.tar"),
     ;
 
-    LdEnum(int code, String value,String message) {
+    LdEnum(int code, String value,String message,String path) {
         this.code = code;
         this.value = value;
         this.message = message;
+        this.path = path;
     }
 
     @Getter
@@ -28,6 +29,8 @@ public enum LdEnum {
 
     @Getter
     private final String message;
+    @Getter
+    private final String path;
 
     public static LdEnum valueOf(int value) {
         LdEnum[] enums = values();

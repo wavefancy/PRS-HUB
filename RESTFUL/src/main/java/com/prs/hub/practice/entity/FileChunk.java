@@ -12,22 +12,26 @@ import lombok.Setter;
 
 /**
  * <p>
- * 
+ * 文件分片记录表
  * </p>
  *
  * @author fansp
- * @since 2022-08-09
+ * @since 2023-06-09
  */
 @Getter
 @Setter
 @TableName("file_chunk")
-@ApiModel(value = "FileChunk对象", description = "")
+@ApiModel(value = "FileChunk对象", description = "文件分片记录表")
 public class FileChunk implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @TableId("id")
     private Long id;
+
+    @ApiModelProperty("用户id")
+    @TableField("user_id")
+    private Long userId;
 
     @TableField("version")
     private Boolean version;

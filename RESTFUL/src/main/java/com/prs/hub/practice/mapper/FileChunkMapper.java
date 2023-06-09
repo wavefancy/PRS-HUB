@@ -6,11 +6,11 @@ import org.apache.ibatis.annotations.Mapper;
 
 /**
  * <p>
- *  Mapper 接口
+ * 文件分片记录表 Mapper 接口
  * </p>
  *
  * @author fansp
- * @since 2022-08-09
+ * @since 2023-06-09
  */
 @Mapper
 public interface FileChunkMapper extends BaseMapper<FileChunk> {

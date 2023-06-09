@@ -154,14 +154,13 @@ public class StatisticsController {
                 resultMap.put("msg" ,"对应uuid的runner数据不存在");
                 return BaseResult.ok("接口调用成功",resultMap);
             }
-            if(status.equals("In progress")||status.equals("Not started")){
+            if(status.equals("Started")||status.equals("Submitted")){
                 //根据uuid中止工作流
-                //运行状态 3:Succeeded, 2:failed,1:Running,0:Submitted
-                String statusNow = CromwellUtil.workflowsStatus(workflowsStatusUrl,uuid);
-
-                if("Running".equals(statusNow)||"Submitted".equals(statusNow)){
-                    CromwellUtil.workflowsAbort( workflowsAbortUrl,uuid);
-                }
+//                String statusNow = CromwellUtil.workflowsStatus(workflowsStatusUrl,uuid);
+//
+//                if("Running".equals(statusNow)||"Submitted".equals(statusNow)){
+//                    CromwellUtil.workflowsAbort( workflowsAbortUrl,uuid);
+//                }
             }
 
             //删除该条数据，当存在resultPath时删除运行结果文件

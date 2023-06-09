@@ -119,6 +119,8 @@ public class BigFileServiceImpl implements BigFileService {
             return resMap;
         }
 
+        param.setUserId(Long.valueOf(userReqDTO.getId()));
+
         String fileNameInput = param.getFileNameInput();
         String fileName = param.getFilename();
 
@@ -142,7 +144,7 @@ public class BigFileServiceImpl implements BigFileService {
         String fullFileName = savePath + File.separator + (StringUtils.isNotEmpty(fileNameInput) ? fileNameInput+suffixName : fileName);
         log.info("文件完整路径fullFileName="+fullFileName);
 
-        resMap.put(fileName,onlyName);
+        resMap.put("fileName",onlyName);
         resMap.put("suffixName",suffixName);
         resMap.put("filePath",savePath + File.separator );
 

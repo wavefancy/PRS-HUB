@@ -53,10 +53,12 @@ public class BigFileController {
      */
     @Authorization
     @GetMapping("/upload")
-    public JsonResult<Map<String, Object>> checkUpload(@Valid FileChunkReqDTO param) {
+    public JsonResult<Map<String, Object>> checkUpload(@CurrentUser UserReqDTO userReqDTO, @Valid FileChunkReqDTO param) {
         log.info("文件MD5:" + param.getIdentifier());
+        log.info("文件UserId:" +userReqDTO.getId());
 
-        List<FileChunkResDTO> list = fileChunkService.listByFileMd5(param.getIdentifier());
+        param.setUserId(Long.valueOf(userReqDTO.getId()));
+        List<FileChunkResDTO> list = fileChunkService.list(param);
 
         Map<String, Object> data = new HashMap<>(1);
 
@@ -108,6 +110,7 @@ public class BigFileController {
             return JsonResult.error(MessageEnum.FAIL);
         }
         resMap.put("identifier",param.getIdentifier());
+        log.info("上传文件返回:"+JSONObject.toJSONString(resMap));
         return JsonResult.ok(resMap);
     }
 

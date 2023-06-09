@@ -13,10 +13,10 @@ public interface FileChunkService {
     /**
      * 根据文件 md5md5标识 查询
      *
-     * @param identifier md5标识
+     * @param param
      * @return
      */
-    List<FileChunkResDTO> listByFileMd5(String identifier);
+    List<FileChunkResDTO> list(FileChunkReqDTO param);
 
     /**
      * 保存记录

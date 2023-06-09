@@ -8,6 +8,8 @@ class PrsHubServiceApplicationTests {
 
     @Test
     void contextLoads() {
+        Float str =  Float.valueOf("5E-08").floatValue();
+        System.out.println(str);
     }
 
 }

@@ -52,11 +52,10 @@ public class AlgorithmsParameterServiceImpl implements AlgorithmsParameterServic
         log.info("将参数写入临时文件地址中inputFilePath="+inputFilePath);
         FileUtil.writerJsonFile(inputFilePath,inputJson);
 
-//        File inputFile = new File(inputFilePath);
-//        File wdlFile = new File(wdlPath);
-//        File optionsFile = new File("");
-        File inputFile = new File("/srv/zhaohq/cromwell/test/NA12878_110X/HNA12878-2.read1.fq.gz.fq2ubam.json");
-        File wdlFile = new File("/pmaster/pipeline/cromwell/1_pipeline/fastq2ubam/seq-format-conversion-master/paired-fastq-to-unmapped-bam.wdl");
+        File inputFile = new File(inputFilePath);
+        File wdlFile = new File(wdlPath);
+//        File inputFile = new File("/srv/zhaohq/cromwell/test/NA12878_110X/HNA12878-2.read1.fq.gz.fq2ubam.json");
+//        File wdlFile = new File("/pmaster/pipeline/cromwell/1_pipeline/fastq2ubam/seq-format-conversion-master/paired-fastq-to-unmapped-bam.wdl");
 
         //获取options模板并修改结果目录
         JSONObject optionJson  = changeOptions(algorithmsParameterDTO);

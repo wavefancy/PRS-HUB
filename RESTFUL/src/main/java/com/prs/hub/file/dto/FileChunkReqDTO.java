@@ -3,6 +3,8 @@ package com.prs.hub.file.dto;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
+import com.baomidou.mybatisplus.annotation.TableField;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -26,6 +28,10 @@ public class FileChunkReqDTO {
         return null == this.id;
     }
 
+    /**
+     * 用户id
+     */
+    private Long userId;
     @NotNull(message = "当前分片不能为空")
     private Integer chunkNumber;
 

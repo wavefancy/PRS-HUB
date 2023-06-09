@@ -1,6 +1,7 @@
 package com.prs.hub.file.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
@@ -30,11 +31,12 @@ public class FileChunkServiceImpl implements FileChunkService {
     private FileChunkBo fileChunkBo;
 
     @Override
-    public List<FileChunkResDTO> listByFileMd5(String identifier) {
-        log.info("根据文件 mmd5="+identifier+"标识 查询开始");
+    public List<FileChunkResDTO> list(FileChunkReqDTO param) {
+        log.info("根据:"+ JSONObject.toJSONString(param) +"查询开始");
 
         QueryWrapper<FileChunk> fileChunkQueryWrapper = new QueryWrapper<>();
-        fileChunkQueryWrapper.eq("identifier",identifier);
+        fileChunkQueryWrapper.eq("identifier",param.getIdentifier());
+        fileChunkQueryWrapper.eq("user_id",param.getUserId());
 
         log.info("查询FileChunk数据库开始");
         List<FileChunk> fileChunkList = fileChunkBo.list(fileChunkQueryWrapper);
@@ -50,7 +52,7 @@ public class FileChunkServiceImpl implements FileChunkService {
                 fileChunkResDTOList.add(fileChunkResDTO);
             }
         }
-        log.info("根据文件 mmd5="+identifier+"标识 查询结束："+JSON.toJSONString(fileChunkResDTOList));
+        log.info("根据:"+ JSONObject.toJSONString(param) +"查询结束："+JSON.toJSONString(fileChunkResDTOList));
         return fileChunkResDTOList;
     }
 

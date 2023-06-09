@@ -5,11 +5,11 @@ import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
  * <p>
- *  服务类
+ * 文件分片记录表 服务类
  * </p>
  *
  * @author fansp
- * @since 2022-08-09
+ * @since 2023-06-09
  */
 public interface FileChunkBo extends IService<FileChunk> {
 
