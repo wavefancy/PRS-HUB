@@ -44,8 +44,14 @@ public class ProcessUtils {
     @Value("${rsync.command.pull}")
     private  String commandPull;
 
+    /**
+     * 远程拉取数据
+     * @param source
+     * @param destinationFileName
+     * @return
+     */
     public  boolean rsyncPull(String source,String destinationFileName){
-        log.info("rsync拷贝数据源：{} \n 拷贝目的地地址：{}" , source,destinationPath+"/"+destinationFileName);
+        log.info("rsync拉取拷贝数据源：{} \n 拷贝目的地地址：{}" , source,destinationPath+"/"+destinationFileName);
 
         boolean res = false;
 
@@ -57,26 +63,66 @@ public class ProcessUtils {
         ProcessBuilder builder = new ProcessBuilder();
         builder.command("bash", "-c", rsyncCommand);
         try {
-            log.info("rsync执行命令：{}", rsyncCommand);
+            log.info("rsync执行拉取命令：{}", rsyncCommand);
 
             Process process = builder.start();
             int exitValue  = process.waitFor();
 
             if (exitValue == 0) {
                 res = true;
-                log.info("rsync拷贝成功res:{}",res);
+                log.info("rsync拉取拷贝成功res:{}",res);
             } else {
-                log.info("rsync拷贝失败exitValue:{}",exitValue);
+                log.info("rsync拉取拷贝失败exitValue:{}",exitValue);
             }
         } catch (IOException e) {
-            log.error("rsync拷贝IOException:{}",e.getMessage());
+            log.error("rsync拉取拷贝IOException:{}",e.getMessage());
             return res;
         } catch (InterruptedException e) {
-            log.error("rsync拷贝InterruptedException:{}",e.getMessage());
+            log.error("rsync拉取拷贝InterruptedException:{}",e.getMessage());
             return res;
         }
 
         return res;
     }
 
+    /**
+     * 远程推送数据
+     * @param source
+     * @param destinationFileName
+     * @return
+     */
+    public  boolean rsyncPush(String source,String destinationFileName){
+        log.info("rsync推送拷贝数据源：{} \n 拷贝目的地地址：{}" , source,destinationPath+"/"+destinationFileName);
+
+        boolean res = false;
+
+        // 构建rsync命令
+
+        String rsyncCommand =commandPull+" "+ destinationPath + "/" +destinationFileName +" "+sourceUser + "@"+sourceHost+":" +  source ;
+
+        // 执行rsync命令
+        ProcessBuilder builder = new ProcessBuilder();
+        builder.command("bash", "-c", rsyncCommand);
+        try {
+            log.info("rsync执行推送命令：{}", rsyncCommand);
+
+            Process process = builder.start();
+            int exitValue  = process.waitFor();
+
+            if (exitValue == 0) {
+                res = true;
+                log.info("rsync推送拷贝成功res:{}",res);
+            } else {
+                log.info("rsync推送拷贝失败exitValue:{}",exitValue);
+            }
+        } catch (IOException e) {
+            log.error("rsync推送拷贝IOException:{}",e.getMessage());
+            return res;
+        } catch (InterruptedException e) {
+            log.error("rsync推送拷贝InterruptedException:{}",e.getMessage());
+            return res;
+        }
+
+        return res;
+    }
 }

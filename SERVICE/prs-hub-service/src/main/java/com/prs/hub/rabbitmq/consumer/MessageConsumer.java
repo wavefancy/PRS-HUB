@@ -170,6 +170,9 @@ public class MessageConsumer {
                     resMsg.put("cromwellId",uuid);
                     resMsg.put("status",status);
                     jsonObject.put(uuid,resMsg);
+//                    if("Succeeded".equals(status)||"Failed".equals(status)){
+//                        //如果是成功或者失败的状态将结果文件推送给web服务器
+//                    }
                 }
             }
 

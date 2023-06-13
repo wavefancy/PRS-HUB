@@ -23,10 +23,7 @@ import com.prs.hub.sftpsystem.service.SFTPSystemService;
 import com.prs.hub.runnerdetail.dto.RunnerStatisDTO;
 import com.prs.hub.runnerdetail.dto.RunnerStatisReqDTO;
 import com.prs.hub.statistics.service.StatisticsService;
-import com.prs.hub.utils.FileUtil;
-import com.prs.hub.utils.HttpClientUtil;
-import com.prs.hub.utils.MultipartFileToFileUtil;
-import com.prs.hub.utils.StringUtils;
+import com.prs.hub.utils.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,9 +35,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Slf4j
 @RestController
@@ -402,9 +404,9 @@ public class FileController {
      */
     @Authorization
     @RequestMapping(value = "/downloadResult",method = RequestMethod.GET)
-    public void downloadResult(@RequestParam("uuid") String uuid, HttpServletRequest request, HttpServletResponse response){
+    public void downloadResult(@RequestParam("uuid") String uuid,@RequestParam("status") String status, HttpServletRequest request, HttpServletResponse response){
+        log.info("下载结果文件：uuid="+uuid);
         OutputStream outputStream=null;
-        InputStream inputStream=null;
         try {
             RunnerStatisReqDTO runnerStatisReqDTO = new RunnerStatisReqDTO();
             runnerStatisReqDTO.setWorkflowExecutionUuid(uuid);
@@ -412,30 +414,36 @@ public class FileController {
             if(!CollectionUtils.isNotEmpty(runnerStatisDTOList)){
                 return;
             }
-            String path = runnerStatisDTOList.get(0).getResultPath();
-            // 读到流中
-            inputStream = new FileInputStream(path);// 文件的存放路径
-            String fileName = new File(path).getName();
-            response.reset();
-            response.setContentType("application/octet-stream");
-            //下载文件需要设置的header
-            response.setHeader("Content-Disposition", "attachment;filename=" +  new String(fileName.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1));
-            // 获取输出流
-            outputStream = response.getOutputStream();
-            byte[] b = new byte[1024];
-            int len;
-            //从输入流中读取一定数量的字节，并将其存储在缓冲区字节数组中，读到末尾返回-1
-            while ((len = inputStream.read(b)) > 0) {
-                outputStream.write(b, 0, len);
+            String folderPath = runnerStatisDTOList.get(0).getResultPath();
+            if("Failed".equals(status)){
+                //将结果地址替换为日志输出地址
+                folderPath = folderPath.replace("outputs","wf_logs");
             }
+//            // 读到流中
+//            inputStream = new FileInputStream(path);// 文件的存放路径
+//            String fileName = new File(path).getName();
+//            response.reset();
+//            response.setContentType("application/octet-stream");
+//            //下载文件需要设置的header
+//            response.setHeader("Content-Disposition", "attachment;filename=" +  new String(fileName.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1));
+//            // 获取输出流
+//            outputStream = response.getOutputStream();
+//            byte[] b = new byte[1024];
+//            int len;
+//            //从输入流中读取一定数量的字节，并将其存储在缓冲区字节数组中，读到末尾返回-1
+//            while ((len = inputStream.read(b)) > 0) {
+//                outputStream.write(b, 0, len);
+//            }
+            response.setContentType("application/zip");
+            response.setHeader("Content-Disposition", "attachment; filename=\"download.zip\"");
+            outputStream = response.getOutputStream() ;
+            FolderDownloaderUtils.downloadFolder(folderPath, outputStream);
+
         } catch (Exception e) {
             e.printStackTrace();
         }finally {
             //关闭流
             try {
-                if (inputStream!=null){
-                    inputStream.close();
-                }
                 if (outputStream!=null){
                     outputStream.close();
                 }
@@ -568,5 +576,27 @@ public class FileController {
         messageDTO.setTag(uploadRoutingKey);
 
         return producerService.sendTopicMessage(messageDTO,uploadExchange);
+    }
+
+    public static void downloadFolder(String folderPath, OutputStream outputStream) throws IOException {
+        try (ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream)) {
+            Path folder = Paths.get(folderPath);
+            if (!Files.exists(folder) || !Files.isDirectory(folder)) {
+                throw new FileNotFoundException("Folder not found: " + folderPath);
+            }
+
+            Files.walk(folder)
+                    .filter(path -> !Files.isDirectory(path))
+                    .forEach(path -> {
+                        try {
+                            String relativePath = folder.relativize(path).toString();
+                            zipOutputStream.putNextEntry(new ZipEntry(relativePath));
+                            Files.copy(path, zipOutputStream);
+                            zipOutputStream.closeEntry();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
+        }
     }
 }

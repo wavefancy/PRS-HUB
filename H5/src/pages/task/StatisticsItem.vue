@@ -82,11 +82,11 @@
                     </td>
                     <td class="text-end" >
                       <a v-if="file.status==='Finished'" href="#" class="btn btn-sm btn-neutral operate bg-yellow-500 text-white" 
-                        @click.stop="downloadResult(file.uuid,file.name,file.algorithmsName)">
+                        @click.stop="downloadResult(file.uuid,file.status,file.name,file.algorithmsName)">
                         download
                       </a>
                       <a v-if="file.status==='Failed'" href="#" class="btn btn-sm btn-neutral operate bg-red-500 text-white" 
-                        @click.stop="downloadFailedResult(file.uuid,file.name,file.algorithmsName)">
+                        @click.stop="downloadResult(file.uuid,file.status,file.name,file.algorithmsName)">
                         error_log
                       </a>
                       <a v-if="file.status==='Submitted' || file.status=== 'Started'" href="#" class="btn btn-sm btn-neutral operate" @click.stop="abortRunner(file.uuid)">stop</a>
@@ -169,7 +169,9 @@ export default {
       }
   },
   methods: {
-    downloadResult(uuid,name,algorithmsName){
+    downloadResult(uuid,status,name,algorithmsName){
+      //加载中
+      this.loading=true
       //使用原生的axios请求文件为二进制流 
       axios({
           method: "get",
@@ -180,14 +182,15 @@ export default {
           },
           responseType: "blob",       //设置响应类型为blob，否则二进制流直接转换会出错
           params: { // 其他参数
-              uuid:uuid
+              uuid:uuid,
+              status:status
           },
 
       } 
       ).then((response) => {
         const content = response 
         const blob = new Blob([content])//构造一个blob对象来处理数据
-        const fileName =name+"_"+algorithmsName+"_result.tar.gz"
+        const fileName =("Failed" === status)?"error_logs.zip" : name+"_"+algorithmsName+"_result.zip"
 
         //对于<a>标签，只有 Firefox 和 Chrome（内核） 支持 download 属性
         //IE10以上支持blob但是依然不支持download
@@ -203,13 +206,12 @@ export default {
         } else { //其他浏览器
           navigator.msSaveBlob(blob, fileName)
         }
+        this.loading=false
 
       }).catch((err)=>{
-          console.log(err);
+        console.log(err);
+        this.loading=false
       })
-    },
-    downloadFailedResult(){
-      
     },
     init(currentPage,pageSize){
       let subData = {
