@@ -81,12 +81,16 @@
                       {{file.ranking}}
                     </td>
                     <td class="text-end" >
-                      <a v-if="file.status==='Finished'" href="#" class="btn btn-sm btn-neutral operate bg-yellow-500 text-white" 
+                      <!-- <a v-if="file.status==='Finished'" href="#" class="btn btn-sm btn-neutral operate bg-yellow-500 text-white" 
                         @click.stop="downloadResult(file.uuid,file.status,file.name,file.algorithmsName)">
+                        download
+                      </a> -->
+                      <a v-if="file.status==='Finished'" href="#" class="btn btn-sm btn-neutral operate bg-yellow-500 text-white" 
+                        @click.stop="downloadCOSFile(file.name)">
                         download
                       </a>
                       <a v-if="file.status==='Failed'" href="#" class="btn btn-sm btn-neutral operate bg-red-500 text-white" 
-                        @click.stop="downloadResult(file.uuid,file.status,file.name,file.algorithmsName)">
+                        @click.stop="downloadCOSFile(file.name)">
                         error_log
                       </a>
                       <a v-if="file.status==='Submitted' || file.status=== 'Started'" href="#" class="btn btn-sm btn-neutral operate" @click.stop="abortRunner(file.uuid)">stop</a>
@@ -145,12 +149,14 @@
 
 <script>
 import {Prs} from "@/api"
-import axios from 'axios'
+// import axios from 'axios'
 import {isEmpty }  from "@/utils/validate"
-
-axios.defaults.timeout = 40000
-axios.defaults.baseURL = process.env.VUE_APP_BASE_PRS_EPORTAL
-axios.defaults.headers.post['Content-Type'] = 'application/json charset=UTF-8'
+// import CryptoJS from "crypto-js"
+import COS from "cos-js-sdk-v5"
+import JSZip from 'jszip'
+// axios.defaults.timeout = 40000
+// axios.defaults.baseURL = process.env.VUE_APP_BASE_PRS_EPORTAL
+// axios.defaults.headers.post['Content-Type'] = 'application/json charset=UTF-8'
 export default {
   name: "StatisticsItem",
   data() {
@@ -165,52 +171,120 @@ export default {
         showDetail:{},
         total:0,
         pageSize:5,
-        currentPage:1
+        currentPage:1,
+        secretId : 'AKIDjLlyxiJgpjRxFI6h6HDuYzBJExRmvra5',
+        secretKey : 'JRM3YoqgIiz61kFWYLxMWTFpDOK2Vkkd',
+        region :  'ap-nanjing',
+        bucketName : 'prs-hub-1316944840'
       }
   },
   methods: {
-    downloadResult(uuid,status,name,algorithmsName){
+    // downloadResult(uuid,status,name,algorithmsName){
+    //   //加载中
+    //   this.loading=true
+    //   //使用原生的axios请求文件为二进制流 
+    //   axios({
+    //       method: "get",
+    //       url: "/downloadResult",
+    //       headers: {
+    //           "content-type": "application/json; charset=utf-8",
+    //           "accessToken":localStorage.getItem("accessToken")
+    //       },
+    //       responseType: "blob",       //设置响应类型为blob，否则二进制流直接转换会出错
+    //       params: { // 其他参数
+    //           uuid:uuid,
+    //           status:status
+    //       },
+
+    //   } 
+    //   ).then((response) => {
+    //     const content = response 
+    //     const blob = new Blob([content])//构造一个blob对象来处理数据
+    //     const fileName =("Failed" === status)?"error_logs.zip" : name+"_"+algorithmsName+"_result.zip"
+
+    //     //对于<a>标签，只有 Firefox 和 Chrome（内核） 支持 download 属性
+    //     //IE10以上支持blob但是依然不支持download
+    //     if ('download' in document.createElement('a')) { //支持a标签download的浏览器
+    //       const link = document.createElement('a')//创建a标签
+    //       link.download = fileName//a标签添加属性
+    //       link.style.display = 'none'
+    //       link.href = URL.createObjectURL(blob)
+    //       document.body.appendChild(link)
+    //       link.click()//执行下载
+    //       URL.revokeObjectURL(link.href) //释放url
+    //       document.body.removeChild(link)//释放标签
+    //     } else { //其他浏览器
+    //       navigator.msSaveBlob(blob, fileName)
+    //     }
+    //     this.loading=false
+
+    //   }).catch((err)=>{
+    //     console.log(err);
+    //     this.loading=false
+    //   })
+    // },
+    // 下载COS上的大文件
+    
+    downloadCOSFile(jobName) {
       //加载中
       this.loading=true
-      //使用原生的axios请求文件为二进制流 
-      axios({
-          method: "get",
-          url: "/downloadResult",
-          headers: {
-              "content-type": "application/json; charset=utf-8",
-              "accessToken":localStorage.getItem("accessToken")
-          },
-          responseType: "blob",       //设置响应类型为blob，否则二进制流直接转换会出错
-          params: { // 其他参数
-              uuid:uuid,
-              status:status
-          },
 
-      } 
-      ).then((response) => {
-        const content = response 
-        const blob = new Blob([content])//构造一个blob对象来处理数据
-        const fileName =("Failed" === status)?"error_logs.zip" : name+"_"+algorithmsName+"_result.zip"
+      const folderKey  = 'webUploadFiles/'; // 文件在COS中的存储路径和名称
+      const SecretId = this.secretId
+      const SecretKey = this.secretKey
+      const Region = this.region
+      const Bucket = this.bucketName
+      const cosParams = {
+        SecretId: SecretId,
+        SecretKey: SecretKey,
+        Region: Region,
+        Bucket: Bucket,
+      };
 
-        //对于<a>标签，只有 Firefox 和 Chrome（内核） 支持 download 属性
-        //IE10以上支持blob但是依然不支持download
-        if ('download' in document.createElement('a')) { //支持a标签download的浏览器
-          const link = document.createElement('a')//创建a标签
-          link.download = fileName//a标签添加属性
-          link.style.display = 'none'
-          link.href = URL.createObjectURL(blob)
-          document.body.appendChild(link)
-          link.click()//执行下载
-          URL.revokeObjectURL(link.href) //释放url
-          document.body.removeChild(link)//释放标签
-        } else { //其他浏览器
-          navigator.msSaveBlob(blob, fileName)
+      const cos = new COS(cosParams);
+     
+      cos.getBucket({
+        Bucket: Bucket,
+        Region: Region,
+        Prefix: folderKey
+      }, (err, data) => {
+        if (err) {
+          console.error(err.message)
+          return
         }
-        this.loading=false
 
-      }).catch((err)=>{
-        console.log(err);
-        this.loading=false
+        // 创建压缩包
+        const zip = new JSZip()
+
+        // 遍历文件列表
+        data.Contents.forEach(file => {
+          // 下载文件
+          cos.getObject({
+            Bucket: Bucket,
+            Region: Region,
+            Key: file.Key
+          }, (err, fileData) => {
+            if (err) {
+              return
+            }
+            // 将文件添加到压缩包中
+            zip.file(file.Key, fileData.Body)
+
+            // 判断是否为最后一个文件，如果是则进行压缩
+            if (file === data.Contents[data.Contents.length - 1]) {
+              zip.generateAsync({ type: 'blob' }).then(content => {
+                // 下载压缩包
+                const link = document.createElement('a')
+                link.href = URL.createObjectURL(content)
+                link.download = jobName+'.zip'
+                link.click()
+              })
+              
+              //加载完成
+              this.loading=false
+            }
+          })
+        })
       })
     },
     init(currentPage,pageSize){
@@ -408,6 +482,7 @@ export default {
     clearInterval(this.timer);
   },
 };
+
 </script>
 
 <style scoped >

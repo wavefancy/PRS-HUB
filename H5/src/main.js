@@ -13,7 +13,6 @@ import {Pagination,Message , MessageBox,Tooltip  } from 'element-ui'
 
 import lang from 'element-ui/lib/locale/lang/en'
 import locale from 'element-ui/lib/locale'
-
 // 设置Element语言
 locale.use(lang)
 

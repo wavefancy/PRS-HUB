@@ -31,5 +31,12 @@ mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 #debug: true
-
+#腾讯cos相关配置
+cos:
+  baseUrl: prs-hub-1316944840.cos.ap-nanjing.myqcloud.com
+  secretId: AKIDjLlyxiJgpjRxFI6h6HDuYzBJExRmvra5
+  secretKey: JRM3YoqgIiz61kFWYLxMWTFpDOK2Vkkd
+  regionName: ap-nanjing
+  bucketName: prs-hub-1316944840
+  folderPrefix: /webUploadFiles
 

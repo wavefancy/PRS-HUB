@@ -126,7 +126,7 @@ public class BigFileServiceImpl implements BigFileService {
 
         String onlyName = StringUtils.isNotEmpty(fileNameInput) ? fileNameInput : fileName.substring(0 ,fileName.indexOf("."));
         // 判断目录是否存在，不存在则创建目录
-        File savePath = new File(uploadFilePath+ File.separator + userReqDTO.getId() + File.separator + param.getIdentifier()+ File.separator+onlyName );
+        File savePath = new File(uploadFilePath+ File.separator + userReqDTO.getId() +"_"+ param.getIdentifier());
         if (!savePath.exists()) {
             boolean flag = savePath.mkdirs();
             if (!flag) {
