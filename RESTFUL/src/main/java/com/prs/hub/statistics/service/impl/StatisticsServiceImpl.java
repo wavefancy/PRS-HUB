@@ -198,18 +198,13 @@ public class StatisticsServiceImpl implements StatisticsService {
 
         if(CollectionUtils.isNotEmpty(runnerDetailList)){
             StringBuffer weUuidStrBuffer = new StringBuffer();
+            Map<String,Object> sendMap = new HashMap<String,Object>();
             for (RunnerDetail runnerDetail:runnerDetailList) {
                 String weUuid = runnerDetail.getWorkflowExecutionUuid();
-                if(weUuidStrBuffer.length() == 0){
-                    weUuidStrBuffer.append(weUuid);
-                }else{
-                    weUuidStrBuffer.append(","+weUuid);
-                }
+                sendMap.put(weUuid,runnerDetail.getResultPath());
             }
             //发送消息查询工作流状态
-            Map<String, Object> reqMap = new HashMap<>();
-            reqMap.put("uuidArr",weUuidStrBuffer.toString());
-            this.sendQueryRunnerDetailStatusMessage(reqMap);
+            this.sendQueryRunnerDetailStatusMessage(sendMap);
         }
 
     }

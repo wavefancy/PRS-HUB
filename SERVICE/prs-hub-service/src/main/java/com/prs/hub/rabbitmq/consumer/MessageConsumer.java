@@ -22,10 +22,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -157,22 +159,23 @@ public class MessageConsumer {
 
         log.info("查询未结束的工作流状态消息msgJson:{}",msgJson);
 
-        String uuidArr = (String) msgJson.get("uuidArr");
         try {
             JSONObject jsonObject = new JSONObject();
             //遍历uuid查询对应的工作流状态
-            for (String uuidStr:uuidArr.split(",")) {
-                String[] uuidStrArr = uuidStr.split("@");
-                String uuid = uuidStrArr[0];
+            for ( Map.Entry<String, Object>  entry :msgJson.entrySet()) {
+                String uuid = entry.getKey();
                 String status = CromwellUtil.workflowsStatus(workflowsStatusUrl,uuid);
                 if(StringUtils.isNotEmpty(status)){
                     JSONObject resMsg = new JSONObject();
                     resMsg.put("cromwellId",uuid);
                     resMsg.put("status",status);
                     jsonObject.put(uuid,resMsg);
-//                    if("Succeeded".equals(status)||"Failed".equals(status)){
-//                        //如果是成功或者失败的状态将结果文件推送给web服务器
-//                    }
+                    if("Succeeded".equals(status)||"Failed".equals(status)){
+                        //如果是成功或者失败的状态将结果文件推送给web服务器
+                        String path = (String) entry.getValue();
+                        Boolean flag = processUtils.rsyncPush(path,File.separator+"srv"+path);
+                        log.info("将结果文件推送给web服务器flag="+flag);
+                    }
                 }
             }
 
@@ -218,6 +221,7 @@ public class MessageConsumer {
         MessageProperties messageProperties = message.getMessageProperties();
         String msg=new String(message.getBody());
         JSONObject msgJson= JSON.parseObject(msg);
+        String identifier = (String)msgJson.get("identifier");
         String fileId = (String)msgJson.get("fileId");
         String fileType = (String)msgJson.get("fileType");
         String filePath = (String)msgJson.get("filePath");
@@ -226,7 +230,7 @@ public class MessageConsumer {
         String userId = (String)msgJson.get("userId");
         String pop = (String)msgJson.get("pop");
         try {
-            //拼ld文件地址
+           /* //拼ld文件地址
             String LdFilePath = uploadFilesPrefixPath+filePath+fileName+suffixName;
             if("LD".equals(fileType)){
                 FileParsingDTO fileParsingDTO = new FileParsingDTO();
@@ -255,15 +259,15 @@ public class MessageConsumer {
             }
 
             // 手动确认algorithmsParameter消息已经被消费
-            channel.basicAck(messageProperties.getDeliveryTag(), false);
+            channel.basicAck(messageProperties.getDeliveryTag(), false);*/
 
-           /* //因为上传文件的存放硬盘已经挂载在138服务器上了，75和138都能访问到 所以不用rsync同步文件
            //拼装源文件地址
             String sourcePath = filePath+fileName+suffixName;
            //目标文件名
-            String destinationFileName = fileName + "_" + userId + "_" + messageProperties.getMessageId() + suffixName;
+            String destinationFileName = userId + "_" + identifier + File.separator +fileName + suffixName;
             //复制文件
             boolean rsyncFlag = processUtils.rsyncPull(sourcePath,destinationFileName);
+            log.info("复制远程文件rsyncFlag="+rsyncFlag);
 
             Map<String,Object> resMsg = new HashMap<>();
             resMsg.put("rsyncFlag",rsyncFlag);
@@ -295,7 +299,7 @@ public class MessageConsumer {
             }else {
                 // 同步文件出现问题，将消息重新发送到死信队列中
                 channel.basicNack(messageProperties.getDeliveryTag(), false, false);
-            }*/
+            }
         }catch (Exception e){
             log.error("同步文件异常：{}",e.getMessage());
             // 同步文件出现问题，将消息重新发送到死信队列中

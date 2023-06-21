@@ -129,9 +129,20 @@ public class MessageConsumer {
         log.info("接受到上传文件同步结果消息:{}", JSONObject.toJSONString(message));
 
         String msg=new String(message.getBody());
-
-
-        log.info("接受到上传文件同步结果消息:{}",msg);
+        JSONObject msgJson = JSON.parseObject(msg);
+        if(msgJson != null){
+            try {
+                String fileId = (String)msgJson.get("fileId");
+                String cromwellId = (String)msgJson.get("cromwellId");
+                //记录文件解析状态
+                PrsFileReqDTO prsFileReqDTO = new PrsFileReqDTO();
+                prsFileReqDTO.setId(Long.valueOf(fileId));
+                prsFileReqDTO.setParsingStatus( "N");
+                fileService.updateFile(prsFileReqDTO);
+            }catch (Exception e){
+                log.error("接受到上传文件同步结果消息处理异常:{}",e.getMessage());
+            }
+        }
     }
     /**
      * ld文件解析状态返回结果

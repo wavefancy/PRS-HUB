@@ -11,7 +11,7 @@ import java.util.zip.ZipOutputStream;
  */
 public class FolderDownloaderUtils {
 
-    public static void downloadFolder(String folderPath, OutputStream outputStream) throws IOException {
+    public static void downloadZipFolder(String folderPath, OutputStream outputStream) throws IOException {
         ZipOutputStream zipOut = new ZipOutputStream(new BufferedOutputStream(outputStream));
         Path folder = Paths.get(folderPath);
 

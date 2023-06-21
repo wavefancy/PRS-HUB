@@ -15,22 +15,22 @@ import java.io.IOException;
 public class ProcessUtils {
 
     /**
-     * 源文件地址
+     * 远程文件地址
      */
-    @Value("${rsync.source.host}")
-    private  String sourceHost;
+    @Value("${rsync.remote.host}")
+    private  String remoteHost;
 
     /**
-     * 源服务器用户名
+     * 远程服务器用户名
      */
-    @Value("${rsync.source.user}")
-    private  String sourceUser;
+    @Value("${rsync.remote.user}")
+    private  String remoteUser;
 
     /**
-     * 源服务器密码
+     * 远程服务器密码
      */
-    @Value("${rsync.source.password}")
-    private  String sourcePassword;
+    @Value("${rsync.remote.password}")
+    private  String remotePassword;
 
     /**
      * 目标地址
@@ -57,7 +57,7 @@ public class ProcessUtils {
 
         // 构建rsync命令
 
-        String rsyncCommand =commandPull +" "+sourceUser + "@"+sourceHost+":" +  source +" "+ destinationPath + "/" +destinationFileName;
+        String rsyncCommand =commandPull +" "+remoteUser + "@"+remoteHost+":" +  source +" "+ destinationPath + "/" +destinationFileName;
 
         // 执行rsync命令
         ProcessBuilder builder = new ProcessBuilder();
@@ -87,18 +87,18 @@ public class ProcessUtils {
 
     /**
      * 远程推送数据
-     * @param source
+     * @param remote
      * @param destinationFileName
      * @return
      */
-    public  boolean rsyncPush(String source,String destinationFileName){
-        log.info("rsync推送拷贝数据源：{} \n 拷贝目的地地址：{}" , source,destinationPath+"/"+destinationFileName);
+    public  boolean rsyncPush(String remote,String destinationFileName){
+        log.info("rsync推送拷贝数据源：{} \n 拷贝目的地地址：{}" , remote,destinationPath+"/"+destinationFileName);
 
         boolean res = false;
 
         // 构建rsync命令
 
-        String rsyncCommand =commandPull+" "+ destinationPath + "/" +destinationFileName +" "+sourceUser + "@"+sourceHost+":" +  source ;
+        String rsyncCommand =commandPull+" "+ destinationPath + "/" +destinationFileName +" "+remoteUser + "@"+remoteHost+":" +  remote ;
 
         // 执行rsync命令
         ProcessBuilder builder = new ProcessBuilder();

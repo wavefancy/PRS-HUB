@@ -289,6 +289,7 @@ public class FileController {
             if(fileId !=null && "LD".equals(fileType)){
                 //发送消息对LD文件进行解析
                 Map<String,Object> uploadMsgReq = new HashMap<>();
+                uploadMsgReq.put("identifier",identifier);
                 uploadMsgReq.put("fileId",fileId);
                 uploadMsgReq.put("fileType",fileType);
                 uploadMsgReq.put("filePath",filePath);
@@ -437,7 +438,7 @@ public class FileController {
             response.setContentType("application/zip");
             response.setHeader("Content-Disposition", "attachment; filename=\"download.zip\"");
             outputStream = response.getOutputStream() ;
-            FolderDownloaderUtils.downloadFolder(folderPath, outputStream);
+            FolderDownloaderUtils.downloadZipFolder(folderPath, outputStream);
 
         } catch (Exception e) {
             e.printStackTrace();
