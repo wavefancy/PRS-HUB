@@ -4,7 +4,7 @@ spring:
   datasource:
     #驱动
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://192.168.129.138:3306/prs_hub?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&allowMultiQueries=true
+    url: jdbc:mysql://118.195.223.193:3306/prs_hub?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&allowMultiQueries=true
     username: root
     password: e8c87vb2
   servlet:
@@ -16,7 +16,7 @@ spring:
       resolve-lazily: false
   #配置rabbitmq
   rabbitmq:
-    host: 192.168.129.138
+    host: 118.195.223.193
     port: 5672
     username: prs_hub
     password: zcygkc36

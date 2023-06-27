@@ -137,6 +137,7 @@ public class MessageConsumer {
                 //记录文件解析状态
                 PrsFileReqDTO prsFileReqDTO = new PrsFileReqDTO();
                 prsFileReqDTO.setId(Long.valueOf(fileId));
+                prsFileReqDTO.setParsingId(cromwellId);
                 prsFileReqDTO.setParsingStatus( "N");
                 fileService.updateFile(prsFileReqDTO);
             }catch (Exception e){

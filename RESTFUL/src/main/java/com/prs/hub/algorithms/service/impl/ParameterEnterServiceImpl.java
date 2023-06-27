@@ -231,7 +231,7 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
                 //页面上传GWAS文件完整地址
                 resMap.put(fileType,"/srv"+file.getFilePath()+file.getFileName()+file.getFileSuffix());
             }else{
-                String ldFilePath = file.getFilePath();
+                String ldFilePath = "/srv"+file.getFilePath();
                 //去掉最后一个目录分隔符
                 resMap.put(fileType,((ldFilePath.length()-1 ==ldFilePath.lastIndexOf( File.separator)) ? ldFilePath.substring(0,ldFilePath.lastIndexOf( File.separator)) : ldFilePath) );
             }

@@ -11,7 +11,7 @@ module.exports = defineConfig({
         pathRewrite: { '^/api': '' },
       },
       "/prd-api": {
-        target: "http://192.168.129.138:9090/prs/hub/",
+        target: "http://118.195.223.193:9090/prs/hub/",
         pathRewrite: { '^/prd-api': '' },
       },
     },

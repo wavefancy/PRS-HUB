@@ -81,16 +81,16 @@
                       {{file.ranking}}
                     </td>
                     <td class="text-end" >
-                      <!-- <a v-if="file.status==='Finished'" href="#" class="btn btn-sm btn-neutral operate bg-yellow-500 text-white" 
+                      <a v-if="file.status==='Finished'" href="#" class="btn btn-sm btn-neutral operate bg-yellow-500 text-white" 
                         @click.stop="downloadResult(file.uuid,file.status,file.name,file.algorithmsName)">
                         download
-                      </a> -->
-                      <a v-if="file.status==='Finished'" href="#" class="btn btn-sm btn-neutral operate bg-yellow-500 text-white" 
+                      </a>
+                      <!-- <a v-if="file.status==='Finished'" href="#" class="btn btn-sm btn-neutral operate bg-yellow-500 text-white" 
                         @click.stop="downloadCOSFile(file.name)">
                         download
-                      </a>
+                      </a> -->
                       <a v-if="file.status==='Failed'" href="#" class="btn btn-sm btn-neutral operate bg-red-500 text-white" 
-                        @click.stop="downloadCOSFile(file.name)">
+                        @click.stop="downloadResult(file.uuid,file.status,file.name,file.algorithmsName)">
                         error_log
                       </a>
                       <a v-if="file.status==='Submitted' || file.status=== 'Started'" href="#" class="btn btn-sm btn-neutral operate" @click.stop="abortRunner(file.uuid)">stop</a>
@@ -149,14 +149,14 @@
 
 <script>
 import {Prs} from "@/api"
-// import axios from 'axios'
+import axios from 'axios'
 import {isEmpty }  from "@/utils/validate"
 // import CryptoJS from "crypto-js"
 import COS from "cos-js-sdk-v5"
 import JSZip from 'jszip'
-// axios.defaults.timeout = 40000
-// axios.defaults.baseURL = process.env.VUE_APP_BASE_PRS_EPORTAL
-// axios.defaults.headers.post['Content-Type'] = 'application/json charset=UTF-8'
+axios.defaults.timeout = 40000
+axios.defaults.baseURL = process.env.VUE_APP_BASE_PRS_EPORTAL
+axios.defaults.headers.post['Content-Type'] = 'application/json charset=UTF-8'
 export default {
   name: "StatisticsItem",
   data() {
@@ -179,50 +179,50 @@ export default {
       }
   },
   methods: {
-    // downloadResult(uuid,status,name,algorithmsName){
-    //   //加载中
-    //   this.loading=true
-    //   //使用原生的axios请求文件为二进制流 
-    //   axios({
-    //       method: "get",
-    //       url: "/downloadResult",
-    //       headers: {
-    //           "content-type": "application/json; charset=utf-8",
-    //           "accessToken":localStorage.getItem("accessToken")
-    //       },
-    //       responseType: "blob",       //设置响应类型为blob，否则二进制流直接转换会出错
-    //       params: { // 其他参数
-    //           uuid:uuid,
-    //           status:status
-    //       },
+    downloadResult(uuid,status,name,algorithmsName){
+      //加载中
+      this.loading=true
+      //使用原生的axios请求文件为二进制流 
+      axios({
+          method: "get",
+          url: "/downloadResult",
+          headers: {
+              "content-type": "application/json; charset=utf-8",
+              "accessToken":localStorage.getItem("accessToken")
+          },
+          responseType: "blob",       //设置响应类型为blob，否则二进制流直接转换会出错
+          params: { // 其他参数
+              uuid:uuid,
+              status:status
+          },
 
-    //   } 
-    //   ).then((response) => {
-    //     const content = response 
-    //     const blob = new Blob([content])//构造一个blob对象来处理数据
-    //     const fileName =("Failed" === status)?"error_logs.zip" : name+"_"+algorithmsName+"_result.zip"
+      } 
+      ).then((response) => {
+        const content = response 
+        const blob = new Blob([content])//构造一个blob对象来处理数据
+        const fileName =("Failed" === status)?"error_logs.zip" : name+"_"+algorithmsName+"_result.zip"
 
-    //     //对于<a>标签，只有 Firefox 和 Chrome（内核） 支持 download 属性
-    //     //IE10以上支持blob但是依然不支持download
-    //     if ('download' in document.createElement('a')) { //支持a标签download的浏览器
-    //       const link = document.createElement('a')//创建a标签
-    //       link.download = fileName//a标签添加属性
-    //       link.style.display = 'none'
-    //       link.href = URL.createObjectURL(blob)
-    //       document.body.appendChild(link)
-    //       link.click()//执行下载
-    //       URL.revokeObjectURL(link.href) //释放url
-    //       document.body.removeChild(link)//释放标签
-    //     } else { //其他浏览器
-    //       navigator.msSaveBlob(blob, fileName)
-    //     }
-    //     this.loading=false
+        //对于<a>标签，只有 Firefox 和 Chrome（内核） 支持 download 属性
+        //IE10以上支持blob但是依然不支持download
+        if ('download' in document.createElement('a')) { //支持a标签download的浏览器
+          const link = document.createElement('a')//创建a标签
+          link.download = fileName//a标签添加属性
+          link.style.display = 'none'
+          link.href = URL.createObjectURL(blob)
+          document.body.appendChild(link)
+          link.click()//执行下载
+          URL.revokeObjectURL(link.href) //释放url
+          document.body.removeChild(link)//释放标签
+        } else { //其他浏览器
+          navigator.msSaveBlob(blob, fileName)
+        }
+        this.loading=false
 
-    //   }).catch((err)=>{
-    //     console.log(err);
-    //     this.loading=false
-    //   })
-    // },
+      }).catch((err)=>{
+        console.log(err);
+        this.loading=false
+      })
+    },
     // 下载COS上的大文件
     
     downloadCOSFile(jobName) {

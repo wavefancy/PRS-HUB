@@ -90,6 +90,11 @@ public class MessageConsumer {
      */
     @Value("${upload.files.prefix.path}")
     private String uploadFilesPrefixPath;
+    /**
+     * 远程计算机存放输出结果目录
+     */
+    @Value("${rsync.remote.outputs.path}")
+    private String remoteOutputsPath;
 
     /**
      * 监听用户提交工作流
@@ -173,7 +178,7 @@ public class MessageConsumer {
                     if("Succeeded".equals(status)||"Failed".equals(status)){
                         //如果是成功或者失败的状态将结果文件推送给web服务器
                         String path = (String) entry.getValue();
-                        Boolean flag = processUtils.rsyncPush(path,File.separator+"srv"+path);
+                        Boolean flag = processUtils.rsyncPush(remoteOutputsPath,File.separator+"srv"+path);
                         log.info("将结果文件推送给web服务器flag="+flag);
                     }
                 }

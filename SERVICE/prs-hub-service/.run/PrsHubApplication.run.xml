@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="PrsHubApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+    <module name="prs-hub-restful" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="com.prs.hub.PrsHubApplication" />
+    <option name="ALTERNATIVE_JRE_PATH" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

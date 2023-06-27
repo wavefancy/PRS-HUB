@@ -34,99 +34,22 @@ public class Test {
 
     public static void main(String[] args) throws Exception {
 
-//        final String remote_url = "http://39.103.140.193:8000/api/workflows/v1";// 第三方服务器请求地址
-//        try {
-//            Map<String, String> filePathMap =  new HashMap<String,String>();
-//            filePathMap.put("workflowSource", "E:\\test\\hello.wdl");
-//            filePathMap.put("workflowInputs","E:\\test\\inputs.json");
-//            httpClientUploadFile(filePathMap,remote_url);
-//
-//        }catch (Exception e){
-//            log.error("",e);
-//        }
-//        Calendar c = Calendar.getInstance();
-//        System.out.println(c.getTime());
-//
-//        // 获得年份
-//        System.out.println("现在是：" + c.get(Calendar.YEAR) + "年");
-//
-//        // 获得月份
-//        System.out.println("现在是：" + (c.get(Calendar.MONTH)+1) + "月");
-//
-//        //获得日期
-//        System.out.println("现在是：" + c.get(Calendar.DATE) + "号");
-//        System.out.println("现在是：" + c.get(Calendar.DAY_OF_MONTH) + "号");
-//
-//        // 获得这是今年的第几天
-//        System.out.println("现在是今年第" + c.get(Calendar.DAY_OF_YEAR) + "天");
-//
-//        // 获得今天周几
-//        System.out.println("现在是星期：" + (c.get(Calendar.DAY_OF_WEEK)-1) );
-//
-//        // 获得今天是这个月的第几周
-//        System.out.println("现在是第：" + c.get(Calendar.DAY_OF_WEEK_IN_MONTH) + "周" );
-//
-//        // 12小时制的时间
-//        System.out.println("现在是：" + c.get(Calendar.HOUR) + "点");
-//
-//        // 24小时制的时间
-//        System.out.println("现在是：" + c.get(Calendar.HOUR_OF_DAY) + "点");
-//
-//        // 分钟数
-//        System.out.println("现在是：" + c.get(Calendar.MINUTE) + "分");
-//
-//        // 秒数
-//        System.out.println("现在是：" + c.get(Calendar.SECOND) + "秒");
-//
-//        // 毫秒
-//        System.out.println("现在是：" + c.get(Calendar.MILLISECOND) + "毫秒");
-//
-//
-//
-//
-//
-//
-//
-//        SimpleDateFormat dc = new SimpleDateFormat();
-//        dc.applyPattern("yyyy-MM-dd");
-//        Date d = dc.parse("2017-5-13");
-//        c.setTime(d);
-//
-//        System.out.println("--------------------2017-5-13信息-----------------------");
-//
-//        // 获得年份
-//        System.out.println("现在是：" + c.get(Calendar.YEAR) + "年");
-//
-//        // 获得月份
-//        System.out.println("现在是：" + (c.get(Calendar.MONTH)+1) + "月");
-//
-//        //获得日期
-//        System.out.println("现在是：" + c.get(Calendar.DATE) + "号");
-//        System.out.println("现在是：" + c.get(Calendar.DAY_OF_MONTH) + "号");
-//
-//        // 获得这是今年的第几天
-//        System.out.println("现在是今年第" + c.get(Calendar.DAY_OF_YEAR) + "天");
-//
-//        // 获得今天周几
-//        System.out.println("现在是星期：" + (c.get(Calendar.DAY_OF_WEEK)-1) );
-//
-//        // 获得今天是这个月的第几周
-//        System.out.println("现在是第：" + c.get(Calendar.DAY_OF_WEEK_IN_MONTH) + "周" );
+        createDirectory("E:\\UploadFile\\test\\test.txt");
 
-//        String fileName="E:\\test\\P+T\\Height.QC.gz";
-//        Long x = System.currentTimeMillis();
-////使用GZIPInputStream解压GZ文件
-//        InputStream in = new GZIPInputStream(new FileInputStream(fileName));
-//        Scanner sc=new Scanner(in);
-//        List<String> lines=new ArrayList();
-//        while(sc.hasNextLine()){
-//            lines.add(sc.nextLine());
-//        }
-//        Long y = System.currentTimeMillis();
-//        String path = "E:\\test\\P+T\\Height.QC.gz";
-//        FileUtil.getGZIPDataHeaderByFileName(path);
-        System.out.println(JSON.toJSONString(null));
+    }
+    public static void createDirectory(String path) {
+        File directory = new File(path);
 
+        if (!directory.exists()) {
+            boolean created = directory.mkdirs();
+            if (created) {
+                log.info("目录已创建成功");
+            } else {
+                log.info("无法创建目录");
+            }
+        } else {
+            log.info("目录已存在");
+        }
     }
 
     /**

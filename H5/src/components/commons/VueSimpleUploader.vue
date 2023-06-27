@@ -157,7 +157,7 @@ const CHUNK_SIZE = 10 * 1024 * 1024
 
         if(!isEmpty(data)){
           const flag = data.flag
-          if(flag){
+          if(flag&&!isEmpty(data.fileName)){
             if("GWAS" === this.fileType){
               let formData = new FormData();
               formData.append('fileName',data.fileName)

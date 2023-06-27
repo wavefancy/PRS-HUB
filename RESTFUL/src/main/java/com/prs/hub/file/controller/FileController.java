@@ -290,7 +290,7 @@ public class FileController {
                 //发送消息对LD文件进行解析
                 Map<String,Object> uploadMsgReq = new HashMap<>();
                 uploadMsgReq.put("identifier",identifier);
-                uploadMsgReq.put("fileId",fileId);
+                uploadMsgReq.put("fileId",fileId+"");
                 uploadMsgReq.put("fileType",fileType);
                 uploadMsgReq.put("filePath",filePath);
                 uploadMsgReq.put("fileName",fileName);

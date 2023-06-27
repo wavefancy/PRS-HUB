@@ -201,11 +201,12 @@ public class FileUtil {
                 temp.delete();
             }
             if (temp.isDirectory()) {
-                delAllFile(path + "/" + tempList[i]);//先删除文件夹里面的文件
-                delFolder(path + "/" + tempList[i]);//再删除空文件夹
+                delAllFile(path + File.separator + tempList[i]);//先删除文件夹里面的文件
+                delFolder(path + File.separator + tempList[i]);//再删除空文件夹
                 flag = true;
             }
         }
+        log.info("删除临时文件:{}，结果flag:{}",path,flag);
         return flag;
     }
     public static void delFolder(String folderPath) {

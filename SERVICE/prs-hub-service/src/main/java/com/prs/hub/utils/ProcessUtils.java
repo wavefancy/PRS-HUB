@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -54,6 +55,9 @@ public class ProcessUtils {
         log.info("rsync拉取拷贝数据源：{} \n 拷贝目的地地址：{}" , source,destinationPath+"/"+destinationFileName);
 
         boolean res = false;
+        String destinationFilePath = destinationPath+ File.separator + destinationFileName.substring(0,destinationFileName.lastIndexOf( File.separator));
+        log.info("如果目录不存在则创建目录：{}",destinationFilePath);
+        createDirectory(destinationFilePath);
 
         // 构建rsync命令
 
@@ -98,7 +102,7 @@ public class ProcessUtils {
 
         // 构建rsync命令
 
-        String rsyncCommand =commandPull+" "+ destinationPath + "/" +destinationFileName +" "+remoteUser + "@"+remoteHost+":" +  remote ;
+        String rsyncCommand =commandPull+" " +destinationFileName +" "+remoteUser + "@"+remoteHost+":" +  remote ;
 
         // 执行rsync命令
         ProcessBuilder builder = new ProcessBuilder();
@@ -124,5 +128,19 @@ public class ProcessUtils {
         }
 
         return res;
+    }
+    public void createDirectory(String path) {
+        File directory = new File(path);
+
+        if (!directory.exists()) {
+            boolean created = directory.mkdirs();
+            if (created) {
+                log.info("目录已创建成功");
+            } else {
+                log.info("无法创建目录");
+            }
+        } else {
+            log.info("目录已存在");
+        }
     }
 }
