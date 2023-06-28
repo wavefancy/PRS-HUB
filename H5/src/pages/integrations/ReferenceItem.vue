@@ -447,7 +447,7 @@
     //数据初始化
     mounted(){
       //为总线绑定函数
-      this.$bus.$on('fileChange',this.fileChange)
+      this.$bus.$off.$on('fileChange',this.fileChange)
       this.getFileList(this.currentPage,this.pageSize);
     },
     watch: {
@@ -466,6 +466,10 @@
           // 立即处理 进入页面就触发
           immediate: true
       }
+    },
+    beforeDestroy() {
+      //销毁总线绑定的函数
+      this.$bus.$off('fileChange')
     }
     
   };

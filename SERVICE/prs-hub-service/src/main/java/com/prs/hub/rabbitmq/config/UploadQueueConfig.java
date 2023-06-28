@@ -19,6 +19,9 @@ public class UploadQueueConfig {
     public static final String UPLOAD_QUEUE_NAME = "prs.hub.upload.queue";
     //查询LD文件解析状态队列名称
     public static final String QUERY_FILE_STATUS_QUEUE_NAME = "prs.hub.query.file.status.queue";
+    //删除文件队列名称
+    public static final String DELETE_FILE_QUEUE_NAME = "prs.hub.delete.file.queue";
+    public static final String DELETE_FILE_ROUTING_KEY_NAME = "prs.hub.delete.file";
 
     //声明Upload Exchange
     @Bean("uploadExchange")
@@ -37,6 +40,11 @@ public class UploadQueueConfig {
     public Queue queryFileStatusQueue(){
         return QueueBuilder.durable(QUERY_FILE_STATUS_QUEUE_NAME).build();
     }
+    // 声明删除文件队列
+    @Bean("deleteFileQueue")
+    public Queue deleteFileQueue(){
+        return QueueBuilder.durable(DELETE_FILE_QUEUE_NAME).build();
+    }
 
     // 声明Upload队列绑定关系
     @Bean("uploadQueueBinding")
@@ -48,7 +56,12 @@ public class UploadQueueConfig {
     @Bean("queryFileStatusQueueBinding")
     public Binding queryFileStatusQueueBinding(@Qualifier("queryFileStatusQueue") Queue queue,
                                 @Qualifier("uploadExchange") TopicExchange exchange){
-
         return BindingBuilder.bind(queue).to(exchange).with("prs.hub.query.file.status.#");
+    }
+    // 声明删除文件绑定关系
+    @Bean("deleteFileQueueBinding")
+    public Binding deleteFileQueueBinding(@Qualifier("deleteFileQueue") Queue queue,
+                                @Qualifier("uploadExchange") TopicExchange exchange){
+        return BindingBuilder.bind(queue).to(exchange).with(DELETE_FILE_ROUTING_KEY_NAME);
     }
 }

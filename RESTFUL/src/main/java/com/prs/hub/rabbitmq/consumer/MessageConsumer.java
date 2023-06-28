@@ -9,6 +9,7 @@ import com.prs.hub.practice.entity.PrsFile;
 import com.prs.hub.runnerdetail.dto.RunnerStatisReqDTO;
 import com.prs.hub.runnerdetail.service.RunnerDetailService;
 import com.prs.hub.statistics.service.StatisticsService;
+import com.prs.hub.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -40,6 +41,8 @@ public class MessageConsumer {
     private static final String QUERY_LD_FILE_STATUS_RES_QUEUE_NAME = "prs.hub.query.ld.file.status.res.queue";
     //发起ld文件解析返回队列名称
     public static final String UPLOAD_FILE_RES_QUEUE_NAME = "prs.hub.upload.file.res.queue";
+    //中止工作流结果路由
+    private static final String ABORT_RUNNER_RES_QUEUE_NAME = "prs.hub.abort.runner.res.queue";
 
     @Autowired
     private RunnerDetailService runnerDetailService;
@@ -133,12 +136,15 @@ public class MessageConsumer {
         if(msgJson != null){
             try {
                 String fileId = (String)msgJson.get("fileId");
+                String fileType = (String)msgJson.get("fileType");
                 String cromwellId = (String)msgJson.get("cromwellId");
                 //记录文件解析状态
                 PrsFileReqDTO prsFileReqDTO = new PrsFileReqDTO();
                 prsFileReqDTO.setId(Long.valueOf(fileId));
                 prsFileReqDTO.setParsingId(cromwellId);
-                prsFileReqDTO.setParsingStatus( "N");
+                if(StringUtils.isNotEmpty(fileType) && "LD".equals(fileType)){
+                    prsFileReqDTO.setParsingStatus( "N");
+                }
                 fileService.updateFile(prsFileReqDTO);
             }catch (Exception e){
                 log.error("接受到上传文件同步结果消息处理异常:{}",e.getMessage());
@@ -176,6 +182,30 @@ public class MessageConsumer {
                 }
             }catch (Exception e){
                 log.error("ld文件解析状态返回结果消息处理异常:{}",e.getMessage());
+            }
+        }
+    }
+    /**
+     * 中止工作流结果
+     * @param message
+     */
+    @RabbitListener(queues =ABORT_RUNNER_RES_QUEUE_NAME)
+    public void abortRunnerResMsg(Message message){
+        log.info("中止工作流结果消息:{}", JSONObject.toJSONString(message));
+
+        String msg=new String(message.getBody());
+        JSONObject msgJson = JSON.parseObject(msg);
+        if(msgJson != null){
+            try {
+                String uuid = (String)msgJson.get("uuid");
+                RunnerStatisReqDTO runnerStatisUpdate = new RunnerStatisReqDTO();
+                runnerStatisUpdate.setWorkflowExecutionUuid(uuid);
+                runnerStatisUpdate.setStatus(4);
+                log.info("调用runnerDetailService更新runner数据runnerStatisUpdate="+JSON.toJSONString(runnerStatisUpdate));
+                Boolean resFlag = runnerDetailService.updateRunnerDetail(runnerStatisUpdate);
+                log.info("调用runnerDetailService更新runner数据结束resFlag="+resFlag);
+            }catch (Exception e){
+                log.error("中止工作流结果消息处理异常:{}",e.getMessage());
             }
         }
     }

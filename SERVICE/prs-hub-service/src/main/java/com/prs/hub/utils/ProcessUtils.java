@@ -96,7 +96,7 @@ public class ProcessUtils {
      * @return
      */
     public  boolean rsyncPush(String remote,String destinationFileName){
-        log.info("rsync推送拷贝数据源：{} \n 拷贝目的地地址：{}" , remote,destinationPath+"/"+destinationFileName);
+        log.info("rsync推送拷贝数据源：{} \n 拷贝目的地地址：{}" , remote,destinationFileName);
 
         boolean res = false;
 

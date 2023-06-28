@@ -117,7 +117,7 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
             Map<String,Object> resMap = this.setInputParameterFile(algorithmReqDTO,parameterEnters,now,singleMap,multipleMap);
             resMap.put("userId",userId);
             //推送消息保存数据
-            this.sendMessageAndSaveRunnerDetail(resMap,algorithmsReqDTO);
+            this.sendMessageAndSaveRunnerDetail(resMap,algorithmsReqDTO,parameterEnters);
         }
         if(CollectionUtils.isEmpty(parameterEnters)){
             log.info("保存用户设置参数结束，传入parameterEnters数据为空");
@@ -137,7 +137,7 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
      * 发送消息 保存数据
      * @param resMap
      */
-    private Boolean sendMessageAndSaveRunnerDetail(Map<String, Object> resMap,AlgorithmsReqDTO algorithmsReqDTO) {
+    private Boolean sendMessageAndSaveRunnerDetail(Map<String, Object> resMap,AlgorithmsReqDTO algorithmsReqDTO,List<ParameterEnter> parameterEnters) {
 
 
         String messageId = UUID.randomUUID().toString();
@@ -146,6 +146,11 @@ public class ParameterEnterServiceImpl implements ParameterEnterService {
         //保存数据
         Long runnerId = this.saveRunnerDetail((String) resMap.get("userId"),now,algorithmsReqDTO,messageId);
         resMap.put("runnerId",runnerId.toString());
+
+        for (int i = 0 ; i < parameterEnters.size() ; i++) {
+            ParameterEnter parameterEnter = parameterEnters.get(i);
+            parameterEnter.setRunnerId(runnerId.toString());
+        }
 
         JSONObject inputJson = new JSONObject(resMap);
 

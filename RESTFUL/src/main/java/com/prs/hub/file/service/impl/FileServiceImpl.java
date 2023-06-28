@@ -60,6 +60,9 @@ public class FileServiceImpl implements FileService {
     @Value("${query.file.status.routing.key}")
     private String queryFileStatusRoutingKey;
 
+    @Value("${delete.file.routing.key}")
+    private String deleteFileRoutingKey;
+
     @Override
     public BaseResult upLoadFiles(String filePath,String fileName, MultipartFile file) {
         log.info("文件上传service开始filePath="+ filePath);
@@ -333,6 +336,24 @@ public class FileServiceImpl implements FileService {
         return updateRes;
     }
 
+    @Override
+    public Boolean sendDeleteFilesMsg(List<String> filePathList){
+        log.info("删除文件发送消息入参：{}", JSONObject.toJSONString(filePathList));
+        Map<String, Object> reqMap = new HashMap<>();
+        reqMap.put("filePathList",filePathList);
+        String messageId = UUID.randomUUID().toString();
+
+        JSONObject inputJson = new JSONObject(reqMap);
+
+        MQMessageDTO messageDTO = new MQMessageDTO();
+        messageDTO.setMessage(inputJson.toJSONString());
+        messageDTO.setMsgId(messageId);
+        messageDTO.setRoutingKey(deleteFileRoutingKey);
+        messageDTO.setTag(deleteFileRoutingKey);
+
+        return producerService.sendTopicMessage(messageDTO,uploadExchange);
+    }
+
     /**
      * 定时任务：每天0点5秒时清理过期的file表数据
      */
@@ -407,9 +428,13 @@ public class FileServiceImpl implements FileService {
         String fileFullPath = prsFile.getFilePath();
         log.info("要删除的文件全路径fileFullPath="+fileFullPath);
 
-        //删除文件
+        //物理删除文件
         File delteFile = new File(fileFullPath);
         MultipartFileToFileUtil.delteTempFile(delteFile);
+
+        List<String> filePathList = new ArrayList<>();
+        filePathList.add(fileFullPath);
+        this.sendDeleteFilesMsg(filePathList);
 
         log.info("物理删除文件记录开始prsFile="+JSON.toJSONString(prsFile));
         Boolean removeRes =  fileBo.removeById(prsFile);

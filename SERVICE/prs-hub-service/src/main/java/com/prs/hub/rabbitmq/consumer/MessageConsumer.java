@@ -11,6 +11,7 @@ import com.prs.hub.files.service.FileService;
 import com.prs.hub.rabbitmq.dto.MQMessageDTO;
 import com.prs.hub.rabbitmq.service.ProducerService;
 import com.prs.hub.utils.CromwellUtil;
+import com.prs.hub.utils.MultipartFileToFileUtil;
 import com.prs.hub.utils.ProcessUtils;
 import com.prs.hub.utils.StringUtils;
 import com.rabbitmq.client.Channel;
@@ -25,10 +26,7 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author fanshupeng
@@ -62,7 +60,12 @@ public class MessageConsumer {
     public static final String QUERY_RUNNER_DETAIL_STATUS_QUEUE_NAME = "prs.hub.query.runner.detail.status.queue";
     //查询job状态结果路由
     public static final String QUERY_RUNNER_DETAIL_STATUS_RES_ROUTING_KEY_NAME = "prs.hub.query.runner.detail.status.res";
-
+    //中止工作流队列
+    public static final String ABORT_RUNNER_QUEUE_NAME = "prs.hub.abort.runner.queue";
+    //中止工作流结果路由
+    private static final String ABORT_RUNNER_RES_ROUTING_KEY_NAME = "prs.hub.abort.runner.res";
+    //删除文件队列名称
+    public static final String DELETE_FILE_QUEUE_NAME = "prs.hub.delete.file.queue";
 
     @Autowired
     private AlgorithmsParameterService algorithmsParameterService;
@@ -85,6 +88,9 @@ public class MessageConsumer {
     @Value("${cromwell.workflows.status.url}")
     private  String workflowsStatusUrl;
 
+    @Value("${cromwell.workflows.abort.url}")
+    private  String workflowsAbortUrl;
+
     /**
      * 在计算服务器上对应uploadfiles路径的第一级目录
      */
@@ -95,6 +101,11 @@ public class MessageConsumer {
      */
     @Value("${rsync.remote.outputs.path}")
     private String remoteOutputsPath;
+    /**
+     * 远程计算机存放输出结果目录
+     */
+    @Value("${rsync.remote.wf_logs.path}")
+    private String remoteWf_logsPath;
 
     /**
      * 监听用户提交工作流
@@ -175,11 +186,17 @@ public class MessageConsumer {
                     resMsg.put("cromwellId",uuid);
                     resMsg.put("status",status);
                     jsonObject.put(uuid,resMsg);
-                    if("Succeeded".equals(status)||"Failed".equals(status)){
-                        //如果是成功或者失败的状态将结果文件推送给web服务器
+                    if("Succeeded".equals(status)){
+                        //如果是成功的状态将结果文件推送给web服务器
                         String path = (String) entry.getValue();
                         Boolean flag = processUtils.rsyncPush(remoteOutputsPath,File.separator+"srv"+path);
                         log.info("将结果文件推送给web服务器flag="+flag);
+                    }else if("Failed".equals(status)){
+                        //如果是者失败的状态将结果文件推送给web服务器
+                        String path = (String) entry.getValue();
+                        Boolean flag = processUtils.rsyncPush(remoteWf_logsPath,File.separator+"srv"+(path.replace("outputs","wf_logs")));
+                        log.info("将结果文件推送给web服务器flag="+flag);
+
                     }
                 }
             }
@@ -289,6 +306,7 @@ public class MessageConsumer {
 
                 //发送文件同步完成消息
                 resMsg.put("fileId",fileId);
+                resMsg.put("fileType",fileType);
                 JSONObject inputJson = new JSONObject(resMsg);
                 String messageId = UUID.randomUUID().toString();
                 MQMessageDTO messageDTO = new MQMessageDTO();
@@ -343,6 +361,77 @@ public class MessageConsumer {
             messageDTO.setTag("prs.hub");
 
             producerService.sendCromwellMessage(messageDTO);
+        }
+
+    }
+
+    /**
+     * 中止工作流消息监听
+     * @param message
+     * @param channel
+     * @throws IOException
+     */
+    @RabbitListener(queues =ABORT_RUNNER_QUEUE_NAME)
+    public void abortRunnerQueueNameMsg(Message message, Channel channel) throws IOException {
+        log.info("监听中止工作流态消息:{}", JSONObject.toJSONString(message));
+        MessageProperties messageProperties = message.getMessageProperties();
+        String msg=new String(message.getBody());
+        JSONObject msgJson= JSON.parseObject(msg);
+        String uuid = null;
+        if(msgJson != null && msgJson.get("uuid") != null){
+            uuid = (String)msgJson.get("uuid");
+        }
+
+        Boolean flag = false;
+        if(StringUtils.isNotEmpty(uuid)){
+            //运行状态 4:中止 3:Succeeded, 2:failed,1:Running,0:Submitted
+            //查询当前运行状态
+            String statusNow = CromwellUtil.workflowsStatus(workflowsStatusUrl,uuid);
+
+            if("Running".equals(statusNow)||"Submitted".equals(statusNow)){
+                flag = CromwellUtil.workflowsAbort(workflowsAbortUrl,uuid);
+            }
+            log.info("中止工作流flag:{}",flag);
+            Map<String,Object> statusMap = new HashMap<>();
+            statusMap.put("uuid",uuid);
+            statusMap.put("flag",flag);
+            if(flag){
+                //发送中止完成消息
+                JSONObject inputJson = new JSONObject(statusMap);
+                String messageId = UUID.randomUUID().toString();
+                MQMessageDTO messageDTO = new MQMessageDTO();
+                messageDTO.setMessage(inputJson.toString());
+                messageDTO.setMsgId(messageId);
+                messageDTO.setRoutingKey(ABORT_RUNNER_RES_ROUTING_KEY_NAME);
+                messageDTO.setExchange(CROMWELL_EXCHANGE);
+                messageDTO.setTag("prs.hub");
+                log.info("发送中止完成消息:{}",inputJson.toJSONString());
+                producerService.sendCromwellMessage(messageDTO);
+            }
+        }
+
+    }
+    /**
+     * 删除文件消息监听
+     * @param message
+     * @param channel
+     * @throws IOException
+     */
+    @RabbitListener(queues =DELETE_FILE_QUEUE_NAME)
+    public void deleteFileQueueNameMsg(Message message, Channel channel) throws IOException {
+        log.info("监听删除文件消息:{}", JSONObject.toJSONString(message));
+        MessageProperties messageProperties = message.getMessageProperties();
+        String msg=new String(message.getBody());
+        JSONObject msgJson= JSON.parseObject(msg);
+        if(msgJson != null){
+            List<String> filePathList = (List<String>)msgJson.get("filePathList");
+            if(CollectionUtils.isNotEmpty(filePathList)){
+                for (String filePath :filePathList) {
+                    //物理删除文件
+                    File delteFile = new File(filePath);
+                    MultipartFileToFileUtil.delteTempFile(delteFile);
+                }
+            }
         }
 
     }

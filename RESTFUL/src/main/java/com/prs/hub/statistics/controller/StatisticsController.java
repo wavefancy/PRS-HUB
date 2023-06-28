@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.prs.hub.algorithms.dto.AlgorithmsReqDTO;
 import com.prs.hub.algorithms.dto.ParameterEnterReqDTO;
 import com.prs.hub.algorithms.service.ParameterEnterService;
 import com.prs.hub.authentication.dto.UserReqDTO;
@@ -13,7 +14,11 @@ import com.prs.hub.commons.Authorization;
 import com.prs.hub.commons.BaseResult;
 import com.prs.hub.commons.CurrentUser;
 import com.prs.hub.constant.ResultCodeEnum;
+import com.prs.hub.file.service.FileService;
+import com.prs.hub.practice.entity.ParameterEnter;
 import com.prs.hub.practice.entity.RunnerDetail;
+import com.prs.hub.rabbitmq.dto.MQMessageDTO;
+import com.prs.hub.rabbitmq.service.ProducerService;
 import com.prs.hub.runnerdetail.dto.RunnerStatisDTO;
 import com.prs.hub.runnerdetail.dto.RunnerStatisReqDTO;
 import com.prs.hub.runnerdetail.dto.RunnerStatisResDTO;
@@ -36,10 +41,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.util.*;
 
 /**
  * @author fanshupeng
@@ -72,6 +75,16 @@ public class StatisticsController {
 
     @Value("${cromwell.workflows.status.url}")
     private String workflowsStatusUrl;
+    //交换机名称
+    @Value("${topic.exchange}")
+    private String TOPIC_EXCHANGE;
+    /**
+     * 发送消息
+     */
+    @Autowired
+    private ProducerService producerService;
+    @Autowired
+    private FileService fileService;
 
     /**
      * 获取runner详情
@@ -154,23 +167,17 @@ public class StatisticsController {
                 resultMap.put("msg" ,"对应uuid的runner数据不存在");
                 return BaseResult.ok("接口调用成功",resultMap);
             }
-            if(status.equals("Started")||status.equals("Submitted")){
-                //根据uuid中止工作流
-//                String statusNow = CromwellUtil.workflowsStatus(workflowsStatusUrl,uuid);
-//
-//                if("Running".equals(statusNow)||"Submitted".equals(statusNow)){
-//                    CromwellUtil.workflowsAbort( workflowsAbortUrl,uuid);
-//                }
-            }
 
             //删除该条数据，当存在resultPath时删除运行结果文件
             String resultPath = runnerDetail.getResultPath();
             if(StringUtils.isNotEmpty(resultPath)){
                 //删除文件夹
-                String filePath = resultPath.substring(0,resultPath.indexOf(uuid))+uuid+"/";
-                log.info("删除运行结果文件filePath="+filePath);
-                Boolean delFileFlag = FileUtil.delAllFile(filePath);
+                log.info("删除运行结果文件filePath="+resultPath);
+                Boolean delFileFlag = FileUtil.delAllFile(resultPath);
                 log.info("删除运行结果文件delFileFlag="+delFileFlag);
+                List<String> filePathList = new ArrayList<>();
+                filePathList.add(resultPath);
+                fileService.sendDeleteFilesMsg(filePathList);
             }
 
             //删除runner数据
@@ -234,24 +241,28 @@ public class StatisticsController {
                 resultMap.put("msg" ,"对应uuid的runner数据不存在");
                 return BaseResult.ok("接口调用成功",resultMap);
             }
-            //根据uuid中止工作流
+            //根据uuid发送中止工作流消息
+            Map<String, Object> sendMagMap = new HashMap<>();
+            sendMagMap.put("uuid",uuid);
+            log.info("根据uuid:{}发送中止工作流消息",uuid);
+            this.sendAbortMessage(sendMagMap);
             //运行状态 4:中止 3:Succeeded, 2:failed,1:Running,0:Submitted
             //查询当前运行状态
-            String statusNow = CromwellUtil.workflowsStatus(workflowsStatusUrl,uuid);
-
-            if("Running".equals(statusNow)||"Submitted".equals(statusNow)){
-                flag = CromwellUtil.workflowsAbort(workflowsAbortUrl,uuid);
-            }
+//            String statusNow = CromwellUtil.workflowsStatus(workflowsStatusUrl,uuid);
+//
+//            if("Running".equals(statusNow)||"Submitted".equals(statusNow)){
+//                flag = CromwellUtil.workflowsAbort(workflowsAbortUrl,uuid);
+//            }
 
             //更新数据
-            if(flag){
+            /*if(flag){
                 RunnerStatisReqDTO runnerStatisUpdate = new RunnerStatisReqDTO();
                 runnerStatisUpdate.setWorkflowExecutionUuid(uuid);
                 runnerStatisUpdate.setStatus(4);
                 log.info("调用runnerDetailService更新runner数据runnerStatisUpdate="+JSON.toJSONString(runnerStatisUpdate));
                 Boolean resFlag = runnerDetailService.updateRunnerDetail(runnerStatisUpdate);
                 log.info("调用runnerDetailService更新runner数据结束resFlag="+resFlag);
-            }
+            }*/
             resultMap.put("code",ResultCodeEnum.SUCCESS.getCode());
             resultMap.put("msg","中止工作流成功");
 
@@ -294,5 +305,23 @@ public class StatisticsController {
         resultMap.put("runningCount",runningCount);
 
         return BaseResult.ok("接口调用成功",resultMap);
+    }
+
+    /**
+     * 发送消息 保存数据
+     * @param resMap
+     */
+    private Boolean sendAbortMessage(Map<String, Object> resMap) {
+        String messageId = UUID.randomUUID().toString();
+
+        JSONObject inputJson = new JSONObject(resMap);
+
+        MQMessageDTO messageDTO = new MQMessageDTO();
+        messageDTO.setMessage(inputJson.toJSONString());
+        messageDTO.setMsgId(messageId);
+        messageDTO.setRoutingKey("prs.hub.abort.runner");
+        messageDTO.setTag("prs.hub");
+
+        return producerService.sendTopicMessage(messageDTO,TOPIC_EXCHANGE);
     }
 }

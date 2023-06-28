@@ -20,10 +20,10 @@ public class MyFastAutoGenerator {
 //        tables.add("parameter");
 //        tables.add("menu");
 //        tables.add("runner_detail");
-//        tables.add("parameter_enter");
+        tables.add("parameter_enter");
 //        tables.add("prs_file");
 //        tables.add("runner_detail");
-        tables.add("file_chunk");
+//        tables.add("file_chunk");
 //        tables.add("runner_detail_to_file");
 
 
@@ -32,7 +32,7 @@ public class MyFastAutoGenerator {
          * username:数据库账号
          * password：数据库密码
          */
-        FastAutoGenerator.create("jdbc:mysql://192.168.129.138:3306/prs_hub?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&allowMultiQueries=true","root","e8c87vb2")
+        FastAutoGenerator.create("jdbc:mysql://118.195.223.193:3306/prs_hub?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&allowMultiQueries=true","root","e8c87vb2")
                 .globalConfig(builder -> {
                     builder.author("fansp")//作者
                             .outputDir("E:\\PRS-HUB\\RESTFUL\\src\\main\\java")    //输出路径(写到java目录)

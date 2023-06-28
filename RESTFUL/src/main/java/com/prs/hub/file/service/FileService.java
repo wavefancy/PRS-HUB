@@ -89,4 +89,10 @@ public interface FileService {
      * @throws Exception
      */
     Boolean updateFile(PrsFileReqDTO  prsFileReqDTO)throws Exception;
+
+    /**
+     * 发送删除文件消息
+     * @param filePathList
+     */
+    Boolean sendDeleteFilesMsg(List<String> filePathList);
 }

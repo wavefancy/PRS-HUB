@@ -22,6 +22,11 @@ public class TopicQueueConfig {
     //查询job状态结果
     public static final String QUERY_RUNNER_DETAIL_STATUS_RES_QUEUE_NAME = "prs.hub.query.runner.detail.status.res.queue";
     public static final String QUERY_RUNNER_DETAIL_STATUS_RES_ROUTING_KEY_NAME = "prs.hub.query.runner.detail.status.res";
+
+    //中止工作流结果路由
+    private static final String ABORT_RUNNER_RES_QUEUE_NAME = "prs.hub.abort.runner.res.queue";
+    private static final String ABORT_RUNNER_RES_ROUTING_KEY_NAME = "prs.hub.abort.runner.res";
+
     //声明cromwell topic Exchange
     @Bean("cromwellTopicExchange")
     public TopicExchange cromwellTopicExchange(){
@@ -50,5 +55,16 @@ public class TopicQueueConfig {
     public Binding queryRunnerDetailStatusResQueueBinding(@Qualifier("queryRunnerDetailStatusResQueue") Queue queue,
                                 @Qualifier("cromwellTopicExchange") TopicExchange exchange){
         return BindingBuilder.bind(queue).to(exchange).with(QUERY_RUNNER_DETAIL_STATUS_RES_ROUTING_KEY_NAME);
+    }
+    // 声明中止工作流结果队列
+    @Bean("abortRunnerResQueue")
+    public Queue abortRunnerResQueue(){
+        return QueueBuilder.durable(ABORT_RUNNER_RES_QUEUE_NAME).build();
+    }
+    // 声明中止工作流结果队列绑定关系
+    @Bean("abortRunnerResQueueBinding")
+    public Binding abortRunnerResQueueBinding(@Qualifier("abortRunnerResQueue") Queue queue,
+                                @Qualifier("cromwellTopicExchange") TopicExchange exchange){
+        return BindingBuilder.bind(queue).to(exchange).with(ABORT_RUNNER_RES_ROUTING_KEY_NAME);
     }
 }

@@ -154,7 +154,7 @@ import {isEmpty }  from "@/utils/validate"
 // import CryptoJS from "crypto-js"
 import COS from "cos-js-sdk-v5"
 import JSZip from 'jszip'
-axios.defaults.timeout = 40000
+axios.defaults.timeout = 400000
 axios.defaults.baseURL = process.env.VUE_APP_BASE_PRS_EPORTAL
 axios.defaults.headers.post['Content-Type'] = 'application/json charset=UTF-8'
 export default {

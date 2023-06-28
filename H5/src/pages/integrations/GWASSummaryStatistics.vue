@@ -327,6 +327,10 @@
           // 立即处理 进入页面就触发
           immediate: true
       }
+    },
+    beforeDestroy() {
+      //销毁总线绑定的函数
+      this.$bus.$off('fileChange')
     }
     
   };

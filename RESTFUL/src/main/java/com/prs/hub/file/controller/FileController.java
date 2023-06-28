@@ -286,7 +286,7 @@ public class FileController {
             resultMap.put("msg","sftp文件上传成功");
             resultMap.put("fileId",fileId);
 
-            if(fileId !=null && "LD".equals(fileType)){
+//            if(fileId !=null && "LD".equals(fileType)){
                 //发送消息对LD文件进行解析
                 Map<String,Object> uploadMsgReq = new HashMap<>();
                 uploadMsgReq.put("identifier",identifier);
@@ -298,7 +298,7 @@ public class FileController {
                 uploadMsgReq.put("userId",userReqDTO.getId());
                 uploadMsgReq.put("pop",pop);
                 this.sendUploadMessage(uploadMsgReq);
-            }
+//            }
 
         }catch (Exception e){
             log.error("文件上传controller异常",e);
@@ -438,6 +438,7 @@ public class FileController {
             response.setContentType("application/zip");
             response.setHeader("Content-Disposition", "attachment; filename=\"download.zip\"");
             outputStream = response.getOutputStream() ;
+            log.info("开始压缩文件:{}",folderPath);
             FolderDownloaderUtils.downloadZipFolder(folderPath, outputStream);
 
         } catch (Exception e) {

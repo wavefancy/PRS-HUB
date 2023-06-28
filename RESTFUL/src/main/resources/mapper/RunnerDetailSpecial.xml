@@ -32,7 +32,7 @@
         <result column="runnerProgress" property="runnerProgress" />
         <result column="runnerQueue" property="runnerQueue" />
         <result column="createdDate" property="createdDate" />
-        <collection ofType="com.prs.hub.practice.dto.ParameterEnterDTO" property="parameterEnterDTOS" column="{uuid=uuid,algorithmsId=algorithmsId}" select="queryChildrenParameter" javaType="ArrayList">
+        <collection ofType="com.prs.hub.practice.dto.ParameterEnterDTO" property="parameterEnterDTOS" column="{runnerId=runnerId,algorithmsId=algorithmsId}" select="queryChildrenParameter" javaType="ArrayList">
         </collection>
         <collection ofType="com.prs.hub.statistics.dto.GWASAndLDFilenameDTO" property="gwasAndLDFilenames" column="{runnerId=runnerId}" select="queryGWASAndLDFilenames" javaType="ArrayList">
         </collection>
@@ -62,7 +62,7 @@
         pe.`parameter_value` as children_parameterValue
         FROM runner_detail rd
         LEFT JOIN PRS_USER pu ON rd.`user_id`=pu.`id`
-        LEFT JOIN parameter_enter pe ON rd.`workflow_execution_uuid`=pe.`workflow_execution_uuid`
+        LEFT JOIN parameter_enter pe ON rd.`id`=pe.`runner_id`
         LEFT JOIN algorithms al ON pe.`algorithms_id`=al.`id`
         WHERE rd.`is_delete`=0
         <if test="userId!=null and userId!=''">
@@ -89,7 +89,7 @@
              DATE_FORMAT(rd.`created_date` , '%Y-%m-%d') createdDate
          FROM runner_detail  rd
                   LEFT JOIN PRS_USER pu ON rd.`user_id`=pu.`id`
-                  LEFT JOIN parameter_enter pe ON rd.`workflow_execution_uuid`=pe.`workflow_execution_uuid`
+                  LEFT JOIN parameter_enter pe ON rd.`id`=pe.`runner_id`
                   LEFT JOIN algorithms al ON pe.`algorithms_id`=al.`id`
 
          WHERE rd.`is_delete`=0
@@ -105,7 +105,7 @@
             pe.`parameter_value` AS parameterValue
         from parameter_enter pe
         where pe.`is_delete`=0
-            AND pe.`workflow_execution_uuid`=#{uuid}
+            AND pe.`runner_id`=#{runnerId}
             AND pe.`algorithms_id`=#{algorithmsId}
     </select>
     <select id="queryGWASAndLDFilenames" parameterType="java.util.Map" resultMap="gwasAndLDFilenamesMap">

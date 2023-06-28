@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
  * </p>
  *
  * @author fansp
- * @since 2022-09-13
+ * @since 2023-06-27
  */
 @Service
 public class ParameterEnterBoImpl extends ServiceImpl<ParameterEnterMapper, ParameterEnter> implements ParameterEnterBo {

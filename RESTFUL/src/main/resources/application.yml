@@ -1,5 +1,8 @@
 server:
   port: 9090
+  # server端的socket超时间(毫秒)，使用值-1表示没有(即无限)超时，默认值为60000(即60秒)
+  # Tomcat附带的标准server.xml将此值设置为20000(即20秒)，除非disableUploadTimeout设置为false，否则在读取请求正文(如果有)时也会使用此超时
+  disableUploadTimeout: false
 spring:
   datasource:
     #驱动
@@ -16,10 +19,10 @@ spring:
       resolve-lazily: false
   mail:
     host: smtp.qq.com    #邮箱服务器地址 此处为QQ邮箱的
-    username: 952050154@qq.com   #邮箱账号
-    password: cqbfylcczybkbefh            #邮箱密码，此处为QQ邮箱授权码，下图有介绍
+    username: 610958259@qq.com   #邮箱账号
+    password: mvwzfxbfpqygbfje            #邮箱密码，此处为QQ邮箱授权码，
     default-encoding: utf-8    #默认编码
-    from: 952050154@qq.com  #邮件发件人
+    from: 610958259@qq.com  #邮件发件人
     properties.mail.smtp.starttls.enable: true
     properties.mail.smtp.starttls.required: true
     properties.mail.smtp.ssl.enable: true
